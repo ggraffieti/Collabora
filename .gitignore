@@ -12,6 +12,6 @@ build/
 *.cache-main
 *.cache-test
 
-Collabora.iml
+*.iml
 
 # Allow

@@ -2,3 +2,13 @@ language: java
 
 script:
 - './gradlew clean build'
+notifications:
+  email:
+    recipients:
+      - gabriele.graffieti@gmail.com
+      - manuel.peruzzi94@gmail.com
+      - alfredo.maffi@studio.unibo.it
+      - federico.vitali2@studio.unibo.it
+      - mattia.oriano@studio.unibo.it
+    on_success: never
+    on_failure: always

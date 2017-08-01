@@ -1,7 +1,15 @@
+# Ignore
+
 .gradle/
-.idea/
+
+.idea/*
+
+!.idea/inspectionProfiles
+
 build/
 **/*-gen/
 **/*generated*/
 *.cache-main
 *.cache-test
+
+# Allow

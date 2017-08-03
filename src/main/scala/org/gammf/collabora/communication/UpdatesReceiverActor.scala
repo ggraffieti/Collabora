@@ -10,9 +10,11 @@ class UpdatesReceiverActor(connection: ActorRef, channelCreator: ActorRef, subsc
 
   val exchange = "notifications"
   val queue = "notify.username"
+  val routingKey = None
 
   override def receive: Receive = {
-    case StartMessage => channelCreator ! ChannelCreationMessage(connection, exchange, queue, None)
+    case StartMessage => channelCreator ! SubscribingChannelCreationMessage(
+      connection, exchange, queue, routingKey)
     case ChannelCreatedMessage(channel) => subscriber ! SubscribeMessage(channel, queue)
     case _ => println("Huh?")
   }

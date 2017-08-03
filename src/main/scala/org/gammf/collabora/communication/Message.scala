@@ -10,9 +10,11 @@ trait Message
 
 case class StartMessage() extends Message
 
-case class ChannelCreationMessage(connection: ActorRef, exchange: String, queue: String,
-                                  routingKey: Option[String])
+case class SubscribingChannelCreationMessage(connection: ActorRef, exchange: String, queue: String,
+                                  routingKey: Option[String]) extends Message
 
-case class ChannelCreatedMessage(channel: Channel)
+case class PublishingChannelCreationMessage(connection: ActorRef, exchange: String) extends Message
+
+case class ChannelCreatedMessage(channel: Channel) extends Message
 
 case class SubscribeMessage(channel: Channel, queue: String) extends Message

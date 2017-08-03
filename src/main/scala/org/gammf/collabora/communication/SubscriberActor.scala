@@ -8,7 +8,7 @@ import akka.actor.Actor
 class SubscriberActor extends Actor {
 
   override def receive = {
-    case SubscribeMessage =>
+    case SubscribeMessage(channel, exchange, queue, routingKey) =>
       println("Subscribe message received!")
     case _ => println("Huh?")
   }

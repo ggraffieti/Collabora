@@ -7,7 +7,4 @@ import com.newmotion.akka.rabbitmq.Channel
   */
 trait Message
 
-case class SubscribeMessage(channel: Channel,
-                             exchange: String,
-                             queue: String,
-                             routingKey: String) extends Message
+case class SubscribeMessage(channel: Channel, queue: String) extends Message

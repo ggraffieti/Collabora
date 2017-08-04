@@ -1,18 +1,22 @@
 package org.gammf.collabora.util
 
-import java.util.Date
+trait Note {
+  def id: Option[String]
+  def content: String
+  def expiration: Option[String]
+  def location: Option[Double, Double]
+  def previousNotes: Option[List[String]]
+  def state: String
+  def user: Option[String]
 
-/**
-  * Simple repreentation of a note
-  * @param id the id of the note
-  * @param content the content of the note
-  * @param expiration the expiration date
-  * @param location the location where the note
-  * @param previousNotes previous associated notes (this note cannot be completed until all previous notes are
-  *                      not completed.
-  * @param state the state of the note (doing, done, todo...)
-  */
-class Note(val id: Option[String] = None, val content: String, val expiration: Option[Date] = None,
-           val location: Option[(Double, Double)] = None, val previousNotes: Option[List[String]] = None,
-           val state: String) {
+  override def toString: String =
+    "{ Note -- id=" + id +
+    ", content=" + content +
+    ", expiration=" + expiration +
+    ", location=" + location +
+    ", previousNotes=" + previousNotes +
+    ", state=" + state +
+    ", user=" + user +
+    " }"
+
 }

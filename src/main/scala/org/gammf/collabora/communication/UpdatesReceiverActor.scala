@@ -6,16 +6,17 @@ import com.newmotion.akka.rabbitmq._
 /**
   * Created by mperuzzi on 03/08/17.
   */
-class UpdatesReceiverActor(connection: ActorRef, channelCreator: ActorRef, subscriber: ActorRef) extends Actor {
+class UpdatesReceiverActor(connection: ActorRef, naming: ActorRef, channelCreator: ActorRef,
+                           subscriber: ActorRef) extends Actor {
 
-  val exchange = "notifications"
-  val queue = "notify.username"
-  val routingKey = None
+  var subQueue: Option[String] = None
 
   override def receive: Receive = {
-    case StartMessage => channelCreator ! SubscribingChannelCreationMessage(
-      connection, exchange, queue, routingKey)
-    case ChannelCreatedMessage(channel) => subscriber ! SubscribeMessage(channel, queue)
+    case StartMessage => naming ! ChannelNamesRequestMessage(CommunicationType.UPDATES)
+    case ChannelNamesResponseMessage(exchange, queue, routingKey) =>
+      subQueue = queue
+      channelCreator ! SubscribingChannelCreationMessage(connection, exchange, subQueue.get, routingKey)
+    case ChannelCreatedMessage(channel) => subscriber ! SubscribeMessage(channel, subQueue.get)
     case _ => println("Huh?")
   }
 }
@@ -25,10 +26,11 @@ object UseUpdatesReceiverActor extends App {
   val factory = new ConnectionFactory()
   val connection = system.actorOf(ConnectionActor.props(factory), "rabbitmq")
 
+  val naming = system.actorOf(Props[RabbitMQNamingActor], "naming")
   val channelCreator = system.actorOf(Props[ChannelCreatorActor], "channelCreator")
   val subscriber = system.actorOf(Props[SubscriberActor], "subscriber")
   val updatesReceiver = system.actorOf(Props(
-    new UpdatesReceiverActor(connection, channelCreator, subscriber)), "updates-receiver")
+    new UpdatesReceiverActor(connection, naming, channelCreator, subscriber)), "updates-receiver")
 
   updatesReceiver ! StartMessage
 }

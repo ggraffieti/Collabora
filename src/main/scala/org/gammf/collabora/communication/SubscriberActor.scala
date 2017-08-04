@@ -8,13 +8,16 @@ import Utils._
   */
 class SubscriberActor extends Actor {
 
+  var messageSender: Option[ActorRef] = None
+
   override def receive: Receive = {
     case SubscribeMessage(channel, queue) =>
+      messageSender = Some(sender)
       val consumer = new DefaultConsumer(channel) {
         override def handleDelivery(consumerTag: String, envelope: Envelope,
                                     properties: BasicProperties, body: Array[Byte]) {
-          println("Received: " + fromBytes(body) + " with routing key " + envelope.getRoutingKey)
           channel.basicAck(envelope.getDeliveryTag, false)
+          messageSender.get ! ClientUpdateMessage(fromBytes(body))
         }
       }
       channel.basicConsume(queue, false, consumer)

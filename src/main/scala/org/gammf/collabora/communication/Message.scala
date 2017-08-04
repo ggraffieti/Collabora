@@ -23,3 +23,5 @@ case class PublishingChannelCreationMessage(connection: ActorRef, exchange: Stri
 case class ChannelCreatedMessage(channel: Channel) extends Message
 
 case class SubscribeMessage(channel: Channel, queue: String) extends Message
+
+case class ClientUpdateMessage(text: String) extends Message

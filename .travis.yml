@@ -9,6 +9,6 @@ notifications:
       - manuel.peruzzi94@gmail.com
       - alfredo.maffi@studio.unibo.it
       - federico.vitali2@studio.unibo.it
-      - mattia.oriano@studio.unibo.it
+      - mattia.oriani@studio.unibo.it
     on_success: never
     on_failure: always

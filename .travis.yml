@@ -1,4 +1,7 @@
-language: java
+language: scala
+scala:
+  - 2.12.3
+  - 2.12.0
 
 script:
 - './gradlew clean build'

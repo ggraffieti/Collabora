@@ -1,7 +1,7 @@
 package org.gammf.collabora.database.messages
 
-import org.gammf.collabora.util.SimpleNote
+import org.gammf.collabora.util.Note
 
-class InsertNoteMessage(val note: SimpleNote) {
+class InsertNoteMessage(val note: Note) {
 
 }

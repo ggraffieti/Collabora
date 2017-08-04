@@ -1,38 +1,40 @@
-package org.gammf.collabora.database
+package org.gammf.collabora.database.actors
 
-import akka.actor.Actor
-import org.gammf.collabora.database.messages.{InsertNoteMessage, RequestAllNotesMessage}
+import akka.actor.{Actor, ActorRef, Stash}
+import org.gammf.collabora.database.messages._
 import play.api.libs.json.JsObject
 import reactivemongo.api.collections.bson.BSONCollection
 import reactivemongo.api.{Cursor, FailoverStrategy, MongoConnection}
 import reactivemongo.bson.{BSONArray, BSONDocument, BSONObjectID}
 import reactivemongo.play.json.BSONFormats
 
-import scala.concurrent.{Await, Future}
-import scala.concurrent.duration._
-import scala.util.{Failure, Success}
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
+import scala.util.{Failure, Success}
 
-class DBActor(connection: MongoConnection) extends Actor {
+class DBActor(connectionActor: ActorRef, printActor: ActorRef) extends Actor with Stash {
 
-  var notesCollection: BSONCollection = _
+  var connection: Option[MongoConnection] = None
 
-  override def preStart(): Unit = {
-    def notesFut: Future[BSONCollection] = connection.database("collabora", FailoverStrategy())
-      .map(_.collection("note", FailoverStrategy()))
-    notesCollection = Await.result(notesFut, 10.seconds)
+  override def preStart(): Unit = connectionActor ! new AskConnectionMessage()
 
-  }
 
   override def receive: Receive = {
-    case m: RequestAllNotesMessage => {
-      val res: Future[List[BSONDocument]] = notesCollection.find(BSONDocument()).cursor[BSONDocument]().collect[List](100, Cursor.FailOnError[List[BSONDocument]]())
-      res onComplete {
-        case Success(l) => l.foreach(e => println(BSONFormats.BSONDocumentFormat.writes(e).as[JsObject]))
-        case Failure(e) => e.printStackTrace()
+    case m: GetConnectionMessage =>
+      connection = Some(m.connection)
+      unstashAll()
+    case _ if connection.isEmpty => stash()
+    case _: RequestAllNotesMessage =>
+      getNotesCollection onComplete {
+        case Success(notesCollection) => notesCollection.find(BSONDocument())
+          .cursor[BSONDocument]().collect[List](100, Cursor.FailOnError[List[BSONDocument]]()) onComplete {
+          case Success(list) => printActor ! new PrintMessage(list.map(e => BSONFormats.BSONDocumentFormat.writes(e).as[JsObject]).toString)
+          case Failure(e) => e.printStackTrace() // TODO improve error strategy
+        }
+        case Failure(e) => e.printStackTrace() // TODO improve error strategy
       }
-    }
-    case m: InsertNoteMessage => {
+    case m: InsertNoteMessage =>
+      // TODO automathic conversion Note <-> BSONDOocument
       val note = m.note
       var newNote = BSONDocument("content" -> note.content)
       if (note.user.isDefined) newNote = newNote.merge(BSONDocument("state" -> BSONDocument("definition" -> note.state, "username" -> note.user.get)))
@@ -49,13 +51,20 @@ class DBActor(connection: MongoConnection) extends Actor {
         )))
       }
 
-      val writeRes = notesCollection.insert(newNote)
-
-      writeRes onComplete {
-        case Success(res) => println("OKK  " + res)
-        case Failure(e) => e.printStackTrace()
+      getNotesCollection onComplete {
+        case Success(notesCollection) => notesCollection.insert(newNote) onComplete {
+          case Success(res) => printActor ! new PrintMessage("OKK " + res)
+          case Failure(e) => e.printStackTrace() // TODO better error strategy
+        }
+        case Failure(e) => e.printStackTrace() // TODO better error strategy
       }
+  }
 
-    }
+  private def getNotesCollection: Future[BSONCollection] = {
+    if (connection.isDefined)
+      connection.get.database("collabora", FailoverStrategy())
+        .map(_.collection("note", FailoverStrategy()))
+    else
+      throw new Error() // TODO more specific error
   }
 }

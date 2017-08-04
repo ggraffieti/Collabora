@@ -3,12 +3,14 @@ package org.gammf.collabora.communication
 import akka.actor._
 import com.newmotion.akka.rabbitmq._
 import Utils._
+
 /**
-  * Created by mperuzzi on 03/08/17.
+  * @author Manuel Peruzzi
+  * This is an actor that subscribes on a certain queue in a rabbitMQ channel, capturing all the messages.
   */
 class SubscriberActor extends Actor {
 
-  var messageSender: Option[ActorRef] = None
+  private var messageSender: Option[ActorRef] = None
 
   override def receive: Receive = {
     case SubscribeMessage(channel, queue) =>
@@ -21,8 +23,8 @@ class SubscriberActor extends Actor {
         }
       }
       channel.basicConsume(queue, false, consumer)
-      println("Subscribtion started!")
-    case _ => println("Huh?")
+      println("[Subscriber Actor] Subscribtion started!")
+    case _ => println("[Subscriber Actor] Huh?")
   }
 
 }

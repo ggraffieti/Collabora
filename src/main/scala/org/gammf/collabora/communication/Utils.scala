@@ -1,7 +1,8 @@
 package org.gammf.collabora.communication
 
 /**
-  * Created by mperuzzi on 03/08/17.
+  * @author Manuel Peruzzi
+  * This is a simple utility class.
   */
 object Utils {
 

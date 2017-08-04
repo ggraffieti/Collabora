@@ -5,11 +5,12 @@ import com.newmotion.akka.rabbitmq._
 import com.rabbitmq.client.BuiltinExchangeType
 
 /**
-  * Created by mperuzzi on 03/08/17.
+  * @author Manuel Peruzzi
+  * This is an actor that builds and returns to the sender a specific RabbitMQ channel created on the provided connection.
   */
 class ChannelCreatorActor extends Actor {
 
-  var messageSender: Option[ActorRef] = None
+  private var messageSender: Option[ActorRef] = None
 
   override def receive: Receive = {
     case SubscribingChannelCreationMessage(connection, exchange, queue, routingKey) =>
@@ -18,9 +19,9 @@ class ChannelCreatorActor extends Actor {
     case PublishingChannelCreationMessage(connection, exchange) =>
       createChannel(connection, exchange, None, None)
 
-    case ChannelCreated(_) => println("Channel created!")
+    case ChannelCreated(_) => println("[Channel Creator Actor] Channel created!")
 
-    case _ => println("Huh?")
+    case _ => println("[Channel Creator Actor] Huh?")
   }
 
   private def createChannel(connection: ActorRef, exchange: String,

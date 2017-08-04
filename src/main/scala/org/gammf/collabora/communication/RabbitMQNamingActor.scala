@@ -3,7 +3,11 @@ package org.gammf.collabora.communication
 import akka.actor.Actor
 
 /**
-  * Created by mperuzzi on 04/08/17.
+  * @author Manuel Peruzzi
+  */
+
+/**
+  * This is an actor that handles the rabbitMQ naming issues.
   */
 class RabbitMQNamingActor extends Actor {
   implicit def type2Names(commType: CommunicationType.Value): CommunicationNames =
@@ -23,6 +27,9 @@ class RabbitMQNamingActor extends Actor {
   }
 }
 
+/**
+  * This is a simple enumeration containing the types of the client-server communication.
+  */
 object CommunicationType extends Enumeration {
   val UPDATES, NOTIFICATIONS, COLLABORATIONS = Value
 }

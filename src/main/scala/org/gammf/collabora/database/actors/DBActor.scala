@@ -34,14 +34,13 @@ class DBActor(connection: MongoConnection) extends Actor {
     }
     case m: InsertNoteMessage => {
       val note = m.note
-      var newNote = BSONDocument(
-        "content" -> note.content,
-        "state" -> BSONDocument("definition" -> note.state)
-      )
+      var newNote = BSONDocument("content" -> note.content)
+      if (note.user.isDefined) newNote = newNote.merge(BSONDocument("state" -> BSONDocument("definition" -> note.state, "username" -> note.user.get)))
+      else newNote = newNote.merge(BSONDocument("state" -> BSONDocument("definition" -> note.state)))
       if (note.expiration.isDefined) newNote = newNote.merge(BSONDocument("expiration" -> note.expiration.get))
       if (note.previousNotes.isDefined) {
         val arr = BSONArray(note.previousNotes.get.map(e => BSONObjectID.parse(e).get))
-        newNote = newNote.merge(BSONDocument("previousNotes" -> note.expiration.get))
+        newNote = newNote.merge(BSONDocument("previousNotes" -> arr))
       }
       if (note.location.isDefined) {
         newNote = newNote.merge(BSONDocument("location" -> BSONDocument(

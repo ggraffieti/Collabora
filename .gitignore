@@ -12,4 +12,10 @@ build/
 *.cache-main
 *.cache-test
 
+*.iml
+
+# DB working directory
+workingDir/*
+
+
 # Allow

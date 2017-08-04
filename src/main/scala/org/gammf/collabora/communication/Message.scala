@@ -47,7 +47,8 @@ case class SubscribingChannelCreationMessage(connection: ActorRef, exchange: Str
   * @param connection the open connection with the rabbitMQ broker.
   * @param exchange the name of the exchange to be declared.
   */
-case class PublishingChannelCreationMessage(connection: ActorRef, exchange: String) extends Message
+case class PublishingChannelCreationMessage(connection: ActorRef, exchange: String,
+                                           routingKey: Option[String]) extends Message
 
 /**
   * Represents a response to a channel building request.

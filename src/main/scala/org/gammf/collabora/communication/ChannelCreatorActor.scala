@@ -16,8 +16,8 @@ class ChannelCreatorActor extends Actor {
     case SubscribingChannelCreationMessage(connection, exchange, queue, routingKey) =>
       createChannel(connection, exchange, Some(queue), routingKey)
 
-    case PublishingChannelCreationMessage(connection, exchange) =>
-      createChannel(connection, exchange, None, None)
+    case PublishingChannelCreationMessage(connection, exchange, routingKey) =>
+      createChannel(connection, exchange, None, routingKey)
 
     case ChannelCreated(_) => println("[Channel Creator Actor] Channel created!")
 

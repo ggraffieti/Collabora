@@ -13,8 +13,8 @@ object Test extends App {
   val printActor = system.actorOf(Props[PrintActor])
   val dbActor = system.actorOf(Props.create(classOf[DBActor], connectionActor, printActor))
 
-  val note: SimpleNote = new SimpleNote(content = "Insertion test", state = "toDo", location = Some(13.2541, 45.2541), previousNotes = Some(List("5980710df27da3fcfe0ac88d", "59806ff7f27da3fcfe0ac7d2")), expiration = Some(Calendar.getInstance.getTime))
+  //val note: SimpleNote = new SimpleNote(content = "Insertion test", state = "toDo", location = Some(13.2541, 45.2541), previousNotes = Some(List("5980710df27da3fcfe0ac88d", "59806ff7f27da3fcfe0ac7d2")), expiration = Some(Calendar.getInstance.getTime))
 
-  dbActor ! new InsertNoteMessage(note)
-  dbActor ! new RequestAllNotesMessage()
+  //dbActor ! new InsertNoteMessage(note)
+  //dbActor ! new RequestAllNotesMessage()
 }

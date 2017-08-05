@@ -1,6 +1,9 @@
 package org.gammf.collabora.util
 
-import java.util.Date
+import org.joda.time.DateTime
+import org.joda.time.format.DateTimeFormat
+import play.api.libs.json.{JsPath, Reads}
+import play.api.libs.functional.syntax._
 
 /**
   * Simple repreentation of an immutable note
@@ -12,7 +15,39 @@ import java.util.Date
   *                      not completed.
   * @param state the state of the note (doing, done, todo...)
   */
-class SimpleNote(val id: Option[String] = None, val content: String, val expiration: Option[Date] = None,
-                 val location: Option[(Double, Double)] = None, val previousNotes: Option[List[String]] = None,
-                 val state: String, val user: Option[String] = None) extends Note {
+case class SimpleNote(id: Option[String] = None, content: String, expiration: Option[DateTime] = None,
+                 location: Option[Location] = None, previousNotes: Option[List[String]] = None,
+                 state: NoteState) extends Note {
+}
+
+case class Location(latitude: Double, longitude: Double)
+
+case class NoteState(definition: String, username: Option[String])
+
+object SimpleNote {
+  implicit val locationReads: Reads[Location] = (
+    (JsPath \ "latitude").read[Double] and
+      (JsPath \ "longitude").read[Double]
+  )(Location.apply _)
+
+  implicit val noteStateReads: Reads[NoteState] = (
+    (JsPath \ "definition").read[String] and
+      (JsPath \ "username").readNullable[String]
+  )(NoteState.apply _)
+
+  private val jodaDateReads = Reads[DateTime](js =>
+    js.validate[String].map[DateTime](dtString =>
+      DateTime.parse(dtString, DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZ"))
+    )
+  )
+  implicit val dateReads: Reads[DateTime] = jodaDateReads
+
+  implicit val noteReads: Reads[SimpleNote] = (
+    (JsPath \ "id").readNullable[String] and
+      (JsPath \ "content").read[String] and
+      (JsPath \ "expiration").readNullable[DateTime] and
+      (JsPath \ "location").readNullable[Location] and
+      (JsPath \ "previousNotes").readNullable[List[String]] and
+      (JsPath \ "state").read[NoteState]
+  )(SimpleNote.apply _)
 }

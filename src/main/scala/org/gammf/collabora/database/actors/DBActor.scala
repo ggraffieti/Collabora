@@ -37,17 +37,17 @@ class DBActor(connectionActor: ActorRef, printActor: ActorRef) extends Actor wit
       // TODO automathic conversion Note <-> BSONDOocument
       val note = m.note
       var newNote = BSONDocument("content" -> note.content)
-      if (note.user.isDefined) newNote = newNote.merge(BSONDocument("state" -> BSONDocument("definition" -> note.state, "username" -> note.user.get)))
-      else newNote = newNote.merge(BSONDocument("state" -> BSONDocument("definition" -> note.state)))
-      if (note.expiration.isDefined) newNote = newNote.merge(BSONDocument("expiration" -> note.expiration.get))
+      if (note.state.username.isDefined) newNote = newNote.merge(BSONDocument("state" -> BSONDocument("definition" -> note.state.definition, "username" -> note.state.username.get)))
+      else newNote = newNote.merge(BSONDocument("state" -> BSONDocument("definition" -> note.state.definition)))
+      if (note.expiration.isDefined) newNote = newNote.merge(BSONDocument("expiration" -> note.expiration.get.toDate))
       if (note.previousNotes.isDefined) {
         val arr = BSONArray(note.previousNotes.get.map(e => BSONObjectID.parse(e).get))
         newNote = newNote.merge(BSONDocument("previousNotes" -> arr))
       }
       if (note.location.isDefined) {
         newNote = newNote.merge(BSONDocument("location" -> BSONDocument(
-          "latitude" -> note.location.get._1,
-          "longitude" -> note.location.get._2
+          "latitude" -> note.location.get.latitude,
+          "longitude" -> note.location.get.longitude
         )))
       }
 

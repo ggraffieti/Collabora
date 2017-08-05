@@ -18,7 +18,9 @@ class UpdatesReceiverActor(connection: ActorRef, naming: ActorRef, channelCreato
       subQueue = queue
       channelCreator ! SubscribingChannelCreationMessage(connection, exchange, subQueue.get, routingKey)
     case ChannelCreatedMessage(channel) => subscriber ! SubscribeMessage(channel, subQueue.get)
-    case ClientUpdateMessage(text) => println("[Updates Receiver Actor] Received: " + text)
+    case ClientUpdateMessage(text) =>
+      println("[Updates Receiver Actor] Received: " + text)
+
     case _ => println("[Updates Receiver Actor] Huh?")
   }
 }

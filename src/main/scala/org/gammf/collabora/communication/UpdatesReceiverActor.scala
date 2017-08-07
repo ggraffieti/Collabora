@@ -5,7 +5,14 @@ import com.newmotion.akka.rabbitmq._
 
 /**
   * @author Manuel Peruzzi
+  */
+
+/**
   * This is an actor that manages the reception of client updates.
+  * @param connection the open connection with the rabbitMQ broker.
+  * @param naming the reference to a rabbitMQ naming actor.
+  * @param channelCreator the reference to a channel creator actor.
+  * @param subscriber the reference to a subscriber actor.
   */
 class UpdatesReceiverActor(connection: ActorRef, naming: ActorRef, channelCreator: ActorRef,
                            subscriber: ActorRef) extends Actor {

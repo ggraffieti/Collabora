@@ -32,7 +32,7 @@ case class ChannelNamesResponseMessage(exchange: String, queue: Option[String]) 
 
 /**
   * Represents a subscribing channel building request.
-  * @param connection the open connection with the rabbitMQ broker
+  * @param connection the open connection with the rabbitMQ broker.
   * @param exchange the name of the exchange to be declared.
   * @param queue the name of the queue to be declared.
   * @param routingKey the routing key that can be used in the exchange-queue binding.
@@ -77,4 +77,9 @@ case class PublishMessage(channel: Channel, exchange: String, routingKey: Option
   */
 case class ClientUpdateMessage(text: String) extends Message
 
+/**
+  * Represents a notification message to be published.
+  * @param collaborationID the identifier of the collaboration to which the message is addressed.
+  * @param message the text of the message to be published.
+  */
 case class NotificationMessage(collaborationID: String, message: String) extends Message

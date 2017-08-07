@@ -2,6 +2,7 @@ package org.gammf.collabora.database.actors
 
 import akka.actor.{Actor, ActorRef, Stash}
 import org.gammf.collabora.database.messages._
+import org.gammf.collabora.util.SimpleNote
 import play.api.libs.json.JsObject
 import reactivemongo.api.collections.bson.BSONCollection
 import reactivemongo.api.{Cursor, FailoverStrategy, MongoConnection}
@@ -27,8 +28,8 @@ class DBActor(connectionActor: ActorRef, printActor: ActorRef) extends Actor wit
     case _: RequestAllNotesMessage =>
       getNotesCollection onComplete {
         case Success(notesCollection) => notesCollection.find(BSONDocument())
-          .cursor[BSONDocument]().collect[List](100, Cursor.FailOnError[List[BSONDocument]]()) onComplete {
-          case Success(list) => printActor ! new PrintMessage(list.map(e => BSONFormats.BSONDocumentFormat.writes(e).as[JsObject]).toString)
+          .cursor[SimpleNote]().collect[List](100, Cursor.FailOnError[List[SimpleNote]]()) onComplete {
+          case Success(list) => printActor ! new PrintMessage(list.toString)
           case Failure(e) => e.printStackTrace() // TODO improve error strategy
         }
         case Failure(e) => e.printStackTrace() // TODO improve error strategy

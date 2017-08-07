@@ -4,6 +4,7 @@ import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
 import play.api.libs.json._
 import play.api.libs.functional.syntax._
+import reactivemongo.bson.{BSONDateTime, BSONDocument, BSONDocumentReader, BSONHandler, BSONObjectID}
 
 /**
   * Simple repreentation of an immutable note
@@ -76,4 +77,39 @@ object SimpleNote {
       (JsPath \ "state").write[NoteState]
     )(unlift(SimpleNote.unapply))
 
+
+  // BSON conversion
+
+  implicit object BSONDateTimeHandler extends BSONHandler[BSONDateTime, DateTime] {
+    def read(time: BSONDateTime) = new DateTime(time.value)
+    def write(jdtime: DateTime) = BSONDateTime(jdtime.getMillis)
+  }
+
+  implicit object BSONtoLocation extends BSONDocumentReader[Location] {
+    def read(doc: BSONDocument): Location =
+      Location(
+        latitude = doc.getAs[Double]("latitude").get,
+        longitude = doc.getAs[Double]("longitude").get
+      )
+  }
+
+  implicit object BSONtoNoteState extends BSONDocumentReader[NoteState] {
+    def read(state: BSONDocument): NoteState =
+      NoteState(
+        definition = state.getAs[String]("definition").get,
+        username = state.getAs[String]("username")
+      )
+  }
+
+  implicit object BSONtoNote extends BSONDocumentReader[SimpleNote] {
+    def read(doc: BSONDocument): SimpleNote = {
+      SimpleNote(
+        id = doc.getAs[BSONObjectID]("_id").map(id => id.stringify),
+        content = doc.getAs[String]("content").get,
+        expiration = doc.getAs[DateTime]("expiration"),
+        location = doc.getAs[Location]("location"),
+        previousNotes = doc.getAs[List[BSONObjectID]]("previousNotes").map(l => l.map(bsonID => bsonID.stringify)),
+        state = doc.getAs[NoteState]("state").get)
+    }
+  }
 }

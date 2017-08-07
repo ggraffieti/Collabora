@@ -5,7 +5,14 @@ import com.newmotion.akka.rabbitmq._
 
 /**
   * @author Manuel Peruzzi
+  */
+
+/**
   * This is an actor that manages the reception of client updates.
+  * @param connection the open connection with the rabbitMQ broker.
+  * @param naming the reference to a rabbitMQ naming actor.
+  * @param channelCreator the reference to a channel creator actor.
+  * @param subscriber the reference to a subscriber actor.
   */
 class UpdatesReceiverActor(connection: ActorRef, naming: ActorRef, channelCreator: ActorRef,
                            subscriber: ActorRef) extends Actor {
@@ -14,9 +21,9 @@ class UpdatesReceiverActor(connection: ActorRef, naming: ActorRef, channelCreato
 
   override def receive: Receive = {
     case StartMessage => naming ! ChannelNamesRequestMessage(CommunicationType.UPDATES)
-    case ChannelNamesResponseMessage(exchange, queue, routingKey) =>
+    case ChannelNamesResponseMessage(exchange, queue) =>
       subQueue = queue
-      channelCreator ! SubscribingChannelCreationMessage(connection, exchange, subQueue.get, routingKey)
+      channelCreator ! SubscribingChannelCreationMessage(connection, exchange, subQueue.get, None)
     case ChannelCreatedMessage(channel) => subscriber ! SubscribeMessage(channel, subQueue.get)
     case ClientUpdateMessage(text) =>
       println("[Updates Receiver Actor] Received: " + text)

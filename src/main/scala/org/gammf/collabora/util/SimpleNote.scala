@@ -2,7 +2,7 @@ package org.gammf.collabora.util
 
 import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
-import play.api.libs.json.{JsPath, Reads}
+import play.api.libs.json._
 import play.api.libs.functional.syntax._
 
 /**
@@ -50,4 +50,30 @@ object SimpleNote {
       (JsPath \ "previousNotes").readNullable[List[String]] and
       (JsPath \ "state").read[NoteState]
   )(SimpleNote.apply _)
+
+
+
+  implicit val locationWrites: Writes[Location] = (
+    (JsPath \ "latitude").write[Double] and
+      (JsPath \ "longitude").write[Double]
+    )(unlift(Location.unapply))
+
+  implicit val noteStateWrites: Writes[NoteState] = (
+    (JsPath \ "definition").write[String] and
+      (JsPath \ "username").writeNullable[String]
+    )(unlift(NoteState.unapply))
+
+  private val jodaDateWrites: Writes[DateTime] = (date) => JsString(date.toString())
+
+  implicit val dateWrites: Writes[DateTime] = jodaDateWrites
+
+  implicit val noteWrites: Writes[SimpleNote] = (
+    (JsPath \ "id").writeNullable[String] and
+      (JsPath \ "content").write[String] and
+      (JsPath \ "expiration").writeNullable[DateTime] and
+      (JsPath \ "location").writeNullable[Location] and
+      (JsPath \ "previousNotes").writeNullable[List[String]] and
+      (JsPath \ "state").write[NoteState]
+    )(unlift(SimpleNote.unapply))
+
 }

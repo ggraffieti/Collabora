@@ -32,9 +32,9 @@ class ChannelCreatorActor extends Actor {
         case Some(q) =>
           channel.queueDeclare(q, true, false, false, null)
           channel.queueBind(q, exchange, routingKey.getOrElse(""))
-          messageSender.get ! ChannelCreatedMessage(channel)
         case _ =>
       }
+      messageSender.get ! ChannelCreatedMessage(channel)
     }
     messageSender = Some(sender)
     connection ! CreateChannel(ChannelActor.props(setup))

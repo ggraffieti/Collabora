@@ -1,7 +1,7 @@
 package org.gammf.collabora.communication
 
-import akka.actor.{Actor, ActorRef, Stash}
-import com.newmotion.akka.rabbitmq.Channel
+import akka.actor.{Actor, ActorRef, ActorSystem, Props, Stash}
+import com.newmotion.akka.rabbitmq.{Channel, ConnectionActor, ConnectionFactory}
 
 /**
   * Created by mperuzzi on 07/08/17.
@@ -30,5 +30,20 @@ class NotificationsSenderActor(connection: ActorRef, naming: ActorRef, channelCr
 
     case _ => println("[NotificationsSenderActor] Huh?")
   }
+}
 
+object UseNotificationsSenderActor extends App {
+  implicit val system = ActorSystem()
+  val factory = new ConnectionFactory()
+  val connection = system.actorOf(ConnectionActor.props(factory), "rabbitmq")
+
+  val naming = system.actorOf(Props[RabbitMQNamingActor], "naming")
+  val channelCreator = system.actorOf(Props[ChannelCreatorActor], "channelCreator")
+  val publisher = system.actorOf(Props[PublisherActor], "publisher")
+  val notificationsSender = system.actorOf(Props(
+    new NotificationsSenderActor(connection, naming, channelCreator, publisher)), "notifications-sender")
+
+  notificationsSender ! NotificationMessage("collaborationID1", "Some simple text")
+  Thread.sleep(1000)
+  notificationsSender ! StartMessage
 }

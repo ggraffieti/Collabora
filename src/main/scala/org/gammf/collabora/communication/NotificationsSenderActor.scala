@@ -4,7 +4,15 @@ import akka.actor.{Actor, ActorRef, ActorSystem, Props, Stash}
 import com.newmotion.akka.rabbitmq.{Channel, ConnectionActor, ConnectionFactory}
 
 /**
-  * Created by mperuzzi on 07/08/17.
+  * @author Manuel Peruzzi
+  */
+
+/**
+  * This is an actor that manages sending notifications to clients.
+  * @param connection the open connection with the rabbitMQ broker.
+  * @param naming the reference to a rabbitMQ naming actor.
+  * @param channelCreator the reference to a channel creator actor.
+  * @param publisher the reference to a publisher actor.
   */
 class NotificationsSenderActor(connection: ActorRef, naming: ActorRef, channelCreator: ActorRef,
                               publisher: ActorRef) extends Actor with Stash {
@@ -32,6 +40,9 @@ class NotificationsSenderActor(connection: ActorRef, naming: ActorRef, channelCr
   }
 }
 
+/**
+  * This is a simple application that uses the Updates Receiver Actor.
+  */
 object UseNotificationsSenderActor extends App {
   implicit val system = ActorSystem()
   val factory = new ConnectionFactory()

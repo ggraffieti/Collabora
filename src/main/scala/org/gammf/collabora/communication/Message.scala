@@ -78,3 +78,5 @@ case class PublishMessage(channel: Channel, exchange: String, routingKey: Option
   * @param text the text of the update.
   */
 case class ClientUpdateMessage(text: String) extends Message
+
+case class NotificationMessage(collaborationID: String, message: String) extends Message

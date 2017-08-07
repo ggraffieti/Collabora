@@ -64,6 +64,16 @@ case class ChannelCreatedMessage(channel: Channel) extends Message
 case class SubscribeMessage(channel: Channel, queue: String) extends Message
 
 /**
+  * Contains the information needed by a publisher to publish a message on the rabbitMQ broker.
+  * @param channel the rabbitMQ channel.
+  * @param exchange the rabbitMQ exchange to use for the pubblication.
+  * @param routingKey the routing key to be used to identify the concerned queues.
+  * @param message the message to be published.
+  */
+case class PublishMessage(channel: Channel, exchange: String, routingKey: Option[String],
+                          message: String) extends Message
+
+/**
   * Contains the update message sent by a client.
   * @param text the text of the update.
   */

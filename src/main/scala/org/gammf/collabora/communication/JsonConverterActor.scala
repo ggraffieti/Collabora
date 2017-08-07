@@ -28,6 +28,8 @@ object TestJsonConverterActor extends App {
   { "id" : "5980710df27da3fcfe0ac88d",
     "content" : "setup working enviroment",
     "expiration" : "2017-08-07T06:01:17.171Z",
+    "location" : { "latitude" : 546, "longitude" : 324 },
+    "previousNotes" : [ "5980710df27da3fcfe0ac88e", "5980710df27da3fcfe0ac88f" ],
     "state" : { "definition" : "done", "username" : "maffone" }
   }
   """

@@ -27,10 +27,8 @@ case class ChannelNamesRequestMessage(communicationType: CommunicationType.Value
   * Represents a response to a rabbitMQ terminology names request.
   * @param exchange the name of the exchange to be used.
   * @param queue the name of the queue, only in case of subscribing channel.
-  * @param routingKey the routing key that can be used in the exchange-queue binding.
   */
-case class ChannelNamesResponseMessage(exchange: String, queue: Option[String],
-                                       routingKey: Option[String]) extends Message
+case class ChannelNamesResponseMessage(exchange: String, queue: Option[String]) extends Message
 
 /**
   * Represents a subscribing channel building request.

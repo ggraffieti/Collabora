@@ -14,9 +14,9 @@ class UpdatesReceiverActor(connection: ActorRef, naming: ActorRef, channelCreato
 
   override def receive: Receive = {
     case StartMessage => naming ! ChannelNamesRequestMessage(CommunicationType.UPDATES)
-    case ChannelNamesResponseMessage(exchange, queue, routingKey) =>
+    case ChannelNamesResponseMessage(exchange, queue) =>
       subQueue = queue
-      channelCreator ! SubscribingChannelCreationMessage(connection, exchange, subQueue.get, routingKey)
+      channelCreator ! SubscribingChannelCreationMessage(connection, exchange, subQueue.get, None)
     case ChannelCreatedMessage(channel) => subscriber ! SubscribeMessage(channel, subQueue.get)
     case ClientUpdateMessage(text) =>
       println("[Updates Receiver Actor] Received: " + text)

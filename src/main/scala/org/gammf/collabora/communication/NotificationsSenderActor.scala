@@ -14,7 +14,7 @@ class NotificationsSenderActor(connection: ActorRef, naming: ActorRef, channelCr
 
   override def receive: Receive = {
     case StartMessage => naming ! ChannelNamesRequestMessage(CommunicationType.NOTIFICATIONS)
-    case ChannelNamesResponseMessage(exchange, _, _) =>
+    case ChannelNamesResponseMessage(exchange, _) =>
       pubExchange = Some(exchange)
       channelCreator ! PublishingChannelCreationMessage(connection, exchange, None)
     case ChannelCreatedMessage(channel) =>

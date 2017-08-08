@@ -28,10 +28,10 @@ class NotificationsSenderActor(connection: ActorRef, naming: ActorRef, channelCr
     case ChannelCreatedMessage(channel) =>
       pubChannel = Some(channel)
       unstashAll()
-    case NotificationMessage(collaborationID, message) =>
+    case PublishNotificationMessage(collaborationID, message) =>
       pubChannel match {
         case Some(channel) =>
-          publisher ! PublishMessage(channel, pubExchange.get, Some(collaborationID), message)
+          publisher ! PublishMessage(channel, pubExchange.get, Some(collaborationID), message.toString())
         case _ =>
           stash()
       }
@@ -54,7 +54,6 @@ object UseNotificationsSenderActor extends App {
   val notificationsSender = system.actorOf(Props(
     new NotificationsSenderActor(connection, naming, channelCreator, publisher)), "notifications-sender")
 
-  notificationsSender ! NotificationMessage("collaborationID1", "Some simple text")
   Thread.sleep(1000)
   notificationsSender ! StartMessage
 }

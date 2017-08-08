@@ -18,5 +18,4 @@ trait Note {
     ", previousNotes=" + previousNotes +
     ", state=" + state +
     " }"
-
 }

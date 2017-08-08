@@ -7,5 +7,5 @@ trait UpdateMessage {
   def target: String
   def messageType: String
   def user: String
-  def note: Note
+  def note: SimpleNote
 }

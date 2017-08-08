@@ -4,7 +4,7 @@ import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
 import play.api.libs.json._
 import play.api.libs.functional.syntax._
-import reactivemongo.bson.{BSONDateTime, BSONDocument, BSONDocumentReader, BSONHandler, BSONObjectID}
+import reactivemongo.bson.{BSONArray, BSONDateTime, BSONDocument, BSONDocumentReader, BSONDocumentWriter, BSONHandler, BSONObjectID}
 
 /**
   * Simple repreentation of an immutable note
@@ -110,6 +110,29 @@ object SimpleNote {
         location = doc.getAs[Location]("location"),
         previousNotes = doc.getAs[List[BSONObjectID]]("previousNotes").map(l => l.map(bsonID => bsonID.stringify)),
         state = doc.getAs[NoteState]("state").get)
+    }
+  }
+
+  implicit object NotetoBSON extends BSONDocumentWriter[SimpleNote] {
+    def write(note: SimpleNote): BSONDocument = {
+      var newNote = BSONDocument()
+      if (note.id.isDefined) newNote = newNote.merge("_id" -> BSONObjectID.parse(note.id.get).get)
+      else newNote = newNote.merge("_id" -> BSONObjectID.generate())
+      newNote = newNote.merge(BSONDocument("content" -> note.content))
+      if (note.state.username.isDefined) newNote = newNote.merge(BSONDocument("state" -> BSONDocument("definition" -> note.state.definition, "username" -> note.state.username.get)))
+      else newNote = newNote.merge(BSONDocument("state" -> BSONDocument("definition" -> note.state.definition)))
+      if (note.expiration.isDefined) newNote = newNote.merge(BSONDocument("expiration" -> note.expiration.get.toDate))
+      if (note.previousNotes.isDefined) {
+        val arr = BSONArray(note.previousNotes.get.map(e => BSONObjectID.parse(e).get))
+        newNote = newNote.merge(BSONDocument("previousNotes" -> arr))
+      }
+      if (note.location.isDefined) {
+        newNote = newNote.merge(BSONDocument("location" -> BSONDocument(
+          "latitude" -> note.location.get.latitude,
+          "longitude" -> note.location.get.longitude
+        )))
+      }
+      newNote
     }
   }
 }

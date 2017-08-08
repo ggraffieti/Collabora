@@ -23,7 +23,7 @@ class RabbitMQNamingActor extends Actor {
   }
 
   private def names2Message(commNames: CommunicationNames): ChannelNamesResponseMessage = {
-    ChannelNamesResponseMessage(commNames.exchange, commNames.queue, commNames.routingKey)
+    ChannelNamesResponseMessage(commNames.exchange, commNames.queue)
   }
 }
 
@@ -46,8 +46,6 @@ protected sealed trait CommunicationNames {
     case _:UpdatesNames => Some("update.server")
     case _ => None
   }
-
-  def routingKey: Option[String] = None
 }
 
 private case class UpdatesNames() extends CommunicationNames

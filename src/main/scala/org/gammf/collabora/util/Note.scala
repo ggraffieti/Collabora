@@ -1,15 +1,14 @@
 package org.gammf.collabora.util
 
-import java.util.Date
+import org.joda.time.DateTime
 
 trait Note {
   def id: Option[String]
   def content: String
-  def expiration: Option[Date]
-  def location: Option[(Double, Double)]
+  def expiration: Option[DateTime]
+  def location: Option[Location]
   def previousNotes: Option[List[String]]
-  def state: String
-  def user: Option[String]
+  def state: NoteState
 
   override def toString: String =
     "{ Note -- id=" + id +
@@ -18,7 +17,5 @@ trait Note {
     ", location=" + location +
     ", previousNotes=" + previousNotes +
     ", state=" + state +
-    ", user=" + user +
     " }"
-
 }

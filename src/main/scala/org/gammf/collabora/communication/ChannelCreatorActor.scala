@@ -10,14 +10,12 @@ import com.rabbitmq.client.BuiltinExchangeType
   */
 class ChannelCreatorActor extends Actor {
 
-  private var messageSender: Option[ActorRef] = None
-
   override def receive: Receive = {
     case SubscribingChannelCreationMessage(connection, exchange, queue, routingKey) =>
-      createChannel(connection, exchange, Some(queue), routingKey)
+      createChannel(connection, exchange, Some(queue), routingKey, sender)
 
     case PublishingChannelCreationMessage(connection, exchange, routingKey) =>
-      createChannel(connection, exchange, None, routingKey)
+      createChannel(connection, exchange, None, routingKey, sender)
 
     case ChannelCreated(_) => println("[Channel Creator Actor] Channel created!")
 
@@ -25,18 +23,17 @@ class ChannelCreatorActor extends Actor {
   }
 
   private def createChannel(connection: ActorRef, exchange: String,
-                            queue: Option[String], routingKey: Option[String]) = {
+                            queue: Option[String], routingKey: Option[String], messageSender: ActorRef) = {
     def setup(channel: Channel, self: ActorRef) {
       channel.exchangeDeclare(exchange, BuiltinExchangeType.DIRECT, true)
       queue match {
         case Some(q) =>
           channel.queueDeclare(q, true, false, false, null)
           channel.queueBind(q, exchange, routingKey.getOrElse(""))
-          messageSender.get ! ChannelCreatedMessage(channel)
         case _ =>
       }
+      messageSender ! ChannelCreatedMessage(channel)
     }
-    messageSender = Some(sender)
     connection ! CreateChannel(ChannelActor.props(setup))
   }
 

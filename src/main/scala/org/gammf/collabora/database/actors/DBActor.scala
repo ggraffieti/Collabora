@@ -1,19 +1,19 @@
 package org.gammf.collabora.database.actors
 
 import akka.actor.{Actor, ActorRef, Stash}
+import org.gammf.collabora.communication.PublishNotificationMessage
 import org.gammf.collabora.database.messages._
-import org.gammf.collabora.util.SimpleNote
-import play.api.libs.json.JsObject
+import org.gammf.collabora.util.{NotificationMessageImpl, SimpleNote}
+import play.api.libs.json.Json
 import reactivemongo.api.collections.bson.BSONCollection
 import reactivemongo.api.{Cursor, FailoverStrategy, MongoConnection}
-import reactivemongo.bson.{BSONArray, BSONDocument, BSONObjectID}
-import reactivemongo.play.json.BSONFormats
+import reactivemongo.bson.{BSON, BSONDocument}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
 
-class DBActor(connectionActor: ActorRef, printActor: ActorRef) extends Actor with Stash {
+class DBActor(connectionActor: ActorRef, notificationActor: ActorRef) extends Actor with Stash {
 
   var connection: Option[MongoConnection] = None
 
@@ -29,32 +29,19 @@ class DBActor(connectionActor: ActorRef, printActor: ActorRef) extends Actor wit
       getNotesCollection onComplete {
         case Success(notesCollection) => notesCollection.find(BSONDocument())
           .cursor[SimpleNote]().collect[List](100, Cursor.FailOnError[List[SimpleNote]]()) onComplete {
-          case Success(list) => printActor ! new PrintMessage(list.toString)
+          case Success(list) => println(list.toString)
           case Failure(e) => e.printStackTrace() // TODO improve error strategy
         }
         case Failure(e) => e.printStackTrace() // TODO improve error strategy
       }
     case m: InsertNoteMessage =>
-      // TODO automathic conversion Note <-> BSONDOocument
-      val note = m.note
-      var newNote = BSONDocument("content" -> note.content)
-      if (note.state.username.isDefined) newNote = newNote.merge(BSONDocument("state" -> BSONDocument("definition" -> note.state.definition, "username" -> note.state.username.get)))
-      else newNote = newNote.merge(BSONDocument("state" -> BSONDocument("definition" -> note.state.definition)))
-      if (note.expiration.isDefined) newNote = newNote.merge(BSONDocument("expiration" -> note.expiration.get.toDate))
-      if (note.previousNotes.isDefined) {
-        val arr = BSONArray(note.previousNotes.get.map(e => BSONObjectID.parse(e).get))
-        newNote = newNote.merge(BSONDocument("previousNotes" -> arr))
-      }
-      if (note.location.isDefined) {
-        newNote = newNote.merge(BSONDocument("location" -> BSONDocument(
-          "latitude" -> note.location.get.latitude,
-          "longitude" -> note.location.get.longitude
-        )))
-      }
-
       getNotesCollection onComplete {
-        case Success(notesCollection) => notesCollection.insert(newNote) onComplete {
-          case Success(res) => printActor ! new PrintMessage("OKK " + res)
+        case Success(notesCollection) =>
+          val bsonNote: BSONDocument = BSON.write(m.message.note)
+          notesCollection.insert(bsonNote) onComplete {
+          case Success(_) =>
+            val not = NotificationMessageImpl(messageType = "note_created", user = m.message.user, note = bsonNote.as[SimpleNote])
+            notificationActor ! PublishNotificationMessage(m.message.user, Json.toJson(not))
           case Failure(e) => e.printStackTrace() // TODO better error strategy
         }
         case Failure(e) => e.printStackTrace() // TODO better error strategy

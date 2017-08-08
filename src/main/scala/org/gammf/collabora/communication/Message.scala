@@ -2,6 +2,7 @@ package org.gammf.collabora.communication
 
 import akka.actor.ActorRef
 import com.newmotion.akka.rabbitmq.Channel
+import play.api.libs.json.JsValue
 
 /**
   * @author Manuel Peruzzi
@@ -82,4 +83,4 @@ case class ClientUpdateMessage(text: String) extends Message
   * @param collaborationID the identifier of the collaboration to which the message is addressed.
   * @param message the text of the message to be published.
   */
-case class NotificationMessage(collaborationID: String, message: String) extends Message
+case class PublishNotificationMessage(collaborationID: String, message: JsValue) extends Message

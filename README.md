@@ -7,7 +7,8 @@ The universal collaboration tool, from big projects to shopping lists.
     - location, to handle location-based notifications
     - expiration, to allow custom alarms
     - previous notes, to introduce a bond of precedence between notes
-    - state, to promote organization of work
-- Send notification to the clients about the state of their notes
+    - state, to promote the organization of work
+- Send notifications to the clients about the state of their notes
 
-**This repository contains a university course project. Please, do not fork it or send us your ideas until this message is here (~ mid September 2017).**
+## Contributing
+This repository contains a university course project. Please, do not fork it or send us your ideas until this message is here (~ mid September 2017).

@@ -2,7 +2,8 @@ package org.gammf.collabora
 
 import akka.actor.{ActorSystem, Props}
 import com.newmotion.akka.rabbitmq.{ConnectionActor, ConnectionFactory}
-import org.gammf.collabora.communication._
+import org.gammf.collabora.communication.actors._
+import org.gammf.collabora.communication.messages.StartMessage
 import org.gammf.collabora.database.actors.{ConnectionManagerActor, DBActor, PrintActor}
 
 object Test extends App {

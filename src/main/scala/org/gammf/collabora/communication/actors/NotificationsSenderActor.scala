@@ -1,7 +1,9 @@
-package org.gammf.collabora.communication
+package org.gammf.collabora.communication.actors
 
 import akka.actor.{Actor, ActorRef, ActorSystem, Props, Stash}
 import com.newmotion.akka.rabbitmq.{Channel, ConnectionActor, ConnectionFactory}
+import org.gammf.collabora.communication.Utils.CommunicationType
+import org.gammf.collabora.communication.messages._
 
 /**
   * @author Manuel Peruzzi
@@ -17,8 +19,8 @@ import com.newmotion.akka.rabbitmq.{Channel, ConnectionActor, ConnectionFactory}
 class NotificationsSenderActor(connection: ActorRef, naming: ActorRef, channelCreator: ActorRef,
                               publisher: ActorRef) extends Actor with Stash {
 
-  private var pubChannel: Option[Channel] = None
-  private var pubExchange: Option[String] = None
+  private[this] var pubChannel: Option[Channel] = None
+  private[this] var pubExchange: Option[String] = None
 
   override def receive: Receive = {
     case StartMessage => naming ! ChannelNamesRequestMessage(CommunicationType.NOTIFICATIONS)
@@ -35,7 +37,6 @@ class NotificationsSenderActor(connection: ActorRef, naming: ActorRef, channelCr
         case _ =>
           stash()
       }
-
     case _ => println("[NotificationsSenderActor] Huh?")
   }
 }

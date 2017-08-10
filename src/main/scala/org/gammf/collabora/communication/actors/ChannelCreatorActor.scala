@@ -1,8 +1,9 @@
-package org.gammf.collabora.communication
+package org.gammf.collabora.communication.actors
 
 import akka.actor._
 import com.newmotion.akka.rabbitmq._
 import com.rabbitmq.client.BuiltinExchangeType
+import org.gammf.collabora.communication.messages.{ChannelCreatedMessage, PublishingChannelCreationMessage, SubscribingChannelCreationMessage}
 
 /**
   * @author Manuel Peruzzi
@@ -22,7 +23,7 @@ class ChannelCreatorActor extends Actor {
     case _ => println("[Channel Creator Actor] Huh?")
   }
 
-  private def createChannel(connection: ActorRef, exchange: String,
+  private[this] def createChannel(connection: ActorRef, exchange: String,
                             queue: Option[String], routingKey: Option[String], messageSender: ActorRef) = {
     def setup(channel: Channel, self: ActorRef) {
       channel.exchangeDeclare(exchange, BuiltinExchangeType.DIRECT, true)

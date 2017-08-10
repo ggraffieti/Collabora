@@ -1,4 +1,17 @@
-language: java
+language: scala
+scala:
+  - 2.12.3
+  - 2.12.0
 
 script:
 - './gradlew clean build'
+notifications:
+  email:
+    recipients:
+      - gabriele.graffieti@gmail.com
+      - manuel.peruzzi94@gmail.com
+      - alfredo.maffi@studio.unibo.it
+      - federico.vitali2@studio.unibo.it
+      - mattia.oriani@studio.unibo.it
+    on_success: never
+    on_failure: always

@@ -1,7 +1,21 @@
+# Ignore
+
 .gradle/
-.idea/
+
+.idea/*
+
+!.idea/inspectionProfiles
+
 build/
 **/*-gen/
 **/*generated*/
 *.cache-main
 *.cache-test
+
+*.iml
+
+# DB working directory
+workingDir/*
+
+
+# Allow

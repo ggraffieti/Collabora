@@ -22,7 +22,7 @@ public final class UpdatePublisher {
      * @param args default java main parameters.
      * @throws Exception if something went wrong.
      */
-    public static void main(String[] args) throws Exception {
+    public static void main(final String[] args) throws Exception {
         ConnectionFactory factory = new ConnectionFactory();
         factory.setHost(BROKER_HOST);
         Connection connection = factory.newConnection();

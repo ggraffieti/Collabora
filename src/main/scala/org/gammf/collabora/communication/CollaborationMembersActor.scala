@@ -1,6 +1,7 @@
 package org.gammf.collabora.communication
 
-import akka.actor.{Actor, ActorRef}
+import akka.actor.{Actor, ActorRef, Stash}
+import com.newmotion.akka.rabbitmq.Channel
 
 /**
   * @author Manuel Peruzzi
@@ -14,10 +15,27 @@ import akka.actor.{Actor, ActorRef}
   * @param publisher the reference to a publisher actor.
   */
 class CollaborationMembersActor(connection: ActorRef, naming: ActorRef, channelCreator: ActorRef,
-                                publisher: ActorRef) extends Actor {
+                                publisher: ActorRef) extends Actor with Stash {
+
+  private var pubChannel: Option[Channel] = None
+  private var pubExchange: Option[String] = None
 
   override def receive: Receive = {
-    case _ => println("[UserFinderActor] Huh?")
+    case StartMessage => naming ! ChannelNamesRequestMessage(CommunicationType.COLLABORATIONS)
+    case ChannelNamesResponseMessage(exchange, _) =>
+      pubExchange = Some(exchange)
+      channelCreator ! PublishingChannelCreationMessage(connection, exchange, None)
+    case ChannelCreatedMessage(channel) =>
+      pubChannel = Some(channel)
+      unstashAll()
+    case PublishMemberAddedMessage(username, message) =>
+      pubChannel match {
+        case Some(channel) =>
+          publisher ! PublishMessage(channel, pubExchange.get, Some(username), message.toString())
+        case _ => stash()
+      }
+
+    case _ => println("[CollaborationMembersActor] Huh?")
   }
 
 }

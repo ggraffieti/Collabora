@@ -1,6 +1,6 @@
 package org.gammf.collabora.communication.messages
 
-import org.gammf.collabora.communication.actors.CommunicationType
+import org.gammf.collabora.communication.Utils.CommunicationType
 
 /**
   * Simple trait that represents a message about a rabbitMQ naming issue.

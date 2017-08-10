@@ -1,6 +1,7 @@
 package org.gammf.collabora.communication.actors
 
 import akka.actor._
+import org.gammf.collabora.communication.Utils.CommunicationType
 import org.gammf.collabora.communication.messages._
 import org.gammf.collabora.database.messages.InsertNoteMessage
 import org.gammf.collabora.util.UpdateMessageImpl
@@ -20,7 +21,7 @@ import play.api.libs.json.{JsError, JsSuccess, Json}
 class UpdatesReceiverActor(connection: ActorRef, naming: ActorRef, channelCreator: ActorRef,
                            subscriber: ActorRef, dbActor: ActorRef) extends Actor {
 
-  private var subQueue: Option[String] = None
+  private[this] var subQueue: Option[String] = None
 
   override def receive: Receive = {
     case StartMessage => naming ! ChannelNamesRequestMessage(CommunicationType.UPDATES)

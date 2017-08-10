@@ -11,7 +11,7 @@ import org.gammf.collabora.communication.messages.{ClientUpdateMessage, Subscrib
   */
 class SubscriberActor extends Actor {
 
-  private var messageSender: Option[ActorRef] = None
+  private[this] var messageSender: Option[ActorRef] = None
 
   override def receive: Receive = {
     case SubscribeMessage(channel, queue) =>

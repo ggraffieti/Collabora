@@ -23,7 +23,7 @@ class ChannelCreatorActor extends Actor {
     case _ => println("[Channel Creator Actor] Huh?")
   }
 
-  private def createChannel(connection: ActorRef, exchange: String,
+  private[this] def createChannel(connection: ActorRef, exchange: String,
                             queue: Option[String], routingKey: Option[String], messageSender: ActorRef) = {
     def setup(channel: Channel, self: ActorRef) {
       channel.exchangeDeclare(exchange, BuiltinExchangeType.DIRECT, true)

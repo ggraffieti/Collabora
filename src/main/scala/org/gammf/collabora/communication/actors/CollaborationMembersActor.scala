@@ -1,7 +1,8 @@
-package org.gammf.collabora.communication
+package org.gammf.collabora.communication.actors
 
 import akka.actor.{Actor, ActorRef, ActorSystem, Props, Stash}
 import com.newmotion.akka.rabbitmq.{Channel, ConnectionActor, ConnectionFactory}
+import org.gammf.collabora.communication.messages._
 import play.api.libs.json.{JsValue, Json}
 
 /**

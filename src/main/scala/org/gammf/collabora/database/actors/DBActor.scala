@@ -1,7 +1,7 @@
 package org.gammf.collabora.database.actors
 
 import akka.actor.{Actor, ActorRef, Stash}
-import org.gammf.collabora.communication.PublishNotificationMessage
+import org.gammf.collabora.communication.messages.PublishNotificationMessage
 import org.gammf.collabora.database.messages._
 import org.gammf.collabora.util.{NotificationMessageImpl, SimpleNote}
 import play.api.libs.json.Json

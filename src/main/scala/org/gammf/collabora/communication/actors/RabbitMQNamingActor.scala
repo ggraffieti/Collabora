@@ -1,6 +1,7 @@
-package org.gammf.collabora.communication
+package org.gammf.collabora.communication.actors
 
 import akka.actor.Actor
+import org.gammf.collabora.communication.messages.{ChannelNamesRequestMessage, ChannelNamesResponseMessage}
 
 /**
   * @author Manuel Peruzzi

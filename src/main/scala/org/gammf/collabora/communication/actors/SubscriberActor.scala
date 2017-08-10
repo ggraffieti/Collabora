@@ -1,8 +1,9 @@
-package org.gammf.collabora.communication
+package org.gammf.collabora.communication.actors
 
 import akka.actor._
 import com.newmotion.akka.rabbitmq._
-import Utils._
+import org.gammf.collabora.communication.Utils.fromBytes
+import org.gammf.collabora.communication.messages.{ClientUpdateMessage, SubscribeMessage}
 
 /**
   * @author Manuel Peruzzi

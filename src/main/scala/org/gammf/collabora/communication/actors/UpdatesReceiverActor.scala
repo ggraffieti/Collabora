@@ -1,6 +1,7 @@
-package org.gammf.collabora.communication
+package org.gammf.collabora.communication.actors
 
 import akka.actor._
+import org.gammf.collabora.communication.messages._
 import org.gammf.collabora.database.messages.InsertNoteMessage
 import org.gammf.collabora.util.UpdateMessageImpl
 import play.api.libs.json.{JsError, JsSuccess, Json}

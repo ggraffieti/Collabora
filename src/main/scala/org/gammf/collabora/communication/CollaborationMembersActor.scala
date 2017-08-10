@@ -2,7 +2,7 @@ package org.gammf.collabora.communication
 
 import akka.actor.{Actor, ActorRef, ActorSystem, Props, Stash}
 import com.newmotion.akka.rabbitmq.{Channel, ConnectionActor, ConnectionFactory}
-import play.api.libs.json.Json
+import play.api.libs.json.{JsValue, Json}
 
 /**
   * @author Manuel Peruzzi
@@ -54,7 +54,8 @@ object UseCollaborationMembersActor extends App {
   val collaborationMember = system.actorOf(Props(
     new CollaborationMembersActor(connection, naming, channelCreator, publisher)), "collaboration-members")
 
-  val message = """{
+  val message : JsValue = Json.parse("""
+  {
       "user": "manuelperuzzi",
       "collaboration": {
         "id": "arandomidofarandomcollaboration",
@@ -65,7 +66,7 @@ object UseCollaborationMembersActor extends App {
             "username": "manuelperuzzi",
             "email": "manuel.peruzzi@studio.unibo.it",
             "name": "Manuel",
-            "surname": "Peruzzi"
+            "surname": "Peruzzi",
             "right": "admin"
           }
         ],
@@ -80,9 +81,9 @@ object UseCollaborationMembersActor extends App {
           }
         ]
       }
-  }"""
+  }""")
 
-  collaborationMember ! PublishMemberAddedMessage("maffone", Json.toJson(message))
+  collaborationMember ! PublishMemberAddedMessage("maffone", message)
 
   Thread.sleep(1000)
   collaborationMember ! StartMessage

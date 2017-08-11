@@ -20,8 +20,8 @@ dependencies {
     compile "org.reactivemongo:play2-reactivemongo_2.12:${reactiveMongoPlayVersion}"
     compile "com.typesafe.play:play-json_2.12:${playFrameworkVersion}"
     compile group: 'com.newmotion', name: 'akka-rabbitmq_2.12', version: "${akkaRabbitMQVersion}"
-
     compile "ch.qos.logback:logback-classic:${logbackClassicVersion}"
+    compile group: 'org.apache.httpcomponents', name: 'httpclient', version: "${httpClientVersion}"
 
     testCompile group: 'junit', name: 'junit', version: "${jUnitVersion}"
 }

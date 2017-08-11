@@ -6,7 +6,11 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
 
-public class FirebaseNotificationSender {
+/**
+ * Simple class that sends a post request to the firebase server in order to delivery a
+ * notification message to all the clients registered in a certain topic.
+ */
+public final class FirebaseNotificationSender {
 
     private static final String FIREBASE_URI = "https://fcm.googleapis.com/fcm/send";
     private static final String AUTHORIZATION = "AAAAJtSw2Gk:APA91bEXmB5sRFqSnuYIP3qofHQ0RfHrAzTllJ0vYWtHXKZsMdbuXmUKbr16BVZsMO0cMmm_BWE8oLzkFcyuMr_V6O6ilqvLu7TrOgirVES51Ux9PsKfJ17iOMvTF_WtwqEURqMGBbLf";
@@ -14,7 +18,14 @@ public class FirebaseNotificationSender {
     private static final String NOTIFICATION_BODY = "Peru inserted a note";
     private static final String TOPIC = "collabora-project-id";
 
-    public static void main(String[] args) throws Exception {
+    private FirebaseNotificationSender() { }
+
+    /**
+     * Entry point of the test application.
+     * @param args default java main parameters.
+     * @throws Exception if something went wrong.
+     */
+    public static void main(final String[] args) throws Exception {
 
         final HttpPost post = new HttpPost(FIREBASE_URI);
         post.setHeader("Authorization", "key=" + AUTHORIZATION);

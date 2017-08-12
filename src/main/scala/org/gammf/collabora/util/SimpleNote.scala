@@ -106,7 +106,7 @@ object SimpleNote {
   implicit object BSONtoNote extends BSONDocumentReader[SimpleNote] {
     def read(doc: BSONDocument): SimpleNote = {
       SimpleNote(
-        id = doc.getAs[BSONObjectID]("_id").map(id => id.stringify),
+        id = doc.getAs[BSONObjectID]("id").map(id => id.stringify),
         content = doc.getAs[String]("content").get,
         expiration = doc.getAs[DateTime]("expiration"),
         location = doc.getAs[Location]("location"),
@@ -120,8 +120,8 @@ object SimpleNote {
   implicit object NotetoBSON extends BSONDocumentWriter[SimpleNote] {
     def write(note: SimpleNote): BSONDocument = {
       var newNote = BSONDocument()
-      if (note.id.isDefined) newNote = newNote.merge("_id" -> BSONObjectID.parse(note.id.get).get)
-      else newNote = newNote.merge("_id" -> BSONObjectID.generate())
+      if (note.id.isDefined) newNote = newNote.merge("id" -> BSONObjectID.parse(note.id.get).get)
+      else newNote = newNote.merge("id" -> BSONObjectID.generate())
       newNote = newNote.merge(BSONDocument("content" -> note.content))
       if (note.state.username.isDefined) newNote = newNote.merge(BSONDocument("state" -> BSONDocument("definition" -> note.state.definition, "username" -> note.state.username.get)))
       else newNote = newNote.merge(BSONDocument("state" -> BSONDocument("definition" -> note.state.definition)))

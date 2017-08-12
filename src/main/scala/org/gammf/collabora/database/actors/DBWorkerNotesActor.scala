@@ -1,21 +1,13 @@
 package org.gammf.collabora.database.actors
 
-import akka.actor.{Actor, ActorRef, Stash}
+import akka.actor.{ActorRef, Stash}
 import org.gammf.collabora.database.messages._
-import reactivemongo.api.collections.bson.BSONCollection
-import reactivemongo.api.{FailoverStrategy, MongoConnection}
 import reactivemongo.bson.{BSON, BSONDocument, BSONObjectID}
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
 import scala.util.{Failure, Success}
 
-class DBWorkerNotesActor(connectionActor: ActorRef) extends Actor with Stash {
-
-  var connection: Option[MongoConnection] = None
-
-  override def preStart(): Unit = connectionActor ! new AskConnectionMessage()
-
+class DBWorkerNotesActor(connectionActor: ActorRef) extends DBWorker(connectionActor) with Stash {
 
   override def receive: Receive = {
     case m: GetConnectionMessage =>
@@ -67,11 +59,4 @@ class DBWorkerNotesActor(connectionActor: ActorRef) extends Actor with Stash {
       }
   }
 
-  private def getCollaborationsCollection: Future[BSONCollection] = {
-    if (connection.isDefined)
-      connection.get.database("collabora", FailoverStrategy())
-        .map(_.collection("collaboration", FailoverStrategy()))
-    else
-      throw new Error("Collection collaboration not found") // TODO more specific error
-  }
 }

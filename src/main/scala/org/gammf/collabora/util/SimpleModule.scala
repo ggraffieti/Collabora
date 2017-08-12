@@ -2,7 +2,7 @@ package org.gammf.collabora.util
 
 import reactivemongo.bson.{BSONArray, BSONDocument, BSONDocumentReader, BSONDocumentWriter, BSONObjectID}
 
-case class SimpleModule(id: Option[String], content: String, previousModules: Option[List[String]], state: String)  extends Module {
+case class SimpleModule(id: Option[String] = None, content: String, previousModules: Option[List[String]] = None, state: String)  extends Module {
 
 }
 

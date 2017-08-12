@@ -53,6 +53,6 @@ class DBActor(connectionActor: ActorRef, notificationActor: ActorRef) extends Ac
       connection.get.database("collabora", FailoverStrategy())
         .map(_.collection("note", FailoverStrategy()))
     else
-      throw new Error() // TODO more specific error
+      throw new Error("Collection not found") // TODO more specific error
   }
 }

@@ -9,6 +9,7 @@ trait Note {
   def location: Option[Location]
   def previousNotes: Option[List[String]]
   def state: NoteState
+  def module: Option[String]
 
   override def toString: String =
     "{ Note -- id=" + id +
@@ -17,5 +18,6 @@ trait Note {
     ", location=" + location +
     ", previousNotes=" + previousNotes +
     ", state=" + state +
+    ", module=" + module +
     " }"
 }

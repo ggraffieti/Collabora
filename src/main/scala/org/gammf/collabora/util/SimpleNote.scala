@@ -18,7 +18,7 @@ import reactivemongo.bson.{BSONArray, BSONDateTime, BSONDocument, BSONDocumentRe
   */
 case class SimpleNote(id: Option[String] = None, content: String, expiration: Option[DateTime] = None,
                  location: Option[Location] = None, previousNotes: Option[List[String]] = None,
-                 state: NoteState) extends Note {
+                 state: NoteState, module: Option[String] = None) extends Note {
 }
 
 case class Location(latitude: Double, longitude: Double)
@@ -49,7 +49,8 @@ object SimpleNote {
       (JsPath \ "expiration").readNullable[DateTime] and
       (JsPath \ "location").readNullable[Location] and
       (JsPath \ "previousNotes").readNullable[List[String]] and
-      (JsPath \ "state").read[NoteState]
+      (JsPath \ "state").read[NoteState] and
+      (JsPath \ "module").readNullable[String]
   )(SimpleNote.apply _)
 
 
@@ -74,7 +75,8 @@ object SimpleNote {
       (JsPath \ "expiration").writeNullable[DateTime] and
       (JsPath \ "location").writeNullable[Location] and
       (JsPath \ "previousNotes").writeNullable[List[String]] and
-      (JsPath \ "state").write[NoteState]
+      (JsPath \ "state").write[NoteState] and
+      (JsPath \ "module").writeNullable[String]
     )(unlift(SimpleNote.unapply))
 
 
@@ -109,7 +111,9 @@ object SimpleNote {
         expiration = doc.getAs[DateTime]("expiration"),
         location = doc.getAs[Location]("location"),
         previousNotes = doc.getAs[List[BSONObjectID]]("previousNotes").map(l => l.map(bsonID => bsonID.stringify)),
-        state = doc.getAs[NoteState]("state").get)
+        state = doc.getAs[NoteState]("state").get,
+        module = doc.getAs[BSONObjectID]("module").map(m => m.stringify)
+      )
     }
   }
 
@@ -131,6 +135,9 @@ object SimpleNote {
           "latitude" -> note.location.get.latitude,
           "longitude" -> note.location.get.longitude
         )))
+      }
+      if (note.module.isDefined) {
+        newNote = newNote.merge("module" -> BSONObjectID.parse(note.module.get).get)
       }
       newNote
     }

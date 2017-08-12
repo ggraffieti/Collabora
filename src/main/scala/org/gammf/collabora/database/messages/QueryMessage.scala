@@ -1,6 +1,6 @@
 package org.gammf.collabora.database.messages
 
-import org.gammf.collabora.util.{Module, SimpleNote}
+import org.gammf.collabora.util.{Module, SimpleModule, SimpleNote}
 
 trait QueryMessage
 
@@ -20,6 +20,6 @@ trait QueryModuleMessage extends QueryMessage {
   def userID: String
 }
 
-case class InsertModuleMessage(module: Module, collaborationID: String, userID: String) extends QueryModuleMessage
-case class UpdateModuleMessage(module: Module, collaborationID: String, userID: String) extends QueryModuleMessage
-case class DeleteModuleMessage(module: Module, collaborationID: String, userID: String) extends QueryModuleMessage
+case class InsertModuleMessage(module: SimpleModule, collaborationID: String, userID: String) extends QueryModuleMessage
+case class UpdateModuleMessage(module: SimpleModule, collaborationID: String, userID: String) extends QueryModuleMessage
+case class DeleteModuleMessage(module: SimpleModule, collaborationID: String, userID: String) extends QueryModuleMessage

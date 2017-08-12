@@ -8,8 +8,8 @@ case class SimpleModule(id: Option[String] = None, content: String, previousModu
 
 object SimpleModule {
 
-  implicit object BSONtoModule extends BSONDocumentReader[Module] {
-    def read(doc: BSONDocument): Module = {
+  implicit object BSONtoModule extends BSONDocumentReader[SimpleModule] {
+    def read(doc: BSONDocument): SimpleModule = {
       SimpleModule(
         id = doc.getAs[BSONObjectID]("id").map(id => id.stringify),
         content = doc.getAs[String]("text").get,  // TODO maybe change this in content??
@@ -19,8 +19,8 @@ object SimpleModule {
     }
   }
 
-  implicit object ModuletoBSON extends BSONDocumentWriter[Module] {
-    def write(module: Module): BSONDocument = {
+  implicit object ModuletoBSON extends BSONDocumentWriter[SimpleModule] {
+    def write(module: SimpleModule): BSONDocument = {
       var bsonModule = BSONDocument()
       if (module.id.isDefined) bsonModule = bsonModule.merge("id" -> BSONObjectID.parse(module.id.get).get)
       else bsonModule = bsonModule.merge("id" -> BSONObjectID.generate())

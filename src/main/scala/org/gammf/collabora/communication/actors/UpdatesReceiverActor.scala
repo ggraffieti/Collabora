@@ -30,10 +30,10 @@ class UpdatesReceiverActor(connection: ActorRef, naming: ActorRef, channelCreato
       channelCreator ! SubscribingChannelCreationMessage(connection, exchange, subQueue.get, None)
     case ChannelCreatedMessage(channel) => subscriber ! SubscribeMessage(channel, subQueue.get)
     case ClientUpdateMessage(text) =>
-      Json.parse(text).validate[UpdateMessageImpl] match {
-        case m: JsSuccess[UpdateMessageImpl] => dbActor ! new InsertNoteMessage(m.value)
+/*      Json.parse(text).validate[UpdateMessageImpl] match {
+        case m: JsSuccess[UpdateMessageImpl] => //dbActor ! new InsertNoteMessage(m.value)
         case error: JsError => println(error)
-      }
+      }  */
     case _ => println("[Updates Receiver Actor] Huh?")
   }
 }

@@ -14,16 +14,26 @@ import reactivemongo.bson.{BSONArray, BSONDateTime, BSONDocument, BSONDocumentRe
   * @param location the location where the note
   * @param previousNotes previous associated notes (this note cannot be completed until all previous notes are
   *                      not completed.
-  * @param state the state of the note (doing, done, todo...)
+  * @param state the state of the note
   */
 case class SimpleNote(id: Option[String] = None, content: String, expiration: Option[DateTime] = None,
                  location: Option[Location] = None, previousNotes: Option[List[String]] = None,
-                 state: NoteState) extends Note {
+                 state: NoteState, module: Option[String] = None) extends Note {
 }
 
+/**
+  * Simple class for represents a location on planet earth
+  * @param latitude the latitude
+  * @param longitude the longitude
+  */
 case class Location(latitude: Double, longitude: Double)
 
-case class NoteState(definition: String, username: Option[String])
+/**
+  * The state of note, composed by the state (done, doing, todo...) and the optional user responsible for this note
+  * @param definition the state
+  * @param username the responsible
+  */
+case class NoteState(definition: String, username: Option[String] = None)
 
 object SimpleNote {
   implicit val locationReads: Reads[Location] = (
@@ -49,7 +59,8 @@ object SimpleNote {
       (JsPath \ "expiration").readNullable[DateTime] and
       (JsPath \ "location").readNullable[Location] and
       (JsPath \ "previousNotes").readNullable[List[String]] and
-      (JsPath \ "state").read[NoteState]
+      (JsPath \ "state").read[NoteState] and
+      (JsPath \ "module").readNullable[String]
   )(SimpleNote.apply _)
 
 
@@ -74,7 +85,8 @@ object SimpleNote {
       (JsPath \ "expiration").writeNullable[DateTime] and
       (JsPath \ "location").writeNullable[Location] and
       (JsPath \ "previousNotes").writeNullable[List[String]] and
-      (JsPath \ "state").write[NoteState]
+      (JsPath \ "state").write[NoteState] and
+      (JsPath \ "module").writeNullable[String]
     )(unlift(SimpleNote.unapply))
 
 
@@ -104,20 +116,22 @@ object SimpleNote {
   implicit object BSONtoNote extends BSONDocumentReader[SimpleNote] {
     def read(doc: BSONDocument): SimpleNote = {
       SimpleNote(
-        id = doc.getAs[BSONObjectID]("_id").map(id => id.stringify),
+        id = doc.getAs[BSONObjectID]("id").map(id => id.stringify),
         content = doc.getAs[String]("content").get,
         expiration = doc.getAs[DateTime]("expiration"),
         location = doc.getAs[Location]("location"),
         previousNotes = doc.getAs[List[BSONObjectID]]("previousNotes").map(l => l.map(bsonID => bsonID.stringify)),
-        state = doc.getAs[NoteState]("state").get)
+        state = doc.getAs[NoteState]("state").get,
+        module = doc.getAs[BSONObjectID]("module").map(m => m.stringify)
+      )
     }
   }
 
   implicit object NotetoBSON extends BSONDocumentWriter[SimpleNote] {
     def write(note: SimpleNote): BSONDocument = {
       var newNote = BSONDocument()
-      if (note.id.isDefined) newNote = newNote.merge("_id" -> BSONObjectID.parse(note.id.get).get)
-      else newNote = newNote.merge("_id" -> BSONObjectID.generate())
+      if (note.id.isDefined) newNote = newNote.merge("id" -> BSONObjectID.parse(note.id.get).get)
+      else newNote = newNote.merge("id" -> BSONObjectID.generate())
       newNote = newNote.merge(BSONDocument("content" -> note.content))
       if (note.state.username.isDefined) newNote = newNote.merge(BSONDocument("state" -> BSONDocument("definition" -> note.state.definition, "username" -> note.state.username.get)))
       else newNote = newNote.merge(BSONDocument("state" -> BSONDocument("definition" -> note.state.definition)))
@@ -131,6 +145,9 @@ object SimpleNote {
           "latitude" -> note.location.get.latitude,
           "longitude" -> note.location.get.longitude
         )))
+      }
+      if (note.module.isDefined) {
+        newNote = newNote.merge("module" -> BSONObjectID.parse(note.module.get).get)
       }
       newNote
     }

@@ -23,7 +23,7 @@ object Test extends App {
   val subscriber = system.actorOf(Props[SubscriberActor], "subscriber")
 
   val updatesReceiver = system.actorOf(Props(
-    new UpdatesReceiverActor(rabbitConnection, naming, channelCreator, subscriber, dbActor)), "updates-receiver")
+    new UpdatesReceiverActor(rabbitConnection, naming, channelCreator, subscriber, dbMasterActor)), "updates-receiver")
 
   updatesReceiver ! StartMessage
   notificationActor ! StartMessage

@@ -4,7 +4,7 @@ import akka.actor.{ActorSystem, Props}
 import com.newmotion.akka.rabbitmq.{ConnectionActor, ConnectionFactory}
 import org.gammf.collabora.communication.actors._
 import org.gammf.collabora.communication.messages.StartMessage
-import org.gammf.collabora.database.actors.{ConnectionManagerActor, DBWorkerNotesActor, PrintActor}
+import org.gammf.collabora.database.actors.{ConnectionManagerActor, DBMasterActor, DBWorkerNotesActor, PrintActor}
 
 object Test extends App {
   val system = ActorSystem("CollaboraServer")
@@ -18,8 +18,7 @@ object Test extends App {
 
   val notificationActor = system.actorOf(Props(new NotificationsSenderActor(rabbitConnection, naming, channelCreator, publisherActor)))
 
-  val dbConnectionActor = system.actorOf(Props[ConnectionManagerActor])
-  val dbActor = system.actorOf(Props.create(classOf[DBWorkerNotesActor], dbConnectionActor, notificationActor))
+  val dbMasterActor = system.actorOf(Props.create(classOf[DBMasterActor], system))
 
   val subscriber = system.actorOf(Props[SubscriberActor], "subscriber")
 

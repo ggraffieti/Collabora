@@ -23,7 +23,7 @@ case class SimpleNote(id: Option[String] = None, content: String, expiration: Op
 
 case class Location(latitude: Double, longitude: Double)
 
-case class NoteState(definition: String, username: Option[String])
+case class NoteState(definition: String, username: Option[String] = None)
 
 object SimpleNote {
   implicit val locationReads: Reads[Location] = (

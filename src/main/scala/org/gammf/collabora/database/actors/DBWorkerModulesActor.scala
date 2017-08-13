@@ -8,6 +8,10 @@ import scala.util.{Failure, Success}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
+/**
+  * A worker that performs query on modules.
+  * @param connectionActor the actor that mantains the connection with the DB.
+  */
 class DBWorkerModulesActor(connectionActor: ActorRef) extends DBWorker(connectionActor) with Stash {
 
   override def receive: Receive = {

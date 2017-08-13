@@ -7,6 +7,10 @@ import reactivemongo.bson.{BSON, BSONDocument, BSONObjectID}
 import scala.util.{Failure, Success}
 import scala.concurrent.ExecutionContext.Implicits.global
 
+/**
+  * A worker that performs query on collaborations.
+  * @param connectionActor the actor that mantains the connection with the DB.
+  */
 class DBWorkerCollaborationsActor(connectionActor: ActorRef) extends DBWorker(connectionActor) with Stash {
 
   override def receive: Receive = {

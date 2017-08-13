@@ -14,15 +14,25 @@ import reactivemongo.bson.{BSONArray, BSONDateTime, BSONDocument, BSONDocumentRe
   * @param location the location where the note
   * @param previousNotes previous associated notes (this note cannot be completed until all previous notes are
   *                      not completed.
-  * @param state the state of the note (doing, done, todo...)
+  * @param state the state of the note
   */
 case class SimpleNote(id: Option[String] = None, content: String, expiration: Option[DateTime] = None,
                  location: Option[Location] = None, previousNotes: Option[List[String]] = None,
                  state: NoteState, module: Option[String] = None) extends Note {
 }
 
+/**
+  * Simple class for represents a location on planet earth
+  * @param latitude the latitude
+  * @param longitude the longitude
+  */
 case class Location(latitude: Double, longitude: Double)
 
+/**
+  * The state of note, composed by the state (done, doing, todo...) and the optional user responsible for this note
+  * @param definition the state
+  * @param username the responsible
+  */
 case class NoteState(definition: String, username: Option[String] = None)
 
 object SimpleNote {

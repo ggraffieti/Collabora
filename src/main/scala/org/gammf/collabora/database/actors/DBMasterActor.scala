@@ -4,6 +4,10 @@ import akka.actor.{Actor, ActorRef, ActorSystem, Props}
 import org.gammf.collabora.database.messages._
 import org.gammf.collabora.util.{UpdateMessage, UpdateMessageTarget, UpdateMessageType}
 
+/**
+  * An actor that coordinate, create and act like a gateway for every request from and to the DB. It also create all the needed actors
+  * @param system the actor system.
+  */
 class DBMasterActor(val system: ActorSystem) extends Actor {
 
   private var connectionManagerActor: ActorRef = _

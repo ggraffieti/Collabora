@@ -7,6 +7,10 @@ import reactivemongo.bson.{BSON, BSONDocument, BSONObjectID}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.{Failure, Success}
 
+/**
+  * A worker that performs query on notes.
+  * @param connectionActor the actor that mantains the connection with the DB.
+  */
 class DBWorkerNotesActor(connectionActor: ActorRef) extends DBWorker(connectionActor) with Stash {
 
   override def receive: Receive = {

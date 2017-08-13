@@ -4,6 +4,9 @@ import org.gammf.collabora.util.CollaborationRight.CollaborationRight
 import org.gammf.collabora.util.CollaborationType.CollaborationType
 import reactivemongo.bson.{BSONDocument, BSONDocumentReader, BSONDocumentWriter}
 
+/**
+  * The representation of a collaboration
+  */
 trait Collaboration {
 
   def id: Option[String]
@@ -15,6 +18,11 @@ trait Collaboration {
 
 }
 
+/**
+  * Represents a user inside a collaboration.
+  * @param user the username
+  * @param right the right privilege
+  */
 case class CollaborationUser(user: String, right: CollaborationRight)
 
 object CollaborationUser {
@@ -41,11 +49,17 @@ object CollaborationUser {
 
 }
 
+/**
+  * Represents the type of the collaboration, can be a group, a project or private (private notes)
+  */
 object CollaborationType extends Enumeration {
   type CollaborationType = Value
   val PRIVATE, GROUP, PROJECT = Value
 }
 
+/**
+  * Rights associated to a user in a collaboration.
+  */
 object CollaborationRight extends Enumeration {
   type CollaborationRight = Value
   val READ, WRITE, ADMIN = Value

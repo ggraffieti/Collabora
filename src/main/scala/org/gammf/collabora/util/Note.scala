@@ -2,6 +2,9 @@ package org.gammf.collabora.util
 
 import org.joda.time.DateTime
 
+/**
+  * Represents a Note
+  */
 trait Note {
   def id: Option[String]
   def content: String

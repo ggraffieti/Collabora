@@ -9,6 +9,10 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 import scala.concurrent.Future
 
+/**
+  * A DB worker, it ask for a connection at start time and perform queries.
+  * @param connectionActor the actor that mantains the connection with the DB.
+  */
 abstract class DBWorker(val connectionActor: ActorRef) extends Actor {
 
   protected var connection: Option[MongoConnection] = None

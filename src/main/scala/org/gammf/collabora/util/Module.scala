@@ -1,5 +1,8 @@
 package org.gammf.collabora.util
 
+/**
+  * Represents a module: a group of notes in a project.
+  */
 trait Module {
 
   def id: Option[String]

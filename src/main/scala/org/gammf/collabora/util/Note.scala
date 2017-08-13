@@ -2,6 +2,9 @@ package org.gammf.collabora.util
 
 import org.joda.time.DateTime
 
+/**
+  * Represents a Note
+  */
 trait Note {
   def id: Option[String]
   def content: String
@@ -9,6 +12,7 @@ trait Note {
   def location: Option[Location]
   def previousNotes: Option[List[String]]
   def state: NoteState
+  def module: Option[String]
 
   override def toString: String =
     "{ Note -- id=" + id +
@@ -17,5 +21,6 @@ trait Note {
     ", location=" + location +
     ", previousNotes=" + previousNotes +
     ", state=" + state +
+    ", module=" + module +
     " }"
 }

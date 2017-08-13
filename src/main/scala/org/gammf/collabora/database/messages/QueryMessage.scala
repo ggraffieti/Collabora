@@ -32,3 +32,13 @@ trait QueryCollaborationMessage extends QueryMessage {
 case class InsertCollaborationMessage(collaboration: SimpleCollaboration, userID: String) extends QueryCollaborationMessage
 case class UpdateCollaborationMessage(collaboration: SimpleCollaboration, userID: String) extends QueryCollaborationMessage
 case class DeleteCollaborationMessage(collaboration: SimpleCollaboration, userID: String) extends QueryCollaborationMessage
+
+trait QueryUserMessage extends QueryMessage {
+  def user: CollaborationUser
+  def collaborationID: String
+  def userID: String
+}
+
+case class InsertUserMessage(user: CollaborationUser, collaborationID: String, userID: String) extends QueryUserMessage
+case class UpdateUserMessage(user: CollaborationUser, collaborationID: String, userID: String) extends QueryUserMessage
+case class DeleteUserMessage(user: CollaborationUser, collaborationID: String, userID: String) extends QueryUserMessage

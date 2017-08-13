@@ -32,11 +32,7 @@ class DBWorkerCollaborationsActor(connectionActor: ActorRef) extends DBWorker(co
           val bsonCollaboration: BSONDocument = BSON.write(message.collaboration)
           val selector = BSONDocument("_id" -> BSONObjectID.parse(message.collaboration.id.get).get)
           collaborations.update(selector, BSONDocument("$set" ->
-            BSONDocument(
-              "name" -> bsonCollaboration.get("name"),
-              "type" -> bsonCollaboration.get("type"),
-              "users" -> bsonCollaboration.get("users")
-            )
+            BSONDocument("name" -> bsonCollaboration.get("name"))
           )) onComplete {
             case Success(_) => println("UPDATED COLLABORATION")
             // val not = NotificationMessageImpl(messageType = "note_created", user = message.message.user, note = bsonNote.as[SimpleNote])

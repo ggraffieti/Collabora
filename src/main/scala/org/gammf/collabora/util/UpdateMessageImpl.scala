@@ -22,25 +22,23 @@ case class UpdateMessageImpl(target: UpdateMessageTarget, messageType: UpdateMes
 
 }
 object UpdateMessageImpl {
-  /*implicit val updateMessageReads: Reads[UpdateMessageImpl] = (
-    (JsPath \ "target").read[String] and
-    (JsPath \ "messageType").read[String] and
+  implicit val updateMessageReads: Reads[UpdateMessageImpl] = (
+    (JsPath \ "target").read[UpdateMessageTarget] and
+      (JsPath \ "messageType").read[UpdateMessageType] and
       (JsPath \ "user").read[String] and
       (JsPath \ "note").readNullable[SimpleNote] and
-        (JsPath \ "module").readNullable[SimpleModule] and
-        (JsPath \ "collaboration").readNullable[SimpleCollaboration] and
-        (JsPath \ "member").readNullable[CollaborationUser]
+      (JsPath \ "module").readNullable[SimpleModule] and
+      (JsPath \ "collaboration").readNullable[SimpleCollaboration] and
+      (JsPath \ "member").readNullable[CollaborationUser]
     )(UpdateMessageImpl.apply _)
 
   implicit val updateMessageWrites: Writes[UpdateMessageImpl] = (
-    (JsPath \ "target").write[String] and
-    (JsPath \ "messageType").write[String] and
+    (JsPath \ "target").write[UpdateMessageTarget] and
+      (JsPath \ "messageType").write[UpdateMessageType] and
       (JsPath \ "user").write[String] and
       (JsPath \ "note").writeNullable[SimpleNote] and
-        (JsPath \ "module").writeNullable[SimpleModule] and
-        (JsPath \ "collaboration").writeNullable[SimpleCollaboration] and
-        (JsPath \ "member").writeNullable[CollaborationUser]
-    ) (unlift(UpdateMessageImpl.unapply))*/
-
-  // TODO JSON SERIALIZATION AND DESERIALIZATION of modules, collaborations, users
+      (JsPath \ "module").writeNullable[SimpleModule] and
+      (JsPath \ "collaboration").writeNullable[SimpleCollaboration] and
+      (JsPath \ "member").writeNullable[CollaborationUser]
+    ) (unlift(UpdateMessageImpl.unapply))
 }

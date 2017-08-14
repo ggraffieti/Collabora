@@ -7,7 +7,7 @@ import play.api.libs.functional.syntax._
 import reactivemongo.bson.{BSONArray, BSONDateTime, BSONDocument, BSONDocumentReader, BSONDocumentWriter, BSONHandler, BSONObjectID}
 
 /**
-  * Simple repreentation of an immutable note
+  * Simple reprsentation of an immutable note
   * @param id the id of the note
   * @param content the content of the note
   * @param expiration the expiration date

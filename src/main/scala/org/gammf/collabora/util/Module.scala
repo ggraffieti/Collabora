@@ -15,7 +15,7 @@ trait Module {
     "{ Module -- id=" + id +
       ", content=" + description +
       ", previousModules=" + previousModules +
-      ", state=" + state
+      ", state=" + state +
     " }"
   }
 }

@@ -1,5 +1,7 @@
 package org.gammf.collabora.util
 
+import play.api.libs.json.{JsPath, Json, Reads, Writes}
+import play.api.libs.functional.syntax._
 import reactivemongo.bson.{BSONArray, BSONDocument, BSONDocumentReader, BSONDocumentWriter, BSONObjectID}
 
 /**
@@ -14,6 +16,20 @@ case class SimpleModule(id: Option[String] = None, description: String, previous
 }
 
 object SimpleModule {
+
+  implicit val simpleModuleReads: Reads[SimpleModule] = (
+    (JsPath \ "id").readNullable[String] and
+      (JsPath \ "description").read[String] and
+      (JsPath \ "previousModules").readNullable[List[String]] and
+      (JsPath \ "state").read[String]
+  )(SimpleModule.apply _)
+
+  implicit val simpleModuleWrites: Writes[SimpleModule] = (
+    (JsPath \ "id").writeNullable[String] and
+      (JsPath \ "description").write[String] and
+      (JsPath \ "previousModules").writeNullable[List[String]] and
+      (JsPath \ "state").write[String]
+  )(unlift(SimpleModule.unapply))
 
   implicit object BSONtoModule extends BSONDocumentReader[SimpleModule] {
     def read(doc: BSONDocument): SimpleModule = {
@@ -42,3 +58,12 @@ object SimpleModule {
   }
 
 }
+
+object testModuleImplicits extends App {
+  val module = SimpleModule(Option("nome del modulo"),"questo è un modulo importante",Option(List("28fsd7df8273","fs7d7g7sd7","gdfg7sd7fg")),"doing")
+
+  val jsn = Json.toJson(module)
+  println("Json format: " + jsn)
+  println("Object format:" + jsn.as[SimpleModule])
+}
+

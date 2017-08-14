@@ -1,6 +1,9 @@
 package org.gammf.collabora.util
 
 import org.gammf.collabora.util.CollaborationType.CollaborationType
+import org.joda.time.DateTime
+import play.api.libs.json.{JsPath, Json, Reads, Writes}
+import play.api.libs.functional.syntax._
 import reactivemongo.bson.{BSON, BSONArray, BSONDocument, BSONDocumentReader, BSONDocumentWriter, BSONObjectID}
 
 /**
@@ -21,6 +24,24 @@ case class SimpleCollaboration(id: Option[String] = None, name: String, collabor
 
 
 object SimpleCollaboration {
+
+  implicit val simpleCollaborationReads: Reads[SimpleCollaboration] = (
+    (JsPath \ "id").readNullable[String] and
+      (JsPath \ "name").read[String] and
+      (JsPath \ "collaborationType").read[CollaborationType] and
+      (JsPath \ "users").readNullable[List[CollaborationUser]] and
+      (JsPath \ "modules").readNullable[List[SimpleModule]] and
+      (JsPath \ "notes").readNullable[List[SimpleNote]]
+  )(SimpleCollaboration.apply _)
+
+  implicit val simpleCollaborationWrites: Writes[SimpleCollaboration] = (
+    (JsPath \ "id").writeNullable[String] and
+      (JsPath \ "name").write[String] and
+      (JsPath \ "collaborationType").write[CollaborationType] and
+      (JsPath \ "users").writeNullable[List[CollaborationUser]] and
+      (JsPath \ "modules").writeNullable[List[SimpleModule]] and
+      (JsPath \ "notes").writeNullable[List[SimpleNote]]
+  )(unlift(SimpleCollaboration.unapply))
 
   implicit object BSONtoCollaboration extends BSONDocumentReader[SimpleCollaboration] {
     def read(doc: BSONDocument): SimpleCollaboration = {
@@ -59,5 +80,17 @@ object SimpleCollaboration {
       newCollaboration
     }
   }
+}
 
+object CollectionImplicitTest extends App {
+  val collaboration = SimpleCollaboration(Option.empty,
+                                          "nome",
+                                          CollaborationType.GROUP,
+                                          Option(List(CollaborationUser("fone", CollaborationRight.ADMIN), CollaborationUser("peru", CollaborationRight.ADMIN))),
+                                          Option.empty,
+                                          Option(List(SimpleNote(Option("prova"),"questo è il contenuto",Option(new DateTime()),Option(Location(23.32,23.42)),Option.empty,NoteState("doing", Option("fone")),Option.empty),
+                                                      SimpleNote(Option("prova2"),"questo è il contenuto2",Option(new DateTime()),Option(Location(233.32,233.42)),Option.empty,NoteState("done", Option("peru")),Option.empty))))
+  val jsn = Json.toJson(collaboration)
+  println("Json format: " + jsn)
+  println("Object format: " + jsn.as[SimpleCollaboration])
 }

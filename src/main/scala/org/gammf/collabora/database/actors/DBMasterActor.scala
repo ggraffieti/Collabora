@@ -1,6 +1,7 @@
 package org.gammf.collabora.database.actors
 
 import akka.actor.{Actor, ActorRef, ActorSystem, Props}
+import org.gammf.collabora.communication.actors.NotificationsSenderActor
 import org.gammf.collabora.database.messages._
 import org.gammf.collabora.util.{UpdateMessage, UpdateMessageTarget, UpdateMessageType}
 
@@ -29,9 +30,9 @@ class DBMasterActor(val system: ActorSystem) extends Actor {
   override def receive: Receive = {
     case message: UpdateMessage => message.target match {
       case UpdateMessageTarget.NOTE => message.messageType match {
-        case UpdateMessageType.CREATION => notesActor ! InsertNoteMessage(message.note.get, message.collaboration.get.id.get, message.user)
-        case UpdateMessageType.UPDATING => notesActor ! UpdateNoteMessage(message.note.get, message.collaboration.get.id.get, message.user)
-        case UpdateMessageType.DELETION => notesActor ! DeleteNoteMessage(message.note.get, message.collaboration.get.id.get, message.user)
+        case UpdateMessageType.CREATION => notesActor ! InsertNoteMessage(message.note.get, message.collaborationId.get, message.user)
+        case UpdateMessageType.UPDATING => notesActor ! UpdateNoteMessage(message.note.get, message.collaborationId.get, message.user)
+        case UpdateMessageType.DELETION => notesActor ! DeleteNoteMessage(message.note.get, message.collaborationId.get, message.user)
       }
       case UpdateMessageTarget.COLLABORATION => message.messageType match {
         case UpdateMessageType.CREATION => collaborationsActor ! InsertCollaborationMessage(message.collaboration.get, message.user)
@@ -39,14 +40,14 @@ class DBMasterActor(val system: ActorSystem) extends Actor {
         case UpdateMessageType.DELETION => collaborationsActor ! DeleteCollaborationMessage(message.collaboration.get, message.user)
       }
       case UpdateMessageTarget.MODULE => message.messageType match {
-        case UpdateMessageType.CREATION => modulesActor ! InsertModuleMessage(message.module.get, message.collaboration.get.id.get, message.user)
-        case UpdateMessageType.UPDATING => modulesActor ! UpdateModuleMessage(message.module.get, message.collaboration.get.id.get, message.user)
-        case UpdateMessageType.DELETION => modulesActor ! DeleteModuleMessage(message.module.get, message.collaboration.get.id.get, message.user)
+        case UpdateMessageType.CREATION => modulesActor ! InsertModuleMessage(message.module.get, message.collaborationId.get, message.user)
+        case UpdateMessageType.UPDATING => modulesActor ! UpdateModuleMessage(message.module.get, message.collaborationId.get, message.user)
+        case UpdateMessageType.DELETION => modulesActor ! DeleteModuleMessage(message.module.get, message.collaborationId.get, message.user)
       }
       case UpdateMessageTarget.MEMBER => message.messageType match {
-        case UpdateMessageType.CREATION => usersActor ! InsertUserMessage(message.member.get, message.collaboration.get.id.get, message.user)
-        case UpdateMessageType.UPDATING => usersActor ! UpdateUserMessage(message.member.get, message.collaboration.get.id.get, message.user)
-        case UpdateMessageType.DELETION => usersActor ! DeleteUserMessage(message.member.get, message.collaboration.get.id.get, message.user)
+        case UpdateMessageType.CREATION => usersActor ! InsertUserMessage(message.member.get, message.collaborationId.get, message.user)
+        case UpdateMessageType.UPDATING => usersActor ! UpdateUserMessage(message.member.get, message.collaborationId.get, message.user)
+        case UpdateMessageType.DELETION => usersActor ! DeleteUserMessage(message.member.get, message.collaborationId.get, message.user)
       }
     }
   }

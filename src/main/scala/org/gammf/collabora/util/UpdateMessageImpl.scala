@@ -18,7 +18,7 @@ import play.api.libs.functional.syntax._
   */
 case class UpdateMessageImpl(target: UpdateMessageTarget, messageType: UpdateMessageType, user: String, note: Option[SimpleNote] = None,
                              module: Option[SimpleModule] = None, collaboration: Option[SimpleCollaboration] = None,
-                             member: Option[CollaborationUser] = None) extends UpdateMessage {
+                             member: Option[CollaborationUser] = None, collaborationId: Option[String]) extends UpdateMessage {
 
 }
 object UpdateMessageImpl {
@@ -29,7 +29,8 @@ object UpdateMessageImpl {
       (JsPath \ "note").readNullable[SimpleNote] and
       (JsPath \ "module").readNullable[SimpleModule] and
       (JsPath \ "collaboration").readNullable[SimpleCollaboration] and
-      (JsPath \ "member").readNullable[CollaborationUser]
+      (JsPath \ "member").readNullable[CollaborationUser] and
+      (JsPath \ "collaborationId").readNullable[String]
     )(UpdateMessageImpl.apply _)
 
   implicit val updateMessageWrites: Writes[UpdateMessageImpl] = (
@@ -39,6 +40,7 @@ object UpdateMessageImpl {
       (JsPath \ "note").writeNullable[SimpleNote] and
       (JsPath \ "module").writeNullable[SimpleModule] and
       (JsPath \ "collaboration").writeNullable[SimpleCollaboration] and
-      (JsPath \ "member").writeNullable[CollaborationUser]
+      (JsPath \ "member").writeNullable[CollaborationUser] and
+      (JsPath \ "collaborationId").writeNullable[String]
     ) (unlift(UpdateMessageImpl.unapply))
 }

@@ -15,6 +15,7 @@ trait UpdateMessage {
   def module: Option[SimpleModule]
   def collaboration: Option[SimpleCollaboration]
   def member: Option[CollaborationUser]
+  def collaborationId: Option[String]
 }
 
 

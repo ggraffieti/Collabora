@@ -14,36 +14,41 @@ import play.api.libs.json.{JsValue, Json}
 
 import scala.concurrent.duration._
 
-class CollaborationMembersActorTest extends TestKit (ActorSystem("CollaboraServer")) with WordSpecLike with DefaultTimeout with Matchers with BeforeAndAfterAll with ImplicitSender {
+class NotificationsSenderActorTest extends TestKit (ActorSystem("CollaboraServer")) with WordSpecLike with DefaultTimeout with Matchers with BeforeAndAfterAll with ImplicitSender {
 
   val factory = new ConnectionFactory()
   val connection:ActorRef = system.actorOf(ConnectionActor.props(factory), "rabbitmq")
   val naming: ActorRef = system.actorOf(Props[RabbitMQNamingActor], "naming")
   val channelCreator: ActorRef = system.actorOf(Props[ChannelCreatorActor], "channelCreator")
 
+  override def beforeAll(): Unit ={
+
+  }
 
   override def afterAll(): Unit = {
     TestKit.shutdownActorSystem(system)
   }
 
-  "A CollaborationMember actor" should {
+  "A NotificationsSender actor" should {
 
     "communicate with RabbitMQNamingActor" in {
       within(500 millis){
-        naming ! ChannelNamesRequestMessage(CommunicationType.COLLABORATIONS)
-        expectMsg(ChannelNamesResponseMessage("collaborations", None))
+        naming ! ChannelNamesRequestMessage(CommunicationType.NOTIFICATIONS)
+        expectMsg(ChannelNamesResponseMessage("notifications", None))
       }
     }
 
     "communicate with channelCreatorActor" in {
       within(500 millis){
-        channelCreator ! PublishingChannelCreationMessage(connection, "collaborations", None)
+        channelCreator ! PublishingChannelCreationMessage(connection, "notifications", None)
         expectMsgType[ChannelCreatedMessage]
       }
     }
 
 
   }
+
+
 
 
 }

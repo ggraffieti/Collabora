@@ -11,14 +11,14 @@ trait QueryMessage
   * A trait for notes query. A message contains the note, the collaboration id and the user who have performed the update.
   */
 trait QueryNoteMessage extends QueryMessage {
-  def note: SimpleNote
+  def note: Note
   def collaborationID: String
   def userID: String
 }
 
-case class InsertNoteMessage(note: SimpleNote, collaborationID: String, userID: String) extends QueryNoteMessage
-case class UpdateNoteMessage(note: SimpleNote, collaborationID: String, userID: String) extends QueryNoteMessage
-case class DeleteNoteMessage(note: SimpleNote, collaborationID: String, userID: String) extends QueryNoteMessage
+case class InsertNoteMessage(note: Note, collaborationID: String, userID: String) extends QueryNoteMessage
+case class UpdateNoteMessage(note: Note, collaborationID: String, userID: String) extends QueryNoteMessage
+case class DeleteNoteMessage(note: Note, collaborationID: String, userID: String) extends QueryNoteMessage
 
 /**
   * A trait for module query. A message contains the module, the collaboration id and the user who have performed the update.
@@ -29,9 +29,9 @@ trait QueryModuleMessage extends QueryMessage {
   def userID: String
 }
 
-case class InsertModuleMessage(module: SimpleModule, collaborationID: String, userID: String) extends QueryModuleMessage
-case class UpdateModuleMessage(module: SimpleModule, collaborationID: String, userID: String) extends QueryModuleMessage
-case class DeleteModuleMessage(module: SimpleModule, collaborationID: String, userID: String) extends QueryModuleMessage
+case class InsertModuleMessage(module: Module, collaborationID: String, userID: String) extends QueryModuleMessage
+case class UpdateModuleMessage(module: Module, collaborationID: String, userID: String) extends QueryModuleMessage
+case class DeleteModuleMessage(module: Module, collaborationID: String, userID: String) extends QueryModuleMessage
 
 /**
   * A trait for collaboration query. A message contains the collaboration and the user who have performed the update.
@@ -41,9 +41,9 @@ trait QueryCollaborationMessage extends QueryMessage {
   def userID: String
 }
 
-case class InsertCollaborationMessage(collaboration: SimpleCollaboration, userID: String) extends QueryCollaborationMessage
-case class UpdateCollaborationMessage(collaboration: SimpleCollaboration, userID: String) extends QueryCollaborationMessage
-case class DeleteCollaborationMessage(collaboration: SimpleCollaboration, userID: String) extends QueryCollaborationMessage
+case class InsertCollaborationMessage(collaboration: Collaboration, userID: String) extends QueryCollaborationMessage
+case class UpdateCollaborationMessage(collaboration: Collaboration, userID: String) extends QueryCollaborationMessage
+case class DeleteCollaborationMessage(collaboration: Collaboration, userID: String) extends QueryCollaborationMessage
 
 /**
   * A trait for user query. A message contains the user, the collaboration id and the user who have performed the update.

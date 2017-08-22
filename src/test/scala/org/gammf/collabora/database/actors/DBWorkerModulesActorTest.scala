@@ -23,6 +23,8 @@ class DBWorkerModulesActorTest extends TestKit (ActorSystem("CollaboraServer")) 
   val modulesActor:ActorRef = system.actorOf(Props.create(classOf[DBWorkerModulesActor], connectionManagerActor))
   val moduleId:String = "123456788000000000000000"
 
+  val module:Module = SimpleModule(Option(moduleId),"questo è un modulo importante",None,"doing")
+
   override def beforeAll(): Unit = {
 
   }
@@ -33,7 +35,6 @@ class DBWorkerModulesActorTest extends TestKit (ActorSystem("CollaboraServer")) 
 
   "A DBWorkerModules actor" should {
     "insert new modules in a collaboration correctly in the db" in {
-      val module:Module = SimpleModule(Option(moduleId),"questo è un modulo importante",None,"doing")
       within(3 second) {
         modulesActor ! InsertModuleMessage(module, "59806a4af27da3fcfe0ac0ca", "maffone")
         expectMsgType[QueryOkMessage]
@@ -41,7 +42,6 @@ class DBWorkerModulesActorTest extends TestKit (ActorSystem("CollaboraServer")) 
     }
 
     "update a module in a collaboration correctly" in {
-      val module:Module = SimpleModule(Option(moduleId),"questo è un modulo non importante",None,"doing")
       within(1 second) {
         modulesActor ! UpdateModuleMessage(module, "59806a4af27da3fcfe0ac0ca", "maffone")
         expectMsgType[QueryOkMessage]
@@ -49,7 +49,6 @@ class DBWorkerModulesActorTest extends TestKit (ActorSystem("CollaboraServer")) 
     }
 
     "delete a module in a collaboration correctly" in {
-      val module:Module = SimpleModule(Option(moduleId),"questo è un modulo non importante",None,"doing")
       within(1 second) {
         modulesActor ! DeleteModuleMessage(module, "59806a4af27da3fcfe0ac0ca", "maffone")
         expectMsgType[QueryOkMessage]

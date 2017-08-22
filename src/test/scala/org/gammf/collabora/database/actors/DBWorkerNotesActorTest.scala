@@ -21,7 +21,10 @@ class DBWorkerNotesActorTest extends TestKit (ActorSystem("CollaboraServer")) wi
   val dbMasterActor:ActorRef = system.actorOf(Props.create(classOf[DBMasterActor], system, notificationActor))
   val connectionManagerActor: ActorRef =  system.actorOf(Props[ConnectionManagerActor])
   val notesActor:ActorRef = system.actorOf(Props.create(classOf[DBWorkerNotesActor], connectionManagerActor))
+  val moduleId:String = "123456788354670000000000"
 
+  val notetmp:Note = SimpleNote(Option(moduleId), "prova test", None,
+    None, None, new NoteState("done",None), None)
 
   override def beforeAll(): Unit = {
 
@@ -33,28 +36,23 @@ class DBWorkerNotesActorTest extends TestKit (ActorSystem("CollaboraServer")) wi
 
   "A DBWorkerNotes actor" should {
     "insert new notes correctly in the db" in {
-      val note:Note = SimpleNote(None, "prova test", None,
-        None, None, new NoteState("done",None), None)
+
       within(1 second) {
-        notesActor ! InsertNoteMessage(note, "59806a4af27da3fcfe0ac0ca", "maffone")
+        notesActor ! InsertNoteMessage(notetmp, "59806a4af27da3fcfe0ac0ca", "maffone")
         expectMsgType[QueryOkMessage]
       }
     }
 
     "update notes correctly" in {
-      val note:Note = SimpleNote(Option("599c6a1b6700006700e12dc6"), "prova testone ", None,
-        None, None, new NoteState("done",None), None)
       within(1 second) {
-        notesActor ! UpdateNoteMessage(note, "59806a4af27da3fcfe0ac0ca", "maffone")
+        notesActor ! UpdateNoteMessage(notetmp, "59806a4af27da3fcfe0ac0ca", "maffone")
         expectMsgType[QueryOkMessage]
       }
     }
 
     "delete notes correctly" in {
-      val note:Note = SimpleNote(Option("599c6a1b6700006700e12dc6"), "prova test", None,
-        None, None, new NoteState("done",None), None)
       within(1 second) {
-        notesActor ! DeleteNoteMessage(note, "59806a4af27da3fcfe0ac0ca", "maffone")
+        notesActor ! DeleteNoteMessage(notetmp, "59806a4af27da3fcfe0ac0ca", "maffone")
         expectMsgType[QueryOkMessage]
       }
     }

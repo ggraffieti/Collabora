@@ -44,6 +44,7 @@ class NotificationsSenderActorTest extends TestKit (ActorSystem("CollaboraServer
     val consumer = new DefaultConsumer(channel) {
       override def handleDelivery(consumerTag: String, envelope: Envelope, properties: AMQP.BasicProperties, body: Array[Byte]): Unit = {
         msg = new String(body, "UTF-8")
+        System.out.println(msg)
       }
     }
     channel.basicConsume(queueName, true, consumer)
@@ -53,6 +54,11 @@ class NotificationsSenderActorTest extends TestKit (ActorSystem("CollaboraServer
   override def afterAll(): Unit = {
     TestKit.shutdownActorSystem(system)
   }
+
+  override implicit val patienceConfig: PatienceConfig = PatienceConfig(
+    timeout = scaled(2 seconds),
+    interval = scaled(100 millis)
+  )
 
   "A NotificationsSender actor" should {
 
@@ -75,6 +81,12 @@ class NotificationsSenderActorTest extends TestKit (ActorSystem("CollaboraServer
       updatesReceiver ! StartMessage
       notificationActor ! StartMessage
       updatesReceiver ! ClientUpdateMessage(message)
+      eventually{
+        msg should not be ""
+      }
+      val startMsg = "{\"messageType\":\"note_created\",\"user\":\"maffone\",\"note\":{\"id\":"
+      val endMsg = "\"content\":\"setup working enviroment\",\"expiration\":\"2017-08-07T08:01:17.171+02:00\",\"location\":{\"latitude\":546,\"longitude\":324},\"previousNotes\":[\"5980710df27da3fcfe0ac88e\",\"5980710df27da3fcfe0ac88f\"],\"state\":{\"definition\":\"done\",\"username\":\"maffone\"}}}"
+      assert(msg.startsWith(startMsg)&& msg.endsWith(endMsg))
     }
 
 

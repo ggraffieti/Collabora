@@ -18,7 +18,7 @@ object Test extends App {
 
   val notificationActor = system.actorOf(Props(new NotificationsSenderActor(rabbitConnection, naming, channelCreator, publisherActor)))
 
-  val dbMasterActor = system.actorOf(Props.create(classOf[DBMasterActor], system))
+  val dbMasterActor = system.actorOf(Props.create(classOf[DBMasterActor], system, notificationActor))
 
   val subscriber = system.actorOf(Props[SubscriberActor], "subscriber")
 

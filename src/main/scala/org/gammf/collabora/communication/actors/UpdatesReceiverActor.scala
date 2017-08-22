@@ -4,7 +4,7 @@ import akka.actor._
 import org.gammf.collabora.communication.Utils.CommunicationType
 import org.gammf.collabora.communication.messages._
 import org.gammf.collabora.database.messages.InsertNoteMessage
-import org.gammf.collabora.util.UpdateMessageImpl
+import org.gammf.collabora.util.{UpdateMessage, UpdateMessageImpl}
 import play.api.libs.json.{JsError, JsSuccess, Json}
 
 /**
@@ -30,10 +30,10 @@ class UpdatesReceiverActor(connection: ActorRef, naming: ActorRef, channelCreato
       channelCreator ! SubscribingChannelCreationMessage(connection, exchange, subQueue.get, None)
     case ChannelCreatedMessage(channel) => subscriber ! SubscribeMessage(channel, subQueue.get)
     case ClientUpdateMessage(text) =>
-/*      Json.parse(text).validate[UpdateMessageImpl] match {
-        case m: JsSuccess[UpdateMessageImpl] => //dbActor ! new InsertNoteMessage(m.value)
+      Json.parse(text).validate[UpdateMessage] match {
+        case m: JsSuccess[UpdateMessage] => dbActor ! m.value
         case error: JsError => println(error)
-      }  */
+      }
     case _ => println("[Updates Receiver Actor] Huh?")
   }
 }

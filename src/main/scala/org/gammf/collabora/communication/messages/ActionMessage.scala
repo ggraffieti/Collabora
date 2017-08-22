@@ -1,6 +1,7 @@
 package org.gammf.collabora.communication.messages
 
 import com.newmotion.akka.rabbitmq.Channel
+import play.api.libs.json.JsValue
 
 /**
   * @author Manuel Peruzzi
@@ -26,4 +27,4 @@ case class SubscribeMessage(channel: Channel, queue: String) extends ActionMessa
   * @param message the message to be published.
   */
 case class PublishMessage(channel: Channel, exchange: String, routingKey: Option[String],
-                          message: String) extends ActionMessage
+                          message: JsValue) extends ActionMessage

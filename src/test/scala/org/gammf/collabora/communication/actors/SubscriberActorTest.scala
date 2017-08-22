@@ -17,7 +17,7 @@ class SubscriberActorTest extends TestKit (ActorSystem("CollaboraServer")) with 
   val connection:ActorRef = system.actorOf(ConnectionActor.props(factory), "rabbitmq")
   val channelCreator: ActorRef = system.actorOf(Props[ChannelCreatorActor], "channelCreator")
   val subscriber:ActorRef = system.actorOf(Props[SubscriberActor], "subscriber")
-  
+
   val connectemp: Connection = factory.newConnection
   var channel: Channel = connectemp.createChannel
 

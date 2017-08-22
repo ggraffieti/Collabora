@@ -2,13 +2,9 @@ package org.gammf.collabora.communication.actors
 
 import akka.actor.{ActorRef, ActorSystem, Props}
 import akka.testkit.{DefaultTimeout, ImplicitSender, TestKit}
-import com.newmotion.akka.rabbitmq.{Channel, Connection, ConnectionActor, ConnectionFactory}
-import org.gammf.collabora.Test.{dbConnectionActor, factory, notificationActor, system}
+import com.newmotion.akka.rabbitmq.{ ConnectionActor, ConnectionFactory}
 import org.gammf.collabora.communication.Utils.CommunicationType
 import org.gammf.collabora.communication.messages._
-import org.gammf.collabora.database.actors.{ConnectionManagerActor, DBActor}
-import org.gammf.collabora.database.messages.InsertNoteMessage
-import org.gammf.collabora.util.UpdateMessage
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
 import play.api.libs.json.{JsValue, Json}
 
@@ -20,6 +16,40 @@ class CollaborationMembersActorTest extends TestKit (ActorSystem("CollaboraServe
   val connection:ActorRef = system.actorOf(ConnectionActor.props(factory), "rabbitmq")
   val naming: ActorRef = system.actorOf(Props[RabbitMQNamingActor], "naming")
   val channelCreator: ActorRef = system.actorOf(Props[ChannelCreatorActor], "channelCreator")
+  val publisher: ActorRef = system.actorOf(Props[PublisherActor], "publisher")
+  val collaborationMember: ActorRef = system.actorOf(Props(
+    new CollaborationMembersActor(connection, naming, channelCreator, publisher)), "collaboration-members")
+  val subscriber:ActorRef = system.actorOf(Props[SubscriberActor], "subscriber")
+
+
+  val message : JsValue = Json.parse("""
+  {
+      "user": "manuelperuzzi",
+      "collaboration": {
+        "id": "arandomidofarandomcollaboration",
+        "name": "random-collaboration",
+        "collaborationType": "group",
+        "users": [
+          {
+            "username": "manuelperuzzi",
+            "email": "manuel.peruzzi@studio.unibo.it",
+            "name": "Manuel",
+            "surname": "Peruzzi",
+            "right": "admin"
+          }
+        ],
+        "notes": [
+          {
+            "id": "arandomidofarandomnote",
+            "content": "some content",
+            "state": {
+              "definition": "doing",
+              "username": "manuelperuzzi"
+            }
+          }
+        ]
+      }
+  }""")
 
 
   override def afterAll(): Unit = {
@@ -40,6 +70,12 @@ class CollaborationMembersActorTest extends TestKit (ActorSystem("CollaboraServe
         channelCreator ! PublishingChannelCreationMessage(connection, "collaborations", None)
         expectMsgType[ChannelCreatedMessage]
       }
+    }
+
+    "sends all the information needed by a user that has just been added to a collaboration" in {
+      collaborationMember ! PublishMemberAddedMessage("maffone", message)
+      collaborationMember ! StartMessage
+
     }
 
 

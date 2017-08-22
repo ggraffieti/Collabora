@@ -4,13 +4,9 @@ import akka.actor.{ActorRef, ActorSystem, Props}
 import akka.testkit.{ImplicitSender, TestKit}
 import com.newmotion.akka.rabbitmq.{ConnectionActor, ConnectionFactory}
 import org.gammf.collabora.communication.actors._
-import org.gammf.collabora.communication.messages.{ClientUpdateMessage, StartMessage}
 import org.gammf.collabora.database.messages._
-import org.gammf.collabora.util.{Location, Note, NoteState, SimpleNote, UpdateMessage}
-import org.joda.time.DateTime
+import org.gammf.collabora.util.{Note, NoteState, SimpleNote}
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
-import play.api.libs.json.{JsError, JsSuccess, Json}
-
 import scala.concurrent.duration._
 
 class DBWorkerNotesActorTest extends TestKit (ActorSystem("CollaboraServer")) with WordSpecLike  with Matchers with BeforeAndAfterAll with ImplicitSender {

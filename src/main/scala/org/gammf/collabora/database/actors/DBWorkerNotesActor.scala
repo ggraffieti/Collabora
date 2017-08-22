@@ -2,6 +2,7 @@ package org.gammf.collabora.database.actors
 
 import akka.actor.{ActorRef, Stash}
 import org.gammf.collabora.database.messages._
+import org.gammf.collabora.util.Note
 import reactivemongo.bson.{BSON, BSONDocument, BSONObjectID}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -19,19 +20,19 @@ class DBWorkerNotesActor(connectionActor: ActorRef) extends DBWorker(connectionA
       unstashAll()
     case _ if connection.isEmpty => stash()
     case message: InsertNoteMessage =>
+      val s = sender
       getCollaborationsCollection onComplete {
         case Success(collaborations) =>
           val bsonNote: BSONDocument = BSON.write(message.note)
           val selector = BSONDocument("_id" -> BSONObjectID.parse(message.collaborationID).get)
           collaborations.update(selector, BSONDocument("$push" -> BSONDocument("notes" -> bsonNote))) onComplete {
-          case Success(_) => println("INSERTED")
-           // val not = NotificationMessageImpl(messageType = "note_created", user = message.message.user, note = bsonNote.as[SimpleNote])
-           // notificationActor ! PublishNotificationMessage(message.message.user, Json.toJson(not))
+          case Success(_) => s ! QueryOkMessage(InsertNoteMessage(bsonNote.as[Note], message.collaborationID, message.userID))
           case Failure(e) => e.printStackTrace() // TODO better error strategy
         }
         case Failure(e) => e.printStackTrace() // TODO better error strategy
       }
     case message: UpdateNoteMessage =>
+      val s = sender
       getCollaborationsCollection onComplete {
         case Success(collaborations) =>
           val bsonNote: BSONDocument = BSON.write(message.note)
@@ -40,23 +41,20 @@ class DBWorkerNotesActor(connectionActor: ActorRef) extends DBWorker(connectionA
             "notes.id" -> BSONObjectID.parse(message.note.id.get).get
           )
           collaborations.update(selector, BSONDocument("$set" -> BSONDocument("notes.$" -> bsonNote))) onComplete {
-            case Success(_) => println("UPDATED")
-            // val not = NotificationMessageImpl(messageType = "note_created", user = message.message.user, note = bsonNote.as[SimpleNote])
-            // notificationActor ! PublishNotificationMessage(message.message.user, Json.toJson(not))
+            case Success(_) => s ! QueryOkMessage(message)
             case Failure(e) => e.printStackTrace() // TODO better error strategy
           }
         case Failure(e) => e.printStackTrace() // TODO better error strategy
       }
     case message: DeleteNoteMessage =>
+      val s = sender
       getCollaborationsCollection onComplete {
         case Success(collaborations) =>
           val bsonNote: BSONDocument = BSON.write(message.note)
           val selector = BSONDocument("_id" -> BSONObjectID.parse(message.collaborationID).get)
           collaborations.update(selector, BSONDocument("$pull" -> BSONDocument("notes" ->
             BSONDocument("id" -> BSONObjectID.parse(message.note.id.get).get)))) onComplete {
-            case Success(_) => println("DELETED")
-            // val not = NotificationMessageImpl(messageType = "note_created", user = message.message.user, note = bsonNote.as[SimpleNote])
-            // notificationActor ! PublishNotificationMessage(message.message.user, Json.toJson(not))
+            case Success(_) => s ! QueryOkMessage(message)
             case Failure(e) => e.printStackTrace() // TODO better error strategy
           }
         case Failure(e) => e.printStackTrace() // TODO better error strategy

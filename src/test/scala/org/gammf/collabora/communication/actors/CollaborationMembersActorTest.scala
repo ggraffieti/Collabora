@@ -26,7 +26,6 @@ class CollaborationMembersActorTest extends TestKit (ActorSystem("CollaboraServe
   val publisher: ActorRef = system.actorOf(Props[PublisherActor], "publisher")
   val collaborationMember: ActorRef = system.actorOf(Props(
     new CollaborationMembersActor(connection, naming, channelCreator, publisher)), "collaboration-members")
-  val subscriber:ActorRef = system.actorOf(Props[SubscriberActor], "subscriber")
 
   var msg: String = ""
   val message : JsValue = Json.parse("""

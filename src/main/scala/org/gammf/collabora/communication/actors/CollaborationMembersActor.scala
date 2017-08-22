@@ -34,7 +34,7 @@ class CollaborationMembersActor(connection: ActorRef, naming: ActorRef, channelC
     case PublishMemberAddedMessage(username, message) =>
       pubChannel match {
         case Some(channel) =>
-          publisher ! PublishMessage(channel, pubExchange.get, Some(username), message.toString())
+          publisher ! PublishMessage(channel, pubExchange.get, Some(username), message)
         case _ => stash()
       }
 

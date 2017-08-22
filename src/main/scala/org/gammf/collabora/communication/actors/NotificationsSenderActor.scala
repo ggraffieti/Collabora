@@ -4,6 +4,7 @@ import akka.actor.{Actor, ActorRef, ActorSystem, Props, Stash}
 import com.newmotion.akka.rabbitmq.{Channel, ConnectionActor, ConnectionFactory}
 import org.gammf.collabora.communication.Utils.CommunicationType
 import org.gammf.collabora.communication.messages._
+import play.api.libs.json.Json
 
 /**
   * @author Manuel Peruzzi
@@ -33,7 +34,7 @@ class NotificationsSenderActor(connection: ActorRef, naming: ActorRef, channelCr
     case PublishNotificationMessage(collaborationID, message) =>
       pubChannel match {
         case Some(channel) =>
-          publisher ! PublishMessage(channel, pubExchange.get, Some(collaborationID), message.toString())
+          publisher ! PublishMessage(channel, pubExchange.get, Some(collaborationID), Json.toJson(message))
         case _ =>
           stash()
       }

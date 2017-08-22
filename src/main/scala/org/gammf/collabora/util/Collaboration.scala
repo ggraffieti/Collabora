@@ -4,7 +4,7 @@ import org.gammf.collabora.util.CollaborationRight.CollaborationRight
 import org.gammf.collabora.util.CollaborationType.CollaborationType
 import play.api.libs.json._
 import play.api.libs.functional.syntax._
-import reactivemongo.bson.{BSONDocument, BSONDocumentReader, BSONDocumentWriter}
+import reactivemongo.bson.{BSON, BSONArray, BSONDocument, BSONDocumentReader, BSONDocumentWriter, BSONObjectID}
 
 /**
   * The representation of a collaboration
@@ -15,8 +15,8 @@ trait Collaboration {
   def name: String
   def collaborationType: CollaborationType
   def users: Option[List[CollaborationUser]]
-  def modules: Option[List[SimpleModule]]
-  def notes: Option[List[SimpleNote]]
+  def modules: Option[List[Module]]
+  def notes: Option[List[Note]]
 
   override def toString: String = {
     "{ Collaboration -- id=" + id +
@@ -27,7 +27,6 @@ trait Collaboration {
       ", notes= " + notes +
     " }"
   }
-
 }
 
 /**
@@ -47,7 +46,7 @@ object CollaborationUser {
   implicit val collaborationUserWrites: Writes[CollaborationUser] = (
     (JsPath \ "user").write[String] and
       (JsPath \ "right").write[CollaborationRight]
-  )(unlift(CollaborationUser.unapply))
+    )(unlift(CollaborationUser.unapply))
 
   implicit object BSONtoCollaborationUser extends BSONDocumentReader[CollaborationUser] {
     def read(doc: BSONDocument): CollaborationUser = {
@@ -58,7 +57,6 @@ object CollaborationUser {
     }
   }
 
-
   implicit object CollaborationUserToBSON extends BSONDocumentWriter[CollaborationUser] {
     def write(user: CollaborationUser): BSONDocument = {
       BSONDocument(
@@ -67,8 +65,6 @@ object CollaborationUser {
       )
     }
   }
-
-
 }
 
 /**
@@ -99,6 +95,67 @@ object CollaborationRight extends Enumeration {
     )
 
   implicit val collaborationRightWrite: Writes[CollaborationRight] = (right) =>  JsString(right.toString)
+}
+
+object Collaboration {
+  def apply(id: Option[String], name: String, collaborationType: CollaborationType, users: Option[List[CollaborationUser]], modules: Option[List[Module]], notes: Option[List[Note]]): Collaboration = SimpleCollaboration(id, name, collaborationType, users, modules, notes)
+
+  def unapply(arg: Collaboration): Option[(Option[String], String, CollaborationType, Option[List[CollaborationUser]], Option[List[Module]], Option[List[Note]])] = Some((arg.id, arg.name, arg.collaborationType, arg.users, arg.modules, arg.notes))
+
+  implicit val collaborationReads: Reads[Collaboration] = (
+    (JsPath \ "id").readNullable[String] and
+      (JsPath \ "name").read[String] and
+      (JsPath \ "collaborationType").read[CollaborationType] and
+      (JsPath \ "users").readNullable[List[CollaborationUser]] and
+      (JsPath \ "modules").readNullable[List[Module]] and
+      (JsPath \ "notes").readNullable[List[Note]]
+    )(Collaboration.apply _)
+
+  implicit val collaborationWrites: Writes[Collaboration] = (
+    (JsPath \ "id").writeNullable[String] and
+      (JsPath \ "name").write[String] and
+      (JsPath \ "collaborationType").write[CollaborationType] and
+      (JsPath \ "users").writeNullable[List[CollaborationUser]] and
+      (JsPath \ "modules").writeNullable[List[Module]] and
+      (JsPath \ "notes").writeNullable[List[Note]]
+    )(unlift(Collaboration.unapply))
+
+  implicit object BSONtoCollaboration extends BSONDocumentReader[Collaboration] {
+    def read(doc: BSONDocument): Collaboration = {
+      Collaboration(
+        id = doc.getAs[BSONObjectID]("_id").map(id => id.stringify),
+        name = doc.getAs[String]("name").get,
+        collaborationType = doc.getAs[String]("collaborationType").map(t => CollaborationType.withName(t)).get,
+        users = doc.getAs[List[CollaborationUser]]("users"),
+        modules = doc.getAs[List[Module]]("modules"),
+        notes = doc.getAs[List[Note]]("notes")
+      )
+    }
+  }
+
+  implicit object CollaborationToBSON extends BSONDocumentWriter[Collaboration] {
+    def write(collaboration: Collaboration): BSONDocument = {
+      var newCollaboration = BSONDocument()
+      if (collaboration.id.isDefined) newCollaboration = newCollaboration.merge("_id" -> BSONObjectID.parse(collaboration.id.get).get)
+      else newCollaboration = newCollaboration.merge("_id" -> BSONObjectID.generate())
+      newCollaboration = newCollaboration.merge(BSONDocument("name" -> collaboration.name))
+      newCollaboration = newCollaboration.merge(BSONDocument("collaborationType" -> collaboration.collaborationType.toString))
+
+      if (collaboration.users.isDefined) {
+        val arr = BSONArray(collaboration.users.get.map(e => BSON.write(e)))
+        newCollaboration = newCollaboration.merge(BSONDocument("users" -> arr))
+      }
+      if (collaboration.modules.isDefined) {
+        val arr = BSONArray(collaboration.modules.get)
+        newCollaboration = newCollaboration.merge(BSONDocument("modules" -> arr))
+      }
+      if (collaboration.notes.isDefined) {
+        val arr = BSONArray(collaboration.notes.get)
+        newCollaboration = newCollaboration.merge(BSONDocument("notes" -> arr))
+      }
+      newCollaboration
+    }
+  }
 }
 
 object CollaborationUserTest extends App {

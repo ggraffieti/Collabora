@@ -11,7 +11,7 @@ import scala.util.{Failure, Success}
   * A worker that performs query on members.
   * @param connectionActor the actor that mantains the connection with the DB.
   */
-class DBWorkerUsersActor(connectionActor: ActorRef) extends DBWorker(connectionActor) with Stash {
+class DBWorkerMemberActor(connectionActor: ActorRef) extends DBWorker(connectionActor) with Stash {
 
   override def receive: Receive = {
     case m: GetConnectionMessage =>
@@ -21,19 +21,19 @@ class DBWorkerUsersActor(connectionActor: ActorRef) extends DBWorker(connectionA
 
 
     case message: InsertUserMessage =>
+      val s = sender
       getCollaborationsCollection onComplete {
         case Success(collaborations) =>
           val bsonUser: BSONDocument = BSON.write(message.user)
           val selector = BSONDocument("_id" -> BSONObjectID.parse(message.collaborationID).get)
           collaborations.update(selector, BSONDocument("$push" -> BSONDocument("users" -> bsonUser))) onComplete {
-            case Success(_) => println("INSERTED USER")
-            // val not = NotificationMessageImpl(messageType = "note_created", user = message.message.user, note = bsonNote.as[SimpleNote])
-            // notificationActor ! PublishNotificationMessage(message.message.user, Json.toJson(not))
+            case Success(_) => s ! QueryOkMessage(message)
             case Failure(e) => e.printStackTrace() // TODO better error strategy
           }
         case Failure(e) => e.printStackTrace() // TODO better error strategy
       }
     case message: UpdateUserMessage =>
+      val s = sender
       getCollaborationsCollection onComplete {
         case Success(collaborations) =>
           val bsonUser: BSONDocument = BSON.write(message.user)
@@ -42,23 +42,20 @@ class DBWorkerUsersActor(connectionActor: ActorRef) extends DBWorker(connectionA
             "users.user" -> message.user.user
           )
           collaborations.update(selector, BSONDocument("$set" -> BSONDocument("users.$" -> bsonUser))) onComplete {
-            case Success(_) => println("UPDATED USER")
-            // val not = NotificationMessageImpl(messageType = "note_created", user = message.message.user, note = bsonNote.as[SimpleNote])
-            // notificationActor ! PublishNotificationMessage(message.message.user, Json.toJson(not))
+            case Success(_) => s ! QueryOkMessage(message)
             case Failure(e) => e.printStackTrace() // TODO better error strategy
           }
         case Failure(e) => e.printStackTrace() // TODO better error strategy
       }
     case message: DeleteUserMessage =>
+      val s = sender
       getCollaborationsCollection onComplete {
         case Success(collaborations) =>
           val bsonUser: BSONDocument = BSON.write(message.user)
           val selector = BSONDocument("_id" -> BSONObjectID.parse(message.collaborationID).get)
           collaborations.update(selector, BSONDocument("$pull" -> BSONDocument("users" ->
             BSONDocument("user" -> message.user.user)))) onComplete {
-            case Success(_) => println("DELETED USER")
-            // val not = NotificationMessageImpl(messageType = "note_created", user = message.message.user, note = bsonNote.as[SimpleNote])
-            // notificationActor ! PublishNotificationMessage(message.message.user, Json.toJson(not))
+            case Success(_) => s ! QueryOkMessage(message)
             case Failure(e) => e.printStackTrace() // TODO better error strategy
           }
         case Failure(e) => e.printStackTrace() // TODO better error strategy

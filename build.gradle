@@ -1,27 +1,30 @@
-group 'org.gammf.collabora'
-version '0.2'
+group "${group}"
+version "${version}"
 
 apply plugin: 'java'
 apply plugin: 'scala'
 
-sourceCompatibility = 1.8
+sourceCompatibility = "${jdkVersion}"
+
+def scalaVersion = "${scalaMajorVersion}.${scalaMinorVersion}"
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    compile "org.scala-lang:scala-library:2.12.3"
-    compile group: 'com.typesafe.akka', name: 'akka-actor_2.12', version: '2.5.0'
-    compile 'org.reactivemongo:reactivemongo_2.12:0.12.5'
-    compile 'org.reactivemongo:reactivemongo-play-json_2.12:0.12.5-play26'
-    compile 'org.reactivemongo:play2-reactivemongo_2.12:0.12.5-play26'
-    compile 'com.typesafe.play:play-json_2.12:2.6.0'
-    compile group: 'com.newmotion', name: 'akka-rabbitmq_2.12', version: '4.0.0'
-
-    compile 'ch.qos.logback:logback-classic:1.2.3'
+    compile "org.scala-lang:scala-library:${scalaVersion}"
+    compile group: 'com.typesafe.akka', name: 'akka-actor_2.12', version: "${akkaVersion}"
+    compile "org.reactivemongo:reactivemongo_2.12:${reactiveMongoVersion}"
+    compile "org.reactivemongo:reactivemongo-play-json_2.12:${reactiveMongoPlayJSONVersion}"
+    compile "org.reactivemongo:play2-reactivemongo_2.12:${reactiveMongoPlayVersion}"
+    compile "com.typesafe.play:play-json_2.12:${playFrameworkVersion}"
+    compile group: 'com.newmotion', name: 'akka-rabbitmq_2.12', version: "${akkaRabbitMQVersion}"
+    compile "ch.qos.logback:logback-classic:${logbackClassicVersion}"
+    compile group: 'org.apache.httpcomponents', name: 'httpclient', version: "${httpClientVersion}"
 
     testCompile group: 'junit', name: 'junit', version: '4.12'
     testCompile group: 'org.scalatest' , name: 'scalatest_2.12' , version: '3.0.1'
     testCompile group: 'com.typesafe.akka' , name: 'akka-testkit_2.12' , version: '2.5.3'
+
 }

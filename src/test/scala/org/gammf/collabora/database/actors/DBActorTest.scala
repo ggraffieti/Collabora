@@ -3,10 +3,8 @@ package org.gammf.collabora.database.actors
 import akka.actor.{ActorRef, ActorSystem, Props}
 import akka.testkit.{ImplicitSender, TestKit}
 import com.newmotion.akka.rabbitmq.{ConnectionActor, ConnectionFactory}
-import com.rabbitmq.client._
 import org.gammf.collabora.communication.actors._
-import org.gammf.collabora.database.messages.{AskConnectionMessage, GetConnectionMessage, InsertNoteMessage}
-import org.gammf.collabora.util.UpdateMessageImpl
+import org.gammf.collabora.database.messages.{AskConnectionMessage, GetConnectionMessage}
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
 
 import scala.concurrent.duration._
@@ -20,10 +18,10 @@ class DBActorTest extends TestKit (ActorSystem("CollaboraServer")) with WordSpec
   val channelCreator: ActorRef = system.actorOf(Props[ChannelCreatorActor], "channelCreator")
   val publisherActor: ActorRef = system.actorOf(Props[PublisherActor], "publisher")
   val notificationActor: ActorRef = system.actorOf(Props(new NotificationsSenderActor(connection, naming, channelCreator, publisherActor)))
-  val dbActor: ActorRef = system.actorOf(Props.create(classOf[DBActor], dbConnectionActor, notificationActor))
+  val dbMasterActor:ActorRef = system.actorOf(Props.create(classOf[DBMasterActor], system))
   val subscriber:ActorRef = system.actorOf(Props[SubscriberActor], "subscriber")
   val updatesReceiver:ActorRef = system.actorOf(Props(
-    new UpdatesReceiverActor(connection, naming, channelCreator, subscriber, dbActor)), "updates-receiver")
+    new UpdatesReceiverActor(connection, naming, channelCreator, subscriber, dbMasterActor)), "updates-receiver")
 
 
   override def beforeAll(): Unit = {

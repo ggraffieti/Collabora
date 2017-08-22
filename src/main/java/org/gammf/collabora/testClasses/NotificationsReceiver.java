@@ -17,7 +17,7 @@ import java.io.IOException;
 public final class NotificationsReceiver {
 
     private static final String EXCHANGE_NAME = "notifications";
-    private static final String ROUTING_KEY = "maffone";
+    private static final String ROUTING_KEY = "59806a4af27da3fcfe0ac0ca";
     private static final String BROKER_HOST = "localhost";
 
     private NotificationsReceiver() { }

@@ -1,5 +1,6 @@
 package org.gammf.collabora.communication.messages
 
+import org.gammf.collabora.util.UpdateMessage
 import play.api.libs.json.JsValue
 
 /**
@@ -18,7 +19,7 @@ case class ClientUpdateMessage(text: String) extends CommunicationMessage
   * @param collaborationID the identifier of the collaboration to which the message is addressed.
   * @param message the text of the message to be published in json format.
   */
-case class PublishNotificationMessage(collaborationID: String, message: JsValue)
+case class PublishNotificationMessage(collaborationID: String, message: UpdateMessage)
   extends CommunicationMessage
 
 /**

@@ -34,19 +34,19 @@ case class NoteState(definition: String, username: Option[String] = None)
 object NoteState {
   implicit val noteStateReads: Reads[NoteState] = (
     (JsPath \ "definition").read[String] and
-      (JsPath \ "username").readNullable[String]
+      (JsPath \ "responsible").readNullable[String]
     )(NoteState.apply _)
 
   implicit val noteStateWrites: Writes[NoteState] = (
     (JsPath \ "definition").write[String] and
-      (JsPath \ "username").writeNullable[String]
+      (JsPath \ "responsible").writeNullable[String]
     )(unlift(NoteState.unapply))
 
   implicit object BSONtoNoteState extends BSONDocumentReader[NoteState] {
     def read(state: BSONDocument): NoteState =
       NoteState(
         definition = state.getAs[String]("definition").get,
-        username = state.getAs[String]("username")
+        username = state.getAs[String]("responsible")
       )
   }
 }
@@ -96,7 +96,7 @@ object Note {
       if (note.id.isDefined) newNote = newNote.merge("id" -> BSONObjectID.parse(note.id.get).get)
       else newNote = newNote.merge("id" -> BSONObjectID.generate())
       newNote = newNote.merge(BSONDocument("content" -> note.content))
-      if (note.state.username.isDefined) newNote = newNote.merge(BSONDocument("state" -> BSONDocument("definition" -> note.state.definition, "username" -> note.state.username.get)))
+      if (note.state.username.isDefined) newNote = newNote.merge(BSONDocument("state" -> BSONDocument("definition" -> note.state.definition, "responsible" -> note.state.username.get)))
       else newNote = newNote.merge(BSONDocument("state" -> BSONDocument("definition" -> note.state.definition)))
       if (note.expiration.isDefined) newNote = newNote.merge(BSONDocument("expiration" -> note.expiration.get.toDate))
       if (note.previousNotes.isDefined) {

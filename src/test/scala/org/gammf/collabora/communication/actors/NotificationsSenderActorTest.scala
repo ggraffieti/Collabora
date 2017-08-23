@@ -45,7 +45,6 @@ class NotificationsSenderActorTest extends TestKit (ActorSystem("CollaboraServer
     val consumer = new DefaultConsumer(channel) {
       override def handleDelivery(consumerTag: String, envelope: Envelope, properties: AMQP.BasicProperties, body: Array[Byte]): Unit = {
         msg = new String(body, "UTF-8")
-        //System.out.println(msg)
       }
     }
     channel.basicConsume(queueName, true, consumer)

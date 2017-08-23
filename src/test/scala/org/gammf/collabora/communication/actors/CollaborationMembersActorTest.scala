@@ -105,7 +105,17 @@ class CollaborationMembersActorTest extends TestKit (ActorSystem("CollaboraServe
         msg should not be ""
       }
       assert(msg.equals(message.toString()))
+      msg = ""
     }
+
+    "don't recive messages if user is not part of the collaboration" in {
+      collaborationMember ! PublishMemberAddedMessage("peru", message)
+      eventually{
+        msg should be ("")
+      }
+    }
+
+
 
 
   }

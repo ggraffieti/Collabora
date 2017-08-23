@@ -5,7 +5,7 @@ import akka.testkit.{ImplicitSender, TestKit}
 import com.newmotion.akka.rabbitmq.{ConnectionActor, ConnectionFactory}
 import org.gammf.collabora.communication.actors._
 import org.gammf.collabora.database.messages._
-import org.gammf.collabora.util.{Module, SimpleModule, SimpleUser, User}
+import org.gammf.collabora.util.{CollaborationRight, CollaborationUser}
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
 
 import scala.concurrent.duration._
@@ -22,9 +22,8 @@ class DBWorkerMemberActorTest extends TestKit (ActorSystem("CollaboraServer")) w
   val dbMasterActor:ActorRef = system.actorOf(Props.create(classOf[DBMasterActor], system, notificationActor))
   val connectionManagerActor: ActorRef =  system.actorOf(Props[ConnectionManagerActor])
   val usersActor:ActorRef = system.actorOf(Props.create(classOf[DBWorkerMemberActor], connectionManagerActor))
-  val userID:String = "123456788000000004567700"
 
-  val user:User = SimpleUser(Option(userID),"questo è un modulo importante",None,"doing")
+  val user = CollaborationUser("peru", CollaborationRight.WRITE)
 
   override def beforeAll(): Unit = {
 
@@ -35,21 +34,21 @@ class DBWorkerMemberActorTest extends TestKit (ActorSystem("CollaboraServer")) w
   }
 
   "A DBWorkerMember actor" should {
-    "insert new modules in a collaboration correctly in the db" in {
+    "insert new user in a collaboration correctly in the db" in {
       within(3 second) {
         usersActor ! InsertUserMessage(user, "59806a4af27da3fcfe0ac0ca", "maffone")
         expectMsgType[QueryOkMessage]
       }
     }
 
-    "update a module in a collaboration correctly" in {
+    "update a user right in a collaboration correctly" in {
       within(1 second) {
         usersActor ! UpdateUserMessage(user, "59806a4af27da3fcfe0ac0ca", "maffone")
         expectMsgType[QueryOkMessage]
       }
     }
 
-    "delete a module in a collaboration correctly" in {
+    "delete a user in a collaboration correctly" in {
       within(1 second) {
         usersActor ! DeleteUserMessage(user, "59806a4af27da3fcfe0ac0ca", "maffone")
         expectMsgType[QueryOkMessage]

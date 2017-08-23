@@ -24,4 +24,7 @@ dependencies {
     compile group: 'org.apache.httpcomponents', name: 'httpclient', version: "${httpClientVersion}"
 
     testCompile group: 'junit', name: 'junit', version: "${jUnitVersion}"
+    testCompile group: 'org.scalatest' , name: 'scalatest_2.12' , version: "${scalaTestVersion}"
+    testCompile group: 'com.typesafe.akka' , name: 'akka-testkit_2.12' , version: "${akkaTestKitVersion}"
+
 }

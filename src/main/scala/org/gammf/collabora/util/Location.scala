@@ -2,7 +2,7 @@ package org.gammf.collabora.util
 
 import play.api.libs.functional.syntax._
 import play.api.libs.json.{JsPath, Reads, Writes}
-import reactivemongo.bson.{BSONDocument, BSONDocumentReader}
+import reactivemongo.bson.{BSONDocument, BSONDocumentReader, BSONDocumentWriter}
 
 /**
   * Simple class for represents a location on planet earth
@@ -29,5 +29,14 @@ object Location {
         latitude = doc.getAs[Double]("latitude").get,
         longitude = doc.getAs[Double]("longitude").get
       )
+  }
+
+  implicit object LocationtoBSON extends BSONDocumentWriter[Location] {
+    def write(location: Location): BSONDocument = {
+      BSONDocument(
+        "latitude" -> location.latitude,
+        "longitude" -> location.longitude
+      )
+    }
   }
 }

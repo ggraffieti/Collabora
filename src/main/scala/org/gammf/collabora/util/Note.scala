@@ -90,29 +90,26 @@ object Note {
     }
   }
 
+  implicit object NoteStatetoBSON extends BSONDocumentWriter[NoteState] {
+    def write(noteState: NoteState): BSONDocument = {
+      BSONDocument(
+        "definition" -> noteState.definition,
+        { if (noteState.username.isDefined) "responsible" -> noteState.username.get else BSONDocument()}
+      )
+    }
+  }
+
   implicit object NotetoBSON extends BSONDocumentWriter[Note] {
     def write(note: Note): BSONDocument = {
-      var newNote = BSONDocument()
-      if (note.id.isDefined) newNote = newNote.merge("id" -> BSONObjectID.parse(note.id.get).get)
-      else newNote = newNote.merge("id" -> BSONObjectID.generate())
-      newNote = newNote.merge(BSONDocument("content" -> note.content))
-      if (note.state.username.isDefined) newNote = newNote.merge(BSONDocument("state" -> BSONDocument("definition" -> note.state.definition, "responsible" -> note.state.username.get)))
-      else newNote = newNote.merge(BSONDocument("state" -> BSONDocument("definition" -> note.state.definition)))
-      if (note.expiration.isDefined) newNote = newNote.merge(BSONDocument("expiration" -> note.expiration.get.toDate))
-      if (note.previousNotes.isDefined) {
-        val arr = BSONArray(note.previousNotes.get.map(e => BSONObjectID.parse(e).get))
-        newNote = newNote.merge(BSONDocument("previousNotes" -> arr))
-      }
-      if (note.location.isDefined) {
-        newNote = newNote.merge(BSONDocument("location" -> BSONDocument(
-          "latitude" -> note.location.get.latitude,
-          "longitude" -> note.location.get.longitude
-        )))
-      }
-      if (note.module.isDefined) {
-        newNote = newNote.merge("module" -> BSONObjectID.parse(note.module.get).get)
-      }
-      newNote
+      BSONDocument(
+        "id" -> { if (note.id.isDefined) BSONObjectID.parse(note.id.get).get else BSONObjectID.generate() },
+        "content" -> note.content,
+        "state" -> note.state,
+        { if (note.expiration.isDefined) "expiration" -> note.expiration.get.toDate else BSONDocument() },
+        { if (note.previousNotes.isDefined) "previousNotes" -> BSONArray(note.previousNotes.get.map(e => BSONObjectID.parse(e).get)) else BSONDocument()  },
+        { if (note.location.isDefined) "location" -> note.location.get else BSONDocument() },
+        { if (note.module.isDefined) "module" -> BSONObjectID.parse(note.module.get).get else BSONDocument() }
+      )
     }
   }
 }

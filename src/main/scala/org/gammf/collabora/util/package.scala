@@ -16,7 +16,7 @@ package object util {
   )
   implicit val dateReads: Reads[DateTime] = jodaDateReads
 
-  private val jodaDateWrites: Writes[DateTime] = (date) => JsString(date.toString(ISODateTimeFormat.dateTime()))
+  private val jodaDateWrites: Writes[DateTime] = (date) => JsString(date.toString(ISODateTimeFormat.date()))
 
   implicit val dateWrites: Writes[DateTime] = jodaDateWrites
 

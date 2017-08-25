@@ -16,6 +16,7 @@ class DBMasterActor(val system: ActorSystem, val notificationActor: ActorRef, va
 
   private var connectionManagerActor: ActorRef = _
   private var collaborationsActor: ActorRef = _
+  private var getCollaborarionsActor: ActorRef = _
   private var modulesActor: ActorRef = _
   private var notesActor: ActorRef = _
   private var usersActor: ActorRef = _
@@ -25,6 +26,7 @@ class DBMasterActor(val system: ActorSystem, val notificationActor: ActorRef, va
     connectionManagerActor = system.actorOf(Props[ConnectionManagerActor])
 
     collaborationsActor = system.actorOf(Props.create(classOf[DBWorkerCollaborationsActor], connectionManagerActor))
+    getCollaborarionsActor = system.actorOf(Props.create(classOf[DBWorkerGetCollaborationActor], connectionManagerActor, collaborationMemberActor))
     modulesActor = system.actorOf(Props.create(classOf[DBWorkerModulesActor], connectionManagerActor))
     notesActor = system.actorOf(Props.create(classOf[DBWorkerNotesActor], connectionManagerActor))
     usersActor = system.actorOf(Props.create(classOf[DBWorkerMemberActor], connectionManagerActor))
@@ -73,7 +75,7 @@ class DBMasterActor(val system: ActorSystem, val notificationActor: ActorRef, va
                                                                                                                             module = Option(query.module),
                                                                                                                             collaborationId = Option(query.collaborationID)))
       case query: QueryUserMessage => query match {
-        case s: InsertUserMessage => //collaborationMemberActor ! PublishMemberAddedMessage(query.user.user, CollaborationMessage(user=query.userID,s.collaboration.get))
+        case _: InsertUserMessage => getCollaborarionsActor! InsertUserMessage(query.user, query.collaborationID, query.userID)
           notificationActor ! PublishNotificationMessage(query.collaborationID, UpdateMessage(target = UpdateMessageTarget.MEMBER,
                                                                                               messageType = getUpdateTypeFromQueryMessage(query),
                                                                                               user = query.userID,

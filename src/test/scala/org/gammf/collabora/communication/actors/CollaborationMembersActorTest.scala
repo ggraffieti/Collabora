@@ -34,7 +34,7 @@ class CollaborationMembersActorTest extends TestKit (ActorSystem("CollaboraServe
 
   override def beforeAll(): Unit = {
       fakeReceiver("collaboration","maffone","localhost")
-      fakeReceiver("notifications","59806a4af27da3fcfe0ac0ca","localhost")
+      fakeReceiver("notifications","123456788698540008900000","localhost")
   }
 
   override def afterAll(): Unit = {
@@ -76,7 +76,7 @@ class CollaborationMembersActorTest extends TestKit (ActorSystem("CollaboraServe
     }
 
     "send collaboration to user that have just added and a notification to all the old member of collaboration" in {
-      val message = "{\"messageType\": \"CREATION\",\"target\" : \"MEMBER\",\"user\" : \"maffone\",\"member\": {\"user\": \"maffone\",\"right\": \"WRITE\"}}"
+      val message = "{\"messageType\": \"CREATION\",\"target\" : \"MEMBER\",\"user\" : \"maffone\",\"member\": {\"user\": \"maffone\",\"right\": \"WRITE\"},\"collaborationId\":\"123456788698540008900000\"}"
       notificationActor ! StartMessage
       collaborationMember ! StartMessage
       updatesReceiver ! StartMessage

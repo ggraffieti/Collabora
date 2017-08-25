@@ -6,7 +6,7 @@ import org.gammf.collabora.communication.actors._
 import org.gammf.collabora.communication.messages.StartMessage
 import org.gammf.collabora.database.actors.{ConnectionManagerActor, DBMasterActor, DBWorkerNotesActor, PrintActor}
 
-object Test extends App {
+object EntryPoint extends App {
   val system = ActorSystem("CollaboraServer")
 
   val factory = new ConnectionFactory()

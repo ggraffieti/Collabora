@@ -4,7 +4,7 @@ import akka.actor.{ActorRef, ActorSystem, Props}
 import akka.testkit.{DefaultTimeout, ImplicitSender, TestKit}
 import com.newmotion.akka.rabbitmq.{ConnectionActor, ConnectionFactory}
 import com.rabbitmq.client.{ConnectionFactory, _}
-import org.gammf.collabora.Test.{notificationActor, system}
+import org.gammf.collabora.EntryPoint.{notificationActor, system}
 import org.gammf.collabora.communication.Utils.CommunicationType
 import org.gammf.collabora.communication.messages._
 import org.gammf.collabora.database.actors.{ConnectionManagerActor, DBMasterActor}
@@ -77,7 +77,7 @@ class NotificationsSenderActorTest extends TestKit (ActorSystem("CollaboraServer
     }
 
     "notify clients when there are updates on db" in {
-      val message = "{\"messageType\": \"CREATION\",\"collaborationId\":\"59806a4af27da3fcfe0ac0ca\",\"target\" : \"NOTE\",\"user\" : \"maffone\",\"note\": {\"content\" : \"c'ho un nervoso che ti ciacherei la testa\",\"expiration\" : \"2017-08-07T06:01:17.171Z\",\"location\" : { \"latitude\" : 546, \"longitude\" : 324 },\"previousNotes\" : [ \"5980710df27da3fcfe0ac88e\", \"5980710df27da3fcfe0ac88f\" ],\"state\" : { \"definition\" : \"done\", \"responsible\" : \"maffone\"}}}"
+      val message = "{\"messageType\": \"CREATION\",\"collaborationId\":\"59806a4af27da3fcfe0ac0ca\",\"target\" : \"NOTE\",\"user\" : \"maffone\",\"note\": {\"content\" : \"c'ho un nervoso che ti ciacherei la testa\",\"expiration\" : \"2017-08-07T08:01:17.171+02:00\",\"location\" : { \"latitude\" : 546, \"longitude\" : 324 },\"previousNotes\" : [ \"5980710df27da3fcfe0ac88e\", \"5980710df27da3fcfe0ac88f\" ],\"state\" : { \"definition\" : \"done\", \"responsible\" : \"maffone\"}}}"
       updatesReceiver ! StartMessage
       notificationActor ! StartMessage
       updatesReceiver ! ClientUpdateMessage(message)

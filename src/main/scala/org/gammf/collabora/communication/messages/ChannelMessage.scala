@@ -10,7 +10,7 @@ import com.newmotion.akka.rabbitmq.Channel
 /**
   * Simple trait that represents a message about a rabbitMQ channel.
   */
-trait ChannelMessage extends Message
+sealed trait ChannelMessage extends Message
 
 /**
   * Represents a subscribing channel building request.

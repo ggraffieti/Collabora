@@ -6,7 +6,7 @@ import play.api.libs.json.JsValue
 /**
   * Simple trait that represent a message about the communication.
   */
-trait CommunicationMessage extends Message
+sealed trait CommunicationMessage extends Message
 
 /**
   * Contains the update message sent by a client.

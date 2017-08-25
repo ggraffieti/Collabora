@@ -10,7 +10,7 @@ import play.api.libs.json.JsValue
 /**
   * Simple trait that represents a message about the publish/subscribe communication.
   */
-trait ActionMessage extends Message
+sealed trait ActionMessage extends Message
 
 /**
   * Contains the information needed to make a subscription on the provided queue.

@@ -5,7 +5,7 @@ import org.gammf.collabora.communication.Utils.CommunicationType
 /**
   * Simple trait that represents a message about a rabbitMQ naming issue.
   */
-trait NamingMessage extends Message
+sealed trait NamingMessage extends Message
 
 /**
   * Represents a request for retrieve the rabbitMQ terminology names about a certain communication.

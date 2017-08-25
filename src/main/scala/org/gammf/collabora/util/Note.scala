@@ -105,7 +105,7 @@ object Note {
         "id" -> { if (note.id.isDefined) BSONObjectID.parse(note.id.get).get else BSONObjectID.generate() },
         "content" -> note.content,
         "state" -> note.state,
-        { if (note.expiration.isDefined) "expiration" -> note.expiration.get.toDate else BSONDocument() },
+        { if (note.expiration.isDefined) "expiration" -> note.expiration.get else BSONDocument() },
         { if (note.previousNotes.isDefined) "previousNotes" -> BSONArray(note.previousNotes.get.map(e => BSONObjectID.parse(e).get)) else BSONDocument()  },
         { if (note.location.isDefined) "location" -> note.location.get else BSONDocument() },
         { if (note.module.isDefined) "module" -> BSONObjectID.parse(note.module.get).get else BSONDocument() }

@@ -7,6 +7,10 @@ services:
   - mongodb
   - rabbitmq
 
+before_install:
+  - export TZ=Europe/Rome
+  - date
+
 before_script:
   - mongorestore --drop -d collabora ./MongoDBBackup/collabora
 

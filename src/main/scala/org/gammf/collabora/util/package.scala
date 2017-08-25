@@ -11,7 +11,7 @@ import reactivemongo.bson.{BSONDateTime, BSONHandler}
 package object util {
   private val jodaDateReads = Reads[DateTime](js =>
     js.validate[String].map[DateTime](dtString =>
-      DateTime.parse(dtString, DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZ"))
+      DateTime.parse(dtString, DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZZ"))
     )
   )
   implicit val dateReads: Reads[DateTime] = jodaDateReads

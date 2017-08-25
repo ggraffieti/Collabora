@@ -6,6 +6,7 @@ import com.newmotion.akka.rabbitmq.{ConnectionActor, ConnectionFactory}
 import com.rabbitmq.client._
 import org.gammf.collabora.communication.Utils.CommunicationType
 import org.gammf.collabora.communication.messages._
+import org.gammf.collabora.database.actors.{ConnectionManagerActor, DBMasterActor}
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
 import play.api.libs.json.{JsObject, JsString, JsValue, Json}
 
@@ -26,36 +27,14 @@ class CollaborationMembersActorTest extends TestKit (ActorSystem("CollaboraServe
   val publisher: ActorRef = system.actorOf(Props[PublisherActor], "publisher")
   val collaborationMember: ActorRef = system.actorOf(Props(
     new CollaborationMembersActor(connection, naming, channelCreator, publisher)), "collaboration-members")
+  val notificationActor:ActorRef = system.actorOf(Props(new NotificationsSenderActor(connection, naming, channelCreator, publisher)))
+  val dbMasterActor:ActorRef = system.actorOf(Props.create(classOf[DBMasterActor], system, notificationActor,collaborationMember))
+  val subscriber:ActorRef = system.actorOf(Props[SubscriberActor], "subscriber")
+  val updatesReceiver :ActorRef= system.actorOf(Props(
+    new UpdatesReceiverActor(connection, naming, channelCreator, subscriber, dbMasterActor)), "updates-receiver")
 
   var msg: String = ""
-  val message : JsValue = Json.parse("""
-  {
-      "user": "manuelperuzzi",
-      "collaboration": {
-        "id": "arandomidofarandomcollaboration",
-        "name": "random-collaboration",
-        "collaborationType": "group",
-        "users": [
-          {
-            "username": "manuelperuzzi",
-            "email": "manuel.peruzzi@studio.unibo.it",
-            "name": "Manuel",
-            "surname": "Peruzzi",
-            "right": "admin"
-          }
-        ],
-        "notes": [
-          {
-            "id": "arandomidofarandomnote",
-            "content": "some content",
-            "state": {
-              "definition": "doing",
-              "username": "manuelperuzzi"
-            }
-          }
-        ]
-      }
-  }""")
+
 
   override def beforeAll(): Unit = {
       val factory = new ConnectionFactory
@@ -68,7 +47,6 @@ class CollaborationMembersActorTest extends TestKit (ActorSystem("CollaboraServe
       val consumer = new DefaultConsumer(channel) {
         override def handleDelivery(consumerTag: String, envelope: Envelope, properties: AMQP.BasicProperties, body: Array[Byte]): Unit = {
           msg = new String(body, "UTF-8")
-          //System.out.println(" [x] Received '" + msg + "'")
         }
       }
       channel.basicConsume(queueName, true, consumer)
@@ -77,6 +55,11 @@ class CollaborationMembersActorTest extends TestKit (ActorSystem("CollaboraServe
   override def afterAll(): Unit = {
     TestKit.shutdownActorSystem(system)
   }
+
+  override implicit val patienceConfig: PatienceConfig = PatienceConfig(
+    timeout = scaled(2 seconds),
+    interval = scaled(100 millis)
+  )
 
   "A CollaborationMember actor" should {
 
@@ -94,25 +77,32 @@ class CollaborationMembersActorTest extends TestKit (ActorSystem("CollaboraServe
       }
     }
 
-    "sends all the information needed by a user that has just been added to a collaboration" in {
-      collaborationMember ! PublishMemberAddedMessage("maffone", message)
+    "sends all the information needed by a user that has just created a collaboration" in {
+      val message = "{\"messageType\": \"CREATION\",\"target\" : \"COLLABORATION\",\"user\" : \"maffone\",\"collaboration\": {\"name\": \"provatest\",\"collaborationType\": \"GROUP\",\"users\":[{ \"user\":\"maffone\",\"right\":\"ADMIN\"}]}}"
+      updatesReceiver ! StartMessage
+      notificationActor ! StartMessage
       collaborationMember ! StartMessage
-
-    }
-
-    "check message sended and recived is the same" in {
+      updatesReceiver ! ClientUpdateMessage(message)
       eventually{
         msg should not be ""
       }
+      System.out.println(msg)
+      assert(msg.startsWith("{\"user\":\"maffone\",\"collaboration\")"))
+    }
+
+    "check message sended and recived is the same" in {
+      /*eventually{
+        msg should not be ""
+      }
       assert(msg.equals(message.toString()))
-      msg = ""
+      msg = ""*/
     }
 
     "don't recive messages if user is not part of the collaboration" in {
-      collaborationMember ! PublishMemberAddedMessage("peru", message)
+      /*collaborationMember ! PublishMemberAddedMessage("peru", message)
       eventually{
         msg should be ("")
-      }
+      }*/
     }
 
 

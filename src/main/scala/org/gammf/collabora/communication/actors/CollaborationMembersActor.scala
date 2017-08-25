@@ -34,7 +34,7 @@ class CollaborationMembersActor(connection: ActorRef, naming: ActorRef, channelC
     case PublishMemberAddedMessage(username, message) =>
       pubChannel match {
         case Some(channel) =>
-          publisher ! PublishMessage(channel, pubExchange.get, Some(username), message)
+          publisher ! PublishMessage(channel, pubExchange.get, Some(username), Json.toJson(message))
         case _ => stash()
       }
 
@@ -85,8 +85,8 @@ object UseCollaborationMembersActor extends App {
       }
   }""")
 
-  collaborationMember ! PublishMemberAddedMessage("maffone", message)
+  //collaborationMember ! PublishMemberAddedMessage("maffone", message)
 
-  Thread.sleep(1000)
-  collaborationMember ! StartMessage
+  //Thread.sleep(1000)
+  //collaborationMember ! StartMessage
 }

@@ -28,3 +28,13 @@ dependencies {
     testCompile group: 'com.typesafe.akka' , name: 'akka-testkit_2.12' , version: "${akkaTestKitVersion}"
 
 }
+
+task spec(dependsOn: ['testClasses'], type: JavaExec) {
+    main = 'org.scalatest.tools.Runner'
+    args = ['-R', 'build/classes/test', '-o']
+    classpath = sourceSets.test.runtimeClasspath
+}
+
+testClasses.doLast {
+    tasks.spec.execute()
+}

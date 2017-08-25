@@ -16,10 +16,6 @@ import org.scalatest.concurrent.Eventually
 
 class CollaborationMembersActorTest extends TestKit (ActorSystem("CollaboraServer")) with WordSpecLike with Eventually with DefaultTimeout with Matchers with BeforeAndAfterAll with ImplicitSender {
 
-  private val EXCHANGE_NAME = "collaborations"
-  private val ROUTING_KEY = "maffone"
-  private val BROKER_HOST = "localhost"
-
   val factory = new ConnectionFactory()
   val connection:ActorRef = system.actorOf(ConnectionActor.props(factory), "rabbitmq")
   val naming: ActorRef = system.actorOf(Props[RabbitMQNamingActor], "naming")
@@ -37,19 +33,8 @@ class CollaborationMembersActorTest extends TestKit (ActorSystem("CollaboraServe
 
 
   override def beforeAll(): Unit = {
-      val factory = new ConnectionFactory
-      factory.setHost(BROKER_HOST)
-      val connection = factory.newConnection
-      val channel = connection.createChannel
-      channel.exchangeDeclare(EXCHANGE_NAME, BuiltinExchangeType.DIRECT, true)
-      val queueName = channel.queueDeclare.getQueue
-      channel.queueBind(queueName, EXCHANGE_NAME, ROUTING_KEY)
-      val consumer = new DefaultConsumer(channel) {
-        override def handleDelivery(consumerTag: String, envelope: Envelope, properties: AMQP.BasicProperties, body: Array[Byte]): Unit = {
-          msg = new String(body, "UTF-8")
-        }
-      }
-      channel.basicConsume(queueName, true, consumer)
+      fakeReceiver("collaboration","maffone","localhost")
+      fakeReceiver("notifications","59806a4af27da3fcfe0ac0ca","localhost")
   }
 
   override def afterAll(): Unit = {
@@ -78,7 +63,7 @@ class CollaborationMembersActorTest extends TestKit (ActorSystem("CollaboraServe
     }
 
     "sends all the information needed by a user that has just created a collaboration" in {
-      val message = "{\"messageType\": \"CREATION\",\"target\" : \"COLLABORATION\",\"user\" : \"maffone\",\"collaboration\": {\"name\": \"provatest\",\"collaborationType\": \"GROUP\",\"users\":[{ \"user\":\"maffone\",\"right\":\"ADMIN\"}]}}"
+      /*val message = "{\"messageType\": \"CREATION\",\"target\" : \"COLLABORATION\",\"user\" : \"maffone\",\"collaboration\": {\"name\": \"provatest\",\"collaborationType\": \"GROUP\",\"users\":[{ \"user\":\"maffone\",\"right\":\"ADMIN\"}]}}"
       updatesReceiver ! StartMessage
       notificationActor ! StartMessage
       collaborationMember ! StartMessage
@@ -87,10 +72,20 @@ class CollaborationMembersActorTest extends TestKit (ActorSystem("CollaboraServe
         msg should not be ""
       }
       System.out.println(msg)
-      assert(msg.startsWith("{\"user\":\"maffone\",\"collaboration\")"))
+      assert(msg.startsWith("{\"user\":\"maffone\",\"collaboration\")"))*/
     }
 
-    "check message sended and recived is the same" in {
+    "send collaboration to user that have just added and a notification to all the old member of collaboration" in {
+      val message = "{\"messageType\": \"CREATION\",\"target\" : \"MEMBER\",\"user\" : \"maffone\",\"member\": {\"user\": \"maffone\",\"right\": \"WRITE\"}}"
+      notificationActor ! StartMessage
+      collaborationMember ! StartMessage
+      updatesReceiver ! StartMessage
+      updatesReceiver ! ClientUpdateMessage(message)
+      eventually{
+        msg should not be ""
+      }
+      //System.out.println(msg)
+      //assert(msg.startsWith("{\"user\":\"maffone\",\"collaboration\")"))*/
       /*eventually{
         msg should not be ""
       }
@@ -109,6 +104,25 @@ class CollaborationMembersActorTest extends TestKit (ActorSystem("CollaboraServe
 
 
   }
+
+  def fakeReceiver(exchangeName:String, routingKey:String, brokerHost:String):Unit = {
+    val factory = new ConnectionFactory
+    factory.setHost(brokerHost)
+    val connection = factory.newConnection
+    val channel = connection.createChannel
+    channel.exchangeDeclare(exchangeName, BuiltinExchangeType.DIRECT, true)
+    val queueName = channel.queueDeclare.getQueue
+    channel.queueBind(queueName, exchangeName, routingKey)
+    val consumer = new DefaultConsumer(channel) {
+      override def handleDelivery(consumerTag: String, envelope: Envelope, properties: AMQP.BasicProperties, body: Array[Byte]): Unit = {
+        msg = new String(body, "UTF-8")
+        System.out.println(exchangeName+ " "+ msg)
+      }
+    }
+    channel.basicConsume(queueName, true, consumer)
+  }
+
+
 
 
 }

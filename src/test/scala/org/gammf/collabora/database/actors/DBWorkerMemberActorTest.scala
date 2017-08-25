@@ -36,7 +36,7 @@ class DBWorkerMemberActorTest extends TestKit (ActorSystem("CollaboraServer")) w
   "A DBWorkerMember actor" should {
     "insert new user in a collaboration correctly in the db" in {
       within(3 second) {
-        usersActor ! InsertUserMessage(user, "59806a4af27da3fcfe0ac0ca", "maffone")
+        usersActor ! InsertUserMessage(user, "59806a4af27da3fcfe0ac0ca", "maffone",None)
         expectMsgType[QueryOkMessage]
       }
     }

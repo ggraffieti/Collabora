@@ -21,9 +21,9 @@ class DBWorkerNotesActorTest extends TestKit (ActorSystem("CollaboraServer")) wi
   val dbMasterActor:ActorRef = system.actorOf(Props.create(classOf[DBMasterActor], system, notificationActor))
   val connectionManagerActor: ActorRef =  system.actorOf(Props[ConnectionManagerActor])
   val notesActor:ActorRef = system.actorOf(Props.create(classOf[DBWorkerNotesActor], connectionManagerActor))
-  val moduleId:String = "123456788354670000000000"
+  val noteId:String = "123456788354670000000000"
 
-  val notetmp:Note = SimpleNote(Option(moduleId), "prova test", None,
+  val notetmp:Note = SimpleNote(Option(noteId), "prova test", None,
     None, None, new NoteState("done",None), None)
 
   override def beforeAll(): Unit = {

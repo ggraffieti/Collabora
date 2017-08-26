@@ -135,34 +135,15 @@ object Collaboration {
 
   implicit object CollaborationToBSON extends BSONDocumentWriter[Collaboration] {
     def write(collaboration: Collaboration): BSONDocument = {
-      var newCollaboration = BSONDocument()
-      if (collaboration.id.isDefined) newCollaboration = newCollaboration.merge("_id" -> BSONObjectID.parse(collaboration.id.get).get)
-      else newCollaboration = newCollaboration.merge("_id" -> BSONObjectID.generate())
-      newCollaboration = newCollaboration.merge(BSONDocument("name" -> collaboration.name))
-      newCollaboration = newCollaboration.merge(BSONDocument("collaborationType" -> collaboration.collaborationType.toString))
-
-      if (collaboration.users.isDefined) {
-        val arr = BSONArray(collaboration.users.get.map(e => BSON.write(e)))
-        newCollaboration = newCollaboration.merge(BSONDocument("users" -> arr))
-      }
-      if (collaboration.modules.isDefined) {
-        val arr = BSONArray(collaboration.modules.get)
-        newCollaboration = newCollaboration.merge(BSONDocument("modules" -> arr))
-      }
-      if (collaboration.notes.isDefined) {
-        val arr = BSONArray(collaboration.notes.get)
-        newCollaboration = newCollaboration.merge(BSONDocument("notes" -> arr))
-      }
-      newCollaboration
+      BSONDocument(
+        "_id" -> { if (collaboration.id.isDefined) BSONObjectID.parse(collaboration.id.get).get else BSONObjectID.generate() },
+        "name" -> collaboration.name,
+        "collaborationType" -> collaboration.collaborationType.toString,
+        { if (collaboration.users.isDefined) "users" -> BSONArray(collaboration.users.get.map(e => BSON.write(e))) else BSONDocument() },
+        { if (collaboration.modules.isDefined) "modules" -> BSONArray(collaboration.modules.get) else BSONDocument() },
+        { if (collaboration.notes.isDefined) "notes" -> BSONArray(collaboration.notes.get) else BSONDocument() },
+      )
     }
   }
-}
-
-object CollaborationUserTest extends App {
-  val user = CollaborationUser("peru", CollaborationRight.ADMIN)
-  val json = Json.toJson(user)
-
-  println("Json format: " + json)
-  println("Object format: " + json.as[CollaborationUser])
 }
 

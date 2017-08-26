@@ -3,9 +3,7 @@ package org.gammf.collabora.database.actors
 import akka.actor.{ActorRef, ActorSystem, Props}
 import akka.testkit.{ImplicitSender, TestKit}
 import com.newmotion.akka.rabbitmq.{ConnectionActor, ConnectionFactory}
-import org.gammf.collabora.Test._
 import org.gammf.collabora.communication.actors._
-import org.gammf.collabora.communication.messages.{ClientUpdateMessage, StartMessage}
 import org.gammf.collabora.database.messages._
 import org.gammf.collabora.util.{Collaboration, CollaborationRight, CollaborationType, CollaborationUser, Location, Module, NoteState, SimpleCollaboration, SimpleModule, SimpleNote}
 import org.joda.time.DateTime

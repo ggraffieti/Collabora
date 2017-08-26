@@ -141,7 +141,7 @@ object Collaboration {
         "collaborationType" -> collaboration.collaborationType.toString,
         { if (collaboration.users.isDefined) "users" -> BSONArray(collaboration.users.get.map(e => BSON.write(e))) else BSONDocument() },
         { if (collaboration.modules.isDefined) "modules" -> BSONArray(collaboration.modules.get) else BSONDocument() },
-        { if (collaboration.notes.isDefined) "notes" -> BSONArray(collaboration.notes.get) else BSONDocument() },
+        { if (collaboration.notes.isDefined) "notes" -> BSONArray(collaboration.notes.get.map(n => BSON.write(n))) else BSONDocument() },
       )
     }
   }

@@ -1,6 +1,6 @@
 package org.gammf.collabora.communication.messages
 
-import org.gammf.collabora.util.UpdateMessage
+import org.gammf.collabora.util.{CollaborationMessage, UpdateMessage}
 import play.api.libs.json.JsValue
 
 /**
@@ -27,6 +27,6 @@ case class PublishNotificationMessage(collaborationID: String, message: UpdateMe
   * @param username the identifier of the user to which the message is addressed.
   * @param message the text of the message to be published in json format.
   */
-case class PublishMemberAddedMessage(username: String, message: JsValue)
+case class PublishMemberAddedMessage(username: String, message: CollaborationMessage)
   extends CommunicationMessage
 

@@ -21,7 +21,7 @@ class DBWorkerGetCollaborationActor(connectionActor: ActorRef, collaborationActo
         case Success(collaborations) =>
           val selector = BSONDocument("_id" -> BSONObjectID.parse(message.collaborationID).get)
           collaborations.find(selector).one onComplete {
-            case Success(s) => println(s.get.as[Collaboration]) ; collaborationActor ! PublishMemberAddedMessage(message.user.user,CollaborationMessage(message.userID,s.get.as[Collaboration]))
+            case Success(s) => collaborationActor ! PublishMemberAddedMessage(message.user.user,CollaborationMessage(message.userID,s.get.as[Collaboration]))
             case Failure(e) => e.printStackTrace() // TODO better error strategy
           }
         case Failure(e) => e.printStackTrace() // TODO better error strategy

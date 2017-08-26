@@ -6,9 +6,8 @@ import com.newmotion.akka.rabbitmq.{ConnectionActor, ConnectionFactory}
 import com.rabbitmq.client._
 import org.gammf.collabora.communication.Utils.CommunicationType
 import org.gammf.collabora.communication.messages._
-import org.gammf.collabora.database.actors.{ConnectionManagerActor, DBMasterActor}
+import org.gammf.collabora.database.actors.DBMasterActor
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
-import play.api.libs.json.{JsObject, JsString, JsValue, Json}
 
 import scala.concurrent.duration._
 import org.scalatest.concurrent.Eventually
@@ -29,12 +28,12 @@ class CollaborationMembersActorTest extends TestKit (ActorSystem("CollaboraServe
   val updatesReceiver :ActorRef= system.actorOf(Props(
     new UpdatesReceiverActor(connection, naming, channelCreator, subscriber, dbMasterActor)), "updates-receiver")
 
-  var msg: String = ""
+  var msgCollab,msgNotif: String = ""
 
 
   override def beforeAll(): Unit = {
-      fakeReceiver("collaboration","maffone","localhost")
-      fakeReceiver("notifications","123456788698540008900000","localhost")
+      fakeReceiver("collaborations","maffone","localhost")
+      fakeReceiver("notifications","123456788698540008900400","localhost")
   }
 
   override def afterAll(): Unit = {
@@ -62,45 +61,21 @@ class CollaborationMembersActorTest extends TestKit (ActorSystem("CollaboraServe
       }
     }
 
-    "sends all the information needed by a user that has just created a collaboration" in {
-      /*val message = "{\"messageType\": \"CREATION\",\"target\" : \"COLLABORATION\",\"user\" : \"maffone\",\"collaboration\": {\"name\": \"provatest\",\"collaborationType\": \"GROUP\",\"users\":[{ \"user\":\"maffone\",\"right\":\"ADMIN\"}]}}"
-      updatesReceiver ! StartMessage
-      notificationActor ! StartMessage
-      collaborationMember ! StartMessage
-      updatesReceiver ! ClientUpdateMessage(message)
-      eventually{
-        msg should not be ""
-      }
-      System.out.println(msg)
-      assert(msg.startsWith("{\"user\":\"maffone\",\"collaboration\")"))*/
-    }
-
     "send collaboration to user that have just added and a notification to all the old member of collaboration" in {
-      val message = "{\"messageType\": \"CREATION\",\"target\" : \"MEMBER\",\"user\" : \"maffone\",\"member\": {\"user\": \"maffone\",\"right\": \"WRITE\"},\"collaborationId\":\"123456788698540008900000\"}"
+      val message = "{\"messageType\": \"CREATION\",\"target\" : \"MEMBER\",\"user\" : \"maffone\",\"member\": {\"user\": \"maffone\",\"right\": \"WRITE\"},\"collaborationId\":\"123456788698540008900400\"}"
       notificationActor ! StartMessage
       collaborationMember ! StartMessage
       updatesReceiver ! StartMessage
       updatesReceiver ! ClientUpdateMessage(message)
       eventually{
-        msg should not be ""
+        msgNotif should not be ""
+        msgCollab should not be ""
       }
-      //System.out.println(msg)
-      //assert(msg.startsWith("{\"user\":\"maffone\",\"collaboration\")"))*/
-      /*eventually{
-        msg should not be ""
-      }
-      assert(msg.equals(message.toString()))
-      msg = ""*/
+      System.out.println(msgCollab)
+      System.out.println(msgNotif)
+      assert(msgNotif.startsWith("{\"target\":\"MEMBER\",\"messageType\":\"CREATION\",\"user\":\"maffone\",\"member\"")
+            && msgCollab.startsWith("{\"user\":\"maffone\",\"collaboration\":{\"id\":\"123456788698540008900400\",\"name\":\"simplecollaboration\",\"collaborationType\":\"GROUP\""))
     }
-
-    "don't recive messages if user is not part of the collaboration" in {
-      /*collaborationMember ! PublishMemberAddedMessage("peru", message)
-      eventually{
-        msg should be ("")
-      }*/
-    }
-
-
 
 
   }
@@ -115,8 +90,9 @@ class CollaborationMembersActorTest extends TestKit (ActorSystem("CollaboraServe
     channel.queueBind(queueName, exchangeName, routingKey)
     val consumer = new DefaultConsumer(channel) {
       override def handleDelivery(consumerTag: String, envelope: Envelope, properties: AMQP.BasicProperties, body: Array[Byte]): Unit = {
-        msg = new String(body, "UTF-8")
-        System.out.println(exchangeName+ " "+ msg)
+        val tmpMsg = new String(body, "UTF-8")
+        if (tmpMsg.startsWith("{\"target\":\"MEMBER\",\"messageType\":\"CREATION\",\"user\":\"maffone\",\"member\"")) msgNotif = tmpMsg
+        else msgCollab = tmpMsg
       }
     }
     channel.basicConsume(queueName, true, consumer)

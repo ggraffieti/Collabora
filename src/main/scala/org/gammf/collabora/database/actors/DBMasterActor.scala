@@ -89,6 +89,8 @@ class DBMasterActor(val system: ActorSystem, val notificationActor: ActorRef, va
                                                                                                       collaborationId = Some(query.collaborationID)))
       }
     }
+
+    case fail: QueryFailMessage => fail.error.printStackTrace() // TODO error handling
   }
 
   private def getUpdateTypeFromQueryMessage(query: QueryMessage): UpdateMessageType = query match {

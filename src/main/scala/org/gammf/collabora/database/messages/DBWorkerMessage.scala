@@ -14,4 +14,4 @@ case class QueryOkMessage(queryGoneWell: QueryMessage) extends DBWorkerMessage
   * A simple case class representing a message used to tell that a certain operation on the DB failed.
   * @param error the error.
   */
-case class QueryFailMessage(error: Error) extends DBWorkerMessage
+case class QueryFailMessage(error: Exception) extends DBWorkerMessage

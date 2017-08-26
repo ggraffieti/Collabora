@@ -30,7 +30,7 @@ class DBWorkerNotesActor(connectionActor: ActorRef) extends DBWorker(connectionA
           update = BSONDocument("$push" -> BSONDocument("notes" -> bsonNote))
         )
       }).map(_ => QueryOkMessage(InsertNoteMessage(bsonNote.as[Note], message.collaborationID, message.userID)))
-        .recover({ case e: Error =>  QueryFailMessage(e) }) pipeTo sender
+        .recover({ case e: Exception =>  QueryFailMessage(e) }) pipeTo sender
 
     case message: UpdateNoteMessage =>
       getCollaborationsCollection.map(collaborations => {
@@ -42,7 +42,7 @@ class DBWorkerNotesActor(connectionActor: ActorRef) extends DBWorker(connectionA
           update = BSONDocument("$set" -> BSONDocument("notes.$" -> message.note))
         )
       }).map(_ => QueryOkMessage(message))
-        .recover({ case e: Error =>  QueryFailMessage(e) }) pipeTo sender
+        .recover({ case e: Exception =>  QueryFailMessage(e) }) pipeTo sender
 
     case message: DeleteNoteMessage =>
       getCollaborationsCollection.map(collaborations => {
@@ -52,7 +52,7 @@ class DBWorkerNotesActor(connectionActor: ActorRef) extends DBWorker(connectionA
             BSONDocument("id" -> BSONObjectID.parse(message.note.id.get).get)))
         )
       }).map(_ => QueryOkMessage(message))
-        .recover({ case e: Error => QueryFailMessage(e) }) pipeTo sender
+        .recover({ case e: Exception => QueryFailMessage(e) }) pipeTo sender
 
   }
 }

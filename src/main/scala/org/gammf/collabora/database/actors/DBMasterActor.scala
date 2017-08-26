@@ -2,20 +2,21 @@ package org.gammf.collabora.database.actors
 
 import akka.actor.{Actor, ActorRef, ActorSystem, Props}
 import org.gammf.collabora.communication.actors.NotificationsSenderActor
-import org.gammf.collabora.communication.messages.PublishNotificationMessage
+import org.gammf.collabora.communication.messages.{PublishMemberAddedMessage, PublishNotificationMessage}
 import org.gammf.collabora.database.messages._
 import org.gammf.collabora.util.UpdateMessageTarget.UpdateMessageTarget
 import org.gammf.collabora.util.UpdateMessageType.UpdateMessageType
-import org.gammf.collabora.util.{UpdateMessage, UpdateMessageImpl, UpdateMessageTarget, UpdateMessageType}
+import org.gammf.collabora.util.{Collaboration, CollaborationMessage, UpdateMessage, UpdateMessageImpl, UpdateMessageTarget, UpdateMessageType}
 
 /**
   * An actor that coordinate, create and act like a gateway for every request from and to the DB. It also create all the needed actors
   * @param system the actor system.
   */
-class DBMasterActor(val system: ActorSystem, val notificationActor: ActorRef) extends Actor {
+class DBMasterActor(val system: ActorSystem, val notificationActor: ActorRef, val collaborationMemberActor: ActorRef) extends Actor {
 
   private var connectionManagerActor: ActorRef = _
   private var collaborationsActor: ActorRef = _
+  private var getCollaborarionsActor: ActorRef = _
   private var modulesActor: ActorRef = _
   private var notesActor: ActorRef = _
   private var usersActor: ActorRef = _
@@ -25,6 +26,7 @@ class DBMasterActor(val system: ActorSystem, val notificationActor: ActorRef) ex
     connectionManagerActor = system.actorOf(Props[ConnectionManagerActor])
 
     collaborationsActor = system.actorOf(Props.create(classOf[DBWorkerCollaborationsActor], connectionManagerActor))
+    getCollaborarionsActor = system.actorOf(Props.create(classOf[DBWorkerGetCollaborationActor], connectionManagerActor, collaborationMemberActor))
     modulesActor = system.actorOf(Props.create(classOf[DBWorkerModulesActor], connectionManagerActor))
     notesActor = system.actorOf(Props.create(classOf[DBWorkerNotesActor], connectionManagerActor))
     usersActor = system.actorOf(Props.create(classOf[DBWorkerMemberActor], connectionManagerActor))
@@ -59,21 +61,34 @@ class DBMasterActor(val system: ActorSystem, val notificationActor: ActorRef) ex
                                                                                                                          user = query.userID,
                                                                                                                          note = Option(query.note),
                                                                                                                          collaborationId = Option(query.collaborationID)))
-      case query: QueryCollaborationMessage => notificationActor ! PublishNotificationMessage(query.collaboration.id.get, UpdateMessage(target = UpdateMessageTarget.COLLABORATION,
-                                                                                                                                        messageType = getUpdateTypeFromQueryMessage(query),
-                                                                                                                                        user = query.userID,
-                                                                                                                                        collaboration = Option(query.collaboration),
-                                                                                                                                        collaborationId = Option(query.collaboration.id.get)))
+      case query: QueryCollaborationMessage => query match {
+        case _: InsertCollaborationMessage => collaborationMemberActor ! PublishMemberAddedMessage(query.userID, CollaborationMessage(user=query.userID,collaboration = query.collaboration))
+        case _ => notificationActor ! PublishNotificationMessage(query.collaboration.id.get, UpdateMessage(target = UpdateMessageTarget.COLLABORATION,
+                                                                                                            messageType = getUpdateTypeFromQueryMessage(query),
+                                                                                                            user = query.userID,
+                                                                                                            collaboration = Option(query.collaboration),
+                                                                                                            collaborationId = Option(query.collaboration.id.get)))
+      }
       case query: QueryModuleMessage => notificationActor ! PublishNotificationMessage(query.collaborationID, UpdateMessage(target = UpdateMessageTarget.MODULE,
                                                                                                                             messageType = getUpdateTypeFromQueryMessage(query),
                                                                                                                             user = query.userID,
                                                                                                                             module = Option(query.module),
                                                                                                                             collaborationId = Option(query.collaborationID)))
-      case query: QueryUserMessage => notificationActor ! PublishNotificationMessage(query.collaborationID, UpdateMessage(target = UpdateMessageTarget.MEMBER,
-                                                                                                                          messageType = getUpdateTypeFromQueryMessage(query),
-                                                                                                                          user = query.userID,
-                                                                                                                          member = Option(query.user),
-                                                                                                                          collaborationId = Option(query.collaborationID)))
+      case query: QueryUserMessage => query match {
+        case _: InsertUserMessage => getCollaborarionsActor! InsertUserMessage(query.user, query.collaborationID, query.userID)
+          notificationActor ! PublishNotificationMessage(query.collaborationID, UpdateMessage(target = UpdateMessageTarget.MEMBER,
+                                                                                              messageType = getUpdateTypeFromQueryMessage(query),
+                                                                                              user = query.userID,
+                                                                                              member = Option(query.user),
+                                                                                              collaborationId = Option(query.collaborationID)))
+
+        case _ => notificationActor ! PublishNotificationMessage(query.collaborationID, UpdateMessage(target = UpdateMessageTarget.MEMBER,
+                                                                                                      messageType = getUpdateTypeFromQueryMessage(query),
+                                                                                                      user = query.userID,
+                                                                                                      member = Option(query.user),
+                                                                                                      collaborationId = Option(query.collaborationID)))
+      }
+
     }
   }
 

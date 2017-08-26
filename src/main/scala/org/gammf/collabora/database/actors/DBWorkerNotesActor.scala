@@ -24,16 +24,16 @@ class DBWorkerNotesActor(connectionActor: ActorRef) extends DBWorker(connectionA
 
     case message: InsertNoteMessage =>
       val bsonNote: BSONDocument = BSON.write(message.note) // necessary conversion, sets the noteID
-      getCollaborationsCollection.map(collaborations => {
+      getCollaborationsCollection.map(collaborations =>
         collaborations.update(
           selector = BSONDocument("_id" -> BSONObjectID.parse(message.collaborationID).get),
           update = BSONDocument("$push" -> BSONDocument("notes" -> bsonNote))
         )
-      }).map(_ => QueryOkMessage(InsertNoteMessage(bsonNote.as[Note], message.collaborationID, message.userID)))
+      ).map(_ => QueryOkMessage(InsertNoteMessage(bsonNote.as[Note], message.collaborationID, message.userID)))
         .recover({ case e: Exception =>  QueryFailMessage(e) }) pipeTo sender
 
     case message: UpdateNoteMessage =>
-      getCollaborationsCollection.map(collaborations => {
+      getCollaborationsCollection.map(collaborations =>
         collaborations.update(
           selector = BSONDocument(
             "_id" -> BSONObjectID.parse(message.collaborationID).get,
@@ -41,17 +41,17 @@ class DBWorkerNotesActor(connectionActor: ActorRef) extends DBWorker(connectionA
           ),
           update = BSONDocument("$set" -> BSONDocument("notes.$" -> message.note))
         )
-      }).map(_ => QueryOkMessage(message))
+      ).map(_ => QueryOkMessage(message))
         .recover({ case e: Exception =>  QueryFailMessage(e) }) pipeTo sender
 
     case message: DeleteNoteMessage =>
-      getCollaborationsCollection.map(collaborations => {
+      getCollaborationsCollection.map(collaborations =>
         collaborations.update(
           selector = BSONDocument("_id" -> BSONObjectID.parse(message.collaborationID).get),
           update = BSONDocument("$pull" -> BSONDocument("notes" ->
             BSONDocument("id" -> BSONObjectID.parse(message.note.id.get).get)))
         )
-      }).map(_ => QueryOkMessage(message))
+      ).map(_ => QueryOkMessage(message))
         .recover({ case e: Exception => QueryFailMessage(e) }) pipeTo sender
 
   }

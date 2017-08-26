@@ -19,13 +19,7 @@ abstract class DBWorker(val connectionActor: ActorRef) extends Actor {
 
   override def preStart(): Unit = connectionActor ! new AskConnectionMessage()
 
-  protected def getCollaborationsCollection: Future[BSONCollection] = {
-    if (connection.isDefined)
-      connection.get.database("collabora", FailoverStrategy())
-        .map(_.collection("collaboration", FailoverStrategy()))
-    else
-      throw new Error("Collection collaboration not found") // TODO more specific error
-  }
-
-
+  protected def getCollaborationsCollection: Future[BSONCollection] =
+    connection.get.database("collabora", FailoverStrategy())
+      .map(_.collection("collaboration", FailoverStrategy()))
 }

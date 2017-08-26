@@ -6,7 +6,6 @@ import org.gammf.collabora.database.messages._
 import org.gammf.collabora.util.Collaboration
 import reactivemongo.bson.{BSON, BSONDocument, BSONObjectID}
 
-import scala.util.{Failure, Success}
 import scala.concurrent.ExecutionContext.Implicits.global
 
 /**

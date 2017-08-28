@@ -12,7 +12,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
   * A worker that performs query on collaborations.
   * @param connectionActor the actor that mantains the connection with the DB.
   */
-class DBWorkerCollaborationsActor(connectionActor: ActorRef) extends DBWorker(connectionActor) with Stash {
+class DBWorkerCollaborationsActor(connectionActor: ActorRef) extends CollaborationsDBWorker(connectionActor) with Stash {
 
   override def receive: Receive = {
 
@@ -24,25 +24,23 @@ class DBWorkerCollaborationsActor(connectionActor: ActorRef) extends DBWorker(co
 
     case message: InsertCollaborationMessage =>
       val bsonCollaboration: BSONDocument = BSON.write(message.collaboration) // necessary conversion, sets the collaborationID
-      getCollaborationsCollection.map(collaborations =>
-        collaborations.insert(bsonCollaboration)
-      ).map(_ => QueryOkMessage(InsertCollaborationMessage(bsonCollaboration.as[Collaboration], message.userID)))
-        .recover({ case e: Exception => QueryFailMessage(e) }) pipeTo sender
+      insert(
+        document = bsonCollaboration,
+        okMessage = QueryOkMessage(InsertCollaborationMessage(bsonCollaboration.as[Collaboration], message.userID))
+      ) pipeTo sender
 
     case message: UpdateCollaborationMessage =>
-      getCollaborationsCollection.map(collaborations =>
-        collaborations.update(
-          selector = BSONDocument("_id" -> BSONObjectID.parse(message.collaboration.id.get).get),
-          update = BSONDocument("$set" -> BSONDocument("name" -> message.collaboration.name))
-        )
-      ).map(_ => QueryOkMessage(message))
-        .recover({ case e: Exception => QueryFailMessage(e) }) pipeTo sender
+      update(
+        selector = BSONDocument("_id" -> BSONObjectID.parse(message.collaboration.id.get).get),
+        query = BSONDocument("$set" -> BSONDocument("name" -> message.collaboration.name)),
+        okMessage = QueryOkMessage(message)
+      ) pipeTo sender
 
     case message: DeleteCollaborationMessage =>
-      getCollaborationsCollection.map(collaborations =>
-        collaborations.remove(BSONDocument("_id" -> BSONObjectID.parse(message.collaboration.id.get).get))
-      ).map(_ => QueryOkMessage(message))
-        .recover({ case e: Exception => QueryFailMessage(e) }) pipeTo sender
+      delete(
+        selector = BSONDocument("_id" -> BSONObjectID.parse(message.collaboration.id.get).get),
+        okMessage = QueryOkMessage(message)
+      ) pipeTo sender
 
   }
 }

@@ -5,10 +5,14 @@ import com.newmotion.akka.rabbitmq.{ConnectionActor, ConnectionFactory}
 import org.gammf.collabora.communication.actors._
 import org.gammf.collabora.communication.messages.StartMessage
 import org.gammf.collabora.database.actors.{ConnectionManagerActor, DBMasterActor, DBWorkerNotesActor, PrintActor}
+import us.raudi.pushraven.Pushraven
 
 object EntryPoint extends App {
-  val system = ActorSystem("CollaboraServer")
 
+  private val AUTHORIZATION = "AAAAJtSw2Gk:APA91bEXmB5sRFqSnuYIP3qofHQ0RfHrAzTllJ0vYWtHXKZsMdbuXmUKbr16BVZsMO0cMmm_BWE8oLzkFcyuMr_V6O6ilqvLu7TrOgirVES51Ux9PsKfJ17iOMvTF_WtwqEURqMGBbLf"
+
+  val system = ActorSystem("CollaboraServer")
+  Pushraven.setKey(AUTHORIZATION)
   val factory = new ConnectionFactory()
 
   val rabbitConnection = system.actorOf(ConnectionActor.props(factory), "rabbitmq")
@@ -29,5 +33,6 @@ object EntryPoint extends App {
 
   updatesReceiver ! StartMessage
   notificationActor ! StartMessage
+  collaborationActor ! StartMessage
 
 }

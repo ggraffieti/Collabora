@@ -57,3 +57,13 @@ trait QueryUserMessage extends QueryMessage {
 case class InsertUserMessage(user: CollaborationUser, collaborationID: String, userID: String) extends QueryUserMessage
 case class UpdateUserMessage(user: CollaborationUser, collaborationID: String, userID: String) extends QueryUserMessage
 case class DeleteUserMessage(user: CollaborationUser, collaborationID: String, userID: String) extends QueryUserMessage
+
+/**
+  * A trait for query used to retrive collaboration. A message contains the collaboration id
+  */
+trait QueryRetriveCollaboration extends QueryMessage {
+  def collaborationID: String
+}
+
+case class GetCollaboration(collaborationID: String) extends  QueryRetriveCollaboration
+

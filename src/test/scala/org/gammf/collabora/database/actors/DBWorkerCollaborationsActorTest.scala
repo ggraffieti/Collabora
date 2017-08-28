@@ -26,12 +26,15 @@ class DBWorkerCollaborationsActorTest extends TestKit (ActorSystem("CollaboraSer
   val collaborationsActor:ActorRef = system.actorOf(Props.create(classOf[DBWorkerCollaborationsActor], connectionManagerActor))
   val collabID:String = "123456788698540008123400"
 
-  val collab:Collaboration = SimpleCollaboration(Option(collabID),"simplecollaboration",
-    CollaborationType.GROUP,
-    Option(List(CollaborationUser("fone", CollaborationRight.ADMIN), CollaborationUser("peru", CollaborationRight.ADMIN))),
-    Option.empty,
-    Option(List(SimpleNote(Option("prova"),"questo è il contenuto",Option(new DateTime()),Option(Location(23.32,23.42)),Option.empty,NoteState("doing", Option("fone")),Option.empty),
-      SimpleNote(Option("prova2"),"questo è il contenuto2",Option(new DateTime()),Option(Location(233.32,233.42)),Option.empty,NoteState("done", Option("peru")),Option.empty))))
+  val collab:Collaboration = SimpleCollaboration(
+    id = Some(collabID),
+    name = "simplecollaboration",
+    collaborationType = CollaborationType.GROUP,
+    users = Some(List(CollaborationUser("fone", CollaborationRight.ADMIN), CollaborationUser("peru", CollaborationRight.ADMIN))),
+    modules = Option.empty,
+    notes = Some(List(SimpleNote(None, "questo è il contenuto",Some(new DateTime()),Some(Location(23.32,23.42)),Option.empty,NoteState("doing", Some("fone")),None),
+      SimpleNote(None,"questo è il contenuto2",Some(new DateTime()),Some(Location(233.32,233.42)),None,NoteState("done", Option("peru")),None)))
+  )
 
   override def beforeAll(): Unit = {
 
@@ -44,27 +47,24 @@ class DBWorkerCollaborationsActorTest extends TestKit (ActorSystem("CollaboraSer
   "A DBWorkerCollaborations actor" should {
     "insert new collaboration in the db" in {
 
-      within(3 second) {
+      within(5 second) {
         collaborationsActor ! InsertCollaborationMessage(collab, "maffone")
         expectMsgType[QueryOkMessage]
       }
     }
 
     "update a collaboration in the db" in {
-      within(1 second) {
+      within(5 second) {
         collaborationsActor ! UpdateCollaborationMessage(collab, "maffone")
         expectMsgType[QueryOkMessage]
       }
     }
 
     "delete a collaboration in the db" in {
-      within(1 second) {
+      within(5 second) {
         collaborationsActor ! DeleteCollaborationMessage(collab, "maffone")
         expectMsgType[QueryOkMessage]
       }
     }
-
-
-
   }
 }

@@ -2,6 +2,7 @@ package org.gammf.collabora.database.actors
 
 import akka.actor.{Actor, Stash}
 import org.gammf.collabora.database.messages.{AskConnectionMessage, GetConnectionMessage}
+import org.gammf.collabora.database._
 import reactivemongo.api.{MongoConnection, MongoDriver}
 
 import scala.util.{Failure, Success}
@@ -12,7 +13,7 @@ import scala.util.{Failure, Success}
 class ConnectionManagerActor extends Actor with Stash {
 
   private[this] var connection: Option[MongoConnection] = None
-  private[this] val mongoUri = "mongodb://localhost:27017/collabora?authMode=scram-sha1"
+  private[this] val mongoUri = CONNECTION_STRING
 
   override def preStart(): Unit = {
     val driver = MongoDriver()

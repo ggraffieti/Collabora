@@ -23,14 +23,14 @@ class UpdatesReceiverActorTest extends TestKit (ActorSystem("CollaboraServer")) 
   "A UpdatesReceived actor" should {
 
     "start correctly" in {
-      within(500 millis){
+      within(5 seconds){
         naming ! ChannelNamesRequestMessage(CommunicationType.UPDATES)
         expectMsg(ChannelNamesResponseMessage("updates",Some("update.server")))
       }
     }
 
     "create channel correctly" in {
-      within(500 millis){
+      within(5 seconds){
         channelCreator ! SubscribingChannelCreationMessage(connection, "updates", "update.server", None)
         expectMsgType[ChannelCreatedMessage]
       }

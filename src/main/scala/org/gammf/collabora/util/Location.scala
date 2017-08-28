@@ -23,19 +23,21 @@ object Location {
       (JsPath \ "longitude").write[Double]
     )(unlift(Location.unapply))
 
+  import org.gammf.collabora.database._
+
   implicit object BSONtoLocation extends BSONDocumentReader[Location] {
     def read(doc: BSONDocument): Location =
       Location(
-        latitude = doc.getAs[Double]("latitude").get,
-        longitude = doc.getAs[Double]("longitude").get
+        latitude = doc.getAs[Double](LOCATION_LATITUDE).get,
+        longitude = doc.getAs[Double](LOCATION_LONGITUDE).get
       )
   }
 
   implicit object LocationtoBSON extends BSONDocumentWriter[Location] {
     def write(location: Location): BSONDocument = {
       BSONDocument(
-        "latitude" -> location.latitude,
-        "longitude" -> location.longitude
+        LOCATION_LATITUDE -> location.latitude,
+        LOCATION_LONGITUDE -> location.longitude
       )
     }
   }

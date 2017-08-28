@@ -38,21 +38,21 @@ class DBWorkerNotesActorTest extends TestKit (ActorSystem("CollaboraServer")) wi
   "A DBWorkerNotes actor" should {
     "insert new notes correctly in the db" in {
 
-      within(1 second) {
+      within(5 second) {
         notesActor ! InsertNoteMessage(notetmp, "59806a4af27da3fcfe0ac0ca", "maffone")
         expectMsgType[QueryOkMessage]
       }
     }
 
     "update notes correctly" in {
-      within(1 second) {
+      within(5 second) {
         notesActor ! UpdateNoteMessage(notetmp, "59806a4af27da3fcfe0ac0ca", "maffone")
         expectMsgType[QueryOkMessage]
       }
     }
 
     "delete notes correctly" in {
-      within(1 second) {
+      within(5 second) {
         notesActor ! DeleteNoteMessage(notetmp, "59806a4af27da3fcfe0ac0ca", "maffone")
         expectMsgType[QueryOkMessage]
       }

@@ -27,11 +27,13 @@ object CollaborationUser {
       (JsPath \ "right").write[CollaborationRight]
     )(unlift(CollaborationUser.unapply))
 
+  import org.gammf.collabora.database._
+
   implicit object BSONtoCollaborationUser extends BSONDocumentReader[CollaborationUser] {
     def read(doc: BSONDocument): CollaborationUser = {
       CollaborationUser(
-        user = doc.getAs[String]("user").get,
-        right = doc.getAs[String]("right").map(r => CollaborationRight.withName(r)).get
+        user = doc.getAs[String](COLLABORATION_USER_USERNAME).get,
+        right = doc.getAs[String](COLLABORATION_USER_RIGHT).map(r => CollaborationRight.withName(r)).get
       )
     }
   }
@@ -39,8 +41,8 @@ object CollaborationUser {
   implicit object CollaborationUserToBSON extends BSONDocumentWriter[CollaborationUser] {
     def write(user: CollaborationUser): BSONDocument = {
       BSONDocument(
-        "user" -> user.user,
-        "right" -> user.right.toString
+        COLLABORATION_USER_USERNAME -> user.user,
+        COLLABORATION_USER_RIGHT -> user.right.toString
       )
     }
   }

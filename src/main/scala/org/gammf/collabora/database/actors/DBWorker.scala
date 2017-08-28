@@ -1,25 +1,29 @@
 package org.gammf.collabora.database.actors
 
-import akka.actor.{Actor, ActorRef}
-import org.gammf.collabora.database.messages.AskConnectionMessage
-import reactivemongo.api.{FailoverStrategy, MongoConnection}
+import akka.actor.Actor
+import org.gammf.collabora.database.messages.{DBWorkerMessage, QueryFailMessage}
+import reactivemongo.api.MongoConnection
 import reactivemongo.api.collections.bson.BSONCollection
-
-import scala.concurrent.ExecutionContext.Implicits.global
+import reactivemongo.bson.BSONDocument
 
 import scala.concurrent.Future
 
-/**
-  * A DB worker, it ask for a connection at start time and perform queries.
-  * @param connectionActor the actor that mantains the connection with the DB.
-  */
-abstract class DBWorker(val connectionActor: ActorRef) extends Actor {
+trait DBWorker extends Actor {
 
-  protected var connection: Option[MongoConnection] = None
+  private[this] val defaultFailStrategy: PartialFunction[Throwable, DBWorkerMessage] = { case e: Exception => QueryFailMessage(e) }
 
-  override def preStart(): Unit = connectionActor ! new AskConnectionMessage()
 
-  protected def getCollaborationsCollection: Future[BSONCollection] =
-    connection.get.database("collabora", FailoverStrategy())
-      .map(_.collection("collaboration", FailoverStrategy()))
+  protected def connection: Option[MongoConnection]
+  protected def getCollaborationsCollection: Future[BSONCollection]
+  protected def getUsersCollection: Future[BSONCollection]
+  protected def update(selector: BSONDocument,
+             query: BSONDocument,
+             okMessage: DBWorkerMessage,
+             failStrategy: PartialFunction[Throwable, DBWorkerMessage] = defaultFailStrategy): Future[DBWorkerMessage]
+  protected def insert(document: BSONDocument,
+             okMessage: DBWorkerMessage,
+             failStrategy: PartialFunction[Throwable, DBWorkerMessage] = defaultFailStrategy): Future[DBWorkerMessage]
+  protected def delete(selector: BSONDocument,
+             okMessage: DBWorkerMessage,
+             failStrategy: PartialFunction[Throwable, DBWorkerMessage] = defaultFailStrategy): Future[DBWorkerMessage]
 }

@@ -1,6 +1,5 @@
 package org.gammf.collabora.util
 
-import org.gammf.collabora.util.CollaborationRight.CollaborationRight
 import org.gammf.collabora.util.CollaborationType.CollaborationType
 import play.api.libs.json._
 import play.api.libs.functional.syntax._
@@ -26,44 +25,6 @@ trait Collaboration {
       ", modules= " + modules +
       ", notes= " + notes +
     " }"
-  }
-}
-
-/**
-  * Represents a user inside a collaboration.
-  * @param user the username
-  * @param right the right privilege
-  */
-case class CollaborationUser(user: String, right: CollaborationRight)
-
-object CollaborationUser {
-
-  implicit val collaborationUserReads: Reads[CollaborationUser] = (
-    (JsPath \ "user").read[String] and
-      (JsPath \ "right").read[CollaborationRight]
-    )(CollaborationUser.apply _)
-
-  implicit val collaborationUserWrites: Writes[CollaborationUser] = (
-    (JsPath \ "user").write[String] and
-      (JsPath \ "right").write[CollaborationRight]
-    )(unlift(CollaborationUser.unapply))
-
-  implicit object BSONtoCollaborationUser extends BSONDocumentReader[CollaborationUser] {
-    def read(doc: BSONDocument): CollaborationUser = {
-      CollaborationUser(
-        user = doc.getAs[String]("user").get,
-        right = doc.getAs[String]("right").map(r => CollaborationRight.withName(r)).get
-      )
-    }
-  }
-
-  implicit object CollaborationUserToBSON extends BSONDocumentWriter[CollaborationUser] {
-    def write(user: CollaborationUser): BSONDocument = {
-      BSONDocument(
-        "user" -> user.user,
-        "right" -> user.right.toString
-      )
-    }
   }
 }
 

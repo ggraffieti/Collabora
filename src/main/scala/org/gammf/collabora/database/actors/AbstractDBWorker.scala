@@ -2,6 +2,7 @@ package org.gammf.collabora.database.actors
 
 import akka.actor.ActorRef
 import org.gammf.collabora.database.messages.AskConnectionMessage
+import org.gammf.collabora.database._
 import reactivemongo.api.{FailoverStrategy, MongoConnection}
 import reactivemongo.api.collections.bson.BSONCollection
 
@@ -20,11 +21,11 @@ abstract class AbstractDBWorker(val connectionActor: ActorRef) extends DBWorker 
   override def preStart(): Unit = connectionActor ! new AskConnectionMessage()
 
   protected def getCollaborationsCollection: Future[BSONCollection] =
-    connection.get.database("collabora", FailoverStrategy())
-      .map(_.collection("collaboration", FailoverStrategy()))
+    connection.get.database(DB_NAME, FailoverStrategy())
+      .map(_.collection(COLLABORATION_CONNECTION_NAME, FailoverStrategy()))
 
   protected def getUsersCollection: Future[BSONCollection] =
-    connection.get.database("collabora", FailoverStrategy())
-      .map(_.collection("user", FailoverStrategy()))
+    connection.get.database(DB_NAME, FailoverStrategy())
+      .map(_.collection(USER_COLLECTION_NAME, FailoverStrategy()))
 
 }

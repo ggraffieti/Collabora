@@ -3,6 +3,7 @@ package org.gammf.collabora.database.actors
 import akka.actor.{ActorRef, Stash}
 import akka.pattern.pipe
 import org.gammf.collabora.database.messages._
+import org.gammf.collabora.database._
 import org.gammf.collabora.util.Collaboration
 import reactivemongo.bson.{BSON, BSONDocument, BSONObjectID}
 
@@ -31,14 +32,14 @@ class DBWorkerCollaborationsActor(connectionActor: ActorRef) extends Collaborati
 
     case message: UpdateCollaborationMessage =>
       update(
-        selector = BSONDocument("_id" -> BSONObjectID.parse(message.collaboration.id.get).get),
-        query = BSONDocument("$set" -> BSONDocument("name" -> message.collaboration.name)),
+        selector = BSONDocument(COLLABORATION_ID -> BSONObjectID.parse(message.collaboration.id.get).get),
+        query = BSONDocument("$set" -> BSONDocument(COLLABORATION_NAME -> message.collaboration.name)),
         okMessage = QueryOkMessage(message)
       ) pipeTo sender
 
     case message: DeleteCollaborationMessage =>
       delete(
-        selector = BSONDocument("_id" -> BSONObjectID.parse(message.collaboration.id.get).get),
+        selector = BSONDocument(COLLABORATION_ID -> BSONObjectID.parse(message.collaboration.id.get).get),
         okMessage = QueryOkMessage(message)
       ) pipeTo sender
 

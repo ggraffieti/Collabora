@@ -2,6 +2,7 @@ package org.gammf.collabora.database.actors
 
 import akka.actor.{ActorRef, Stash}
 import akka.pattern.pipe
+import org.gammf.collabora.database._
 import org.gammf.collabora.database.messages._
 import org.gammf.collabora.util.Module
 import reactivemongo.bson.{BSON, BSONDocument, BSONObjectID}
@@ -25,25 +26,26 @@ class DBWorkerModulesActor(connectionActor: ActorRef) extends CollaborationsDBWo
     case message: InsertModuleMessage =>
       val bsonModule: BSONDocument = BSON.write(message.module) // necessary conversion, sets the moduleID
       update(
-        selector = BSONDocument("_id" -> BSONObjectID.parse(message.collaborationID).get),
-        query = BSONDocument("$push" -> BSONDocument("modules" -> bsonModule)),
+        selector = BSONDocument(COLLABORATION_ID -> BSONObjectID.parse(message.collaborationID).get),
+        query = BSONDocument("$push" -> BSONDocument(COLLABORATION_MODULES -> bsonModule)),
         okMessage = QueryOkMessage(InsertModuleMessage(bsonModule.as[Module], message.collaborationID, message.userID))
       ) pipeTo sender
 
     case message: UpdateModuleMessage =>
       update(
         selector = BSONDocument(
-          "_id" -> BSONObjectID.parse(message.collaborationID).get,
-          "modules.id" -> BSONObjectID.parse(message.module.id.get).get
+          COLLABORATION_ID -> BSONObjectID.parse(message.collaborationID).get,
+          COLLABORATION_MODULES + "." + MODULE_ID -> BSONObjectID.parse(message.module.id.get).get
         ),
-        query = BSONDocument("$set" -> BSONDocument("modules.$" -> message.module)),
+        query = BSONDocument("$set" -> BSONDocument(COLLABORATION_MODULES + ".$" -> message.module)),
         okMessage = QueryOkMessage(message)
       ) pipeTo sender
 
     case message: DeleteModuleMessage =>
       update(
-        selector = BSONDocument("_id" -> BSONObjectID.parse(message.collaborationID).get),
-        query = BSONDocument("$pull" -> BSONDocument("modules" -> BSONDocument("id" -> BSONObjectID.parse(message.module.id.get).get))),
+        selector = BSONDocument(COLLABORATION_ID -> BSONObjectID.parse(message.collaborationID).get),
+        query = BSONDocument("$pull" -> BSONDocument(COLLABORATION_MODULES ->
+          BSONDocument(MODULE_ID -> BSONObjectID.parse(message.module.id.get).get))),
         okMessage = QueryOkMessage(message)
       ) pipeTo sender
 

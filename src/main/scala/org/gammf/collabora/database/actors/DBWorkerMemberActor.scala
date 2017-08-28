@@ -2,6 +2,7 @@ package org.gammf.collabora.database.actors
 
 import akka.actor.{ActorRef, Stash}
 import akka.pattern.pipe
+import org.gammf.collabora.database._
 import org.gammf.collabora.database.messages._
 import reactivemongo.bson.{BSONDocument, BSONObjectID}
 
@@ -23,25 +24,25 @@ class DBWorkerMemberActor(connectionActor: ActorRef) extends CollaborationsDBWor
 
     case message: InsertUserMessage =>
       update(
-        selector = BSONDocument("_id" -> BSONObjectID.parse(message.collaborationID).get),
-        query = BSONDocument("$push" -> BSONDocument("users" -> message.user)),
+        selector = BSONDocument(COLLABORATION_ID -> BSONObjectID.parse(message.collaborationID).get),
+        query = BSONDocument("$push" -> BSONDocument(COLLABORATION_USERS -> message.user)),
         okMessage = QueryOkMessage(message)
       ) pipeTo sender
 
     case message: UpdateUserMessage =>
       update(
         selector = BSONDocument(
-          "_id" -> BSONObjectID.parse(message.collaborationID).get,
-          "users.user" -> message.user.user
+          COLLABORATION_ID -> BSONObjectID.parse(message.collaborationID).get,
+          COLLABORATION_USERS + "." + COLLABORATION_USER_USERNAME -> message.user.user
         ),
-        query = BSONDocument("$set" -> BSONDocument("users.$" -> message.user)),
+        query = BSONDocument("$set" -> BSONDocument(COLLABORATION_USERS + ".$" -> message.user)),
         okMessage = QueryOkMessage(message)
       ) pipeTo sender
 
     case message: DeleteUserMessage =>
       update(
-        selector = BSONDocument("_id" -> BSONObjectID.parse(message.collaborationID).get),
-        query = BSONDocument("$pull" -> BSONDocument("users" -> BSONDocument("user" -> message.user.user))),
+        selector = BSONDocument(COLLABORATION_ID -> BSONObjectID.parse(message.collaborationID).get),
+        query = BSONDocument("$pull" -> BSONDocument(COLLABORATION_USERS -> BSONDocument(COLLABORATION_USER_USERNAME -> message.user.user))),
         okMessage = QueryOkMessage(message)
       ) pipeTo sender
 

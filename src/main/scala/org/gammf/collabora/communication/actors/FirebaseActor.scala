@@ -1,19 +1,23 @@
 package org.gammf.collabora.communication.actors
 
-import akka.actor.{Actor, ActorRef}
+import akka.actor.{Actor, ActorRef, ActorSystem, Props}
+import com.newmotion.akka.rabbitmq.{ConnectionActor, ConnectionFactory}
 import org.gammf.collabora.communication.messages.{PublishFirebaseNotification, PublishNotificationMessage}
+import org.gammf.collabora.database.actors.{ConnectionManagerActor, DBWorkerGetCollaborationActor}
 import org.gammf.collabora.database.messages.GetCollaboration
-import org.gammf.collabora.util.{ UpdateMessage, UpdateMessageTarget, UpdateMessageType}
+import org.gammf.collabora.util.{UpdateMessage, UpdateMessageTarget, UpdateMessageType}
 import us.raudi.pushraven.Notification
 import us.raudi.pushraven.Pushraven
 
 class FirebaseActor(collaborationGetter: ActorRef) extends Actor{
 
+  private val AUTHORIZATION = "AAAAJtSw2Gk:APA91bEXmB5sRFqSnuYIP3qofHQ0RfHrAzTllJ0vYWtHXKZsMdbuXmUKbr16BVZsMO0cMmm_BWE8oLzkFcyuMr_V6O6ilqvLu7TrOgirVES51Ux9PsKfJ17iOMvTF_WtwqEURqMGBbLf"
   private[this] var info: Option[UpdateMessage] = None
-  private[this] val notification: Notification = Notification
+  private[this] val notification: Notification = new Notification
 
   override def receive:Receive = {
     case PublishNotificationMessage(collaborationID, message) =>
+      Pushraven.setKey(AUTHORIZATION)
       info = Some(message)
       collaborationGetter ! GetCollaboration(collaborationID)
     case PublishFirebaseNotification(collaborationID,collaboration)=>
@@ -43,4 +47,21 @@ class FirebaseActor(collaborationGetter: ActorRef) extends Actor{
     }
   }
 
+}
+
+object UseFirebaseActor extends App{
+
+  implicit val system: ActorSystem = ActorSystem()
+  val factory = new ConnectionFactory()
+  var connectionManagerActor: ActorRef = system.actorOf(Props[ConnectionManagerActor])
+  val connection:ActorRef = system.actorOf(ConnectionActor.props(factory), "rabbitmq")
+  val naming: ActorRef = system.actorOf(Props[RabbitMQNamingActor], "naming")
+  val channelCreator: ActorRef = system.actorOf(Props[ChannelCreatorActor], "channelCreator")
+  val publisher: ActorRef = system.actorOf(Props[PublisherActor], "publisher")
+  val collaborationMember: ActorRef = system.actorOf(Props(
+    new CollaborationMembersActor(connection, naming, channelCreator, publisher)), "collaboration-members")
+  var getCollaborarionsActor:ActorRef = system.actorOf(Props.create(classOf[DBWorkerGetCollaborationActor], connectionManagerActor, collaborationMember))
+  var firebaseActor: ActorRef = system.actorOf(Props.create(classOf[FirebaseActor], getCollaborarionsActor))
+
+  firebaseActor ! PublishNotificationMessage("123456788698540008900400",UpdateMessage(UpdateMessageTarget.NOTE,UpdateMessageType.UPDATING,"maffone"))
 }

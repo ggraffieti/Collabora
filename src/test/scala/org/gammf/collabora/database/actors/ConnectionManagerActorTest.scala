@@ -17,7 +17,7 @@ import akka.actor.{ActorRef, ActorSystem, Props}
     "A ConnectionManager actor" should {
 
       "send back connection message correctly" in {
-        within(500 millis) {
+        within(5 seconds) {
           dbConnectionActor ! new AskConnectionMessage()
           expectMsgType[GetConnectionMessage]
         }

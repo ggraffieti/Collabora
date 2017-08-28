@@ -36,21 +36,21 @@ class DBWorkerModulesActorTest extends TestKit (ActorSystem("CollaboraServer")) 
 
   "A DBWorkerModules actor" should {
     "insert new modules in a collaboration correctly in the db" in {
-      within(3 second) {
+      within(5 second) {
         modulesActor ! InsertModuleMessage(module, "59806a4af27da3fcfe0ac0ca", "maffone")
         expectMsgType[QueryOkMessage]
       }
     }
 
     "update a module in a collaboration correctly" in {
-      within(1 second) {
+      within(5 second) {
         modulesActor ! UpdateModuleMessage(module, "59806a4af27da3fcfe0ac0ca", "maffone")
         expectMsgType[QueryOkMessage]
       }
     }
 
     "delete a module in a collaboration correctly" in {
-      within(1 second) {
+      within(5 second) {
         modulesActor ! DeleteModuleMessage(module, "59806a4af27da3fcfe0ac0ca", "maffone")
         expectMsgType[QueryOkMessage]
       }

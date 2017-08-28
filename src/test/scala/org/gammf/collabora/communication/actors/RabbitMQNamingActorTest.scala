@@ -22,21 +22,21 @@ class RabbitMQNamingActorTest extends TestKit (ActorSystem("CollaboraServer")) w
   "A RabbitMQNaming actor" should {
 
     "handles collaboration naming requests" in {
-      within(500 millis){
+      within(5 seconds){
         naming ! ChannelNamesRequestMessage(CommunicationType.COLLABORATIONS)
         expectMsg(ChannelNamesResponseMessage("collaborations", None))
       }
     }
 
     "handles updates naming requests" in {
-      within(500 millis){
+      within(5 seconds){
         naming ! ChannelNamesRequestMessage(CommunicationType.UPDATES)
         expectMsg(ChannelNamesResponseMessage("updates",Some("update.server")))
       }
     }
 
     "handles notification naming requests" in {
-      within(500 millis){
+      within(5 seconds){
         naming ! ChannelNamesRequestMessage(CommunicationType.NOTIFICATIONS)
         expectMsg(ChannelNamesResponseMessage("notifications", None))
       }

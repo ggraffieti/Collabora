@@ -47,21 +47,21 @@ class DBWorkerCollaborationsActorTest extends TestKit (ActorSystem("CollaboraSer
   "A DBWorkerCollaborations actor" should {
     "insert new collaboration in the db" in {
 
-      within(3 second) {
+      within(5 second) {
         collaborationsActor ! InsertCollaborationMessage(collab, "maffone")
         expectMsgType[QueryOkMessage]
       }
     }
 
     "update a collaboration in the db" in {
-      within(1 second) {
+      within(5 second) {
         collaborationsActor ! UpdateCollaborationMessage(collab, "maffone")
         expectMsgType[QueryOkMessage]
       }
     }
 
     "delete a collaboration in the db" in {
-      within(1 second) {
+      within(5 second) {
         collaborationsActor ! DeleteCollaborationMessage(collab, "maffone")
         expectMsgType[QueryOkMessage]
       }

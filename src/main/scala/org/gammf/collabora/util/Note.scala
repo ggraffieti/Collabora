@@ -42,12 +42,23 @@ object NoteState {
       (JsPath \ "responsible").writeNullable[String]
     )(unlift(NoteState.unapply))
 
+  import org.gammf.collabora.database._
+
   implicit object BSONtoNoteState extends BSONDocumentReader[NoteState] {
     def read(state: BSONDocument): NoteState =
       NoteState(
-        definition = state.getAs[String]("definition").get,
-        username = state.getAs[String]("responsible")
+        definition = state.getAs[String](NOTE_STATE_DEFINITION).get,
+        username = state.getAs[String](NOTE_STATE_RESPONSIBLE)
       )
+  }
+
+  implicit object NoteStatetoBSON extends BSONDocumentWriter[NoteState] {
+    def write(noteState: NoteState): BSONDocument = {
+      BSONDocument(
+        NOTE_STATE_DEFINITION -> noteState.definition,
+        { if (noteState.username.isDefined) NOTE_STATE_RESPONSIBLE -> noteState.username.get else BSONDocument()}
+      )
+    }
   }
 }
 
@@ -76,25 +87,18 @@ object Note {
       (JsPath \ "module").writeNullable[String]
     )(unlift(Note.unapply))
 
+  import org.gammf.collabora.database._
+
   implicit object BSONtoNote extends BSONDocumentReader[Note] {
     def read(doc: BSONDocument): Note = {
       Note(
-        id = doc.getAs[BSONObjectID]("id").map(id => id.stringify),
-        content = doc.getAs[String]("content").get,
-        expiration = doc.getAs[DateTime]("expiration"),
-        location = doc.getAs[Location]("location"),
-        previousNotes = doc.getAs[List[BSONObjectID]]("previousNotes").map(l => l.map(bsonID => bsonID.stringify)),
-        state = doc.getAs[NoteState]("state").get,
-        module = doc.getAs[BSONObjectID]("module").map(m => m.stringify)
-      )
-    }
-  }
-
-  implicit object NoteStatetoBSON extends BSONDocumentWriter[NoteState] {
-    def write(noteState: NoteState): BSONDocument = {
-      BSONDocument(
-        "definition" -> noteState.definition,
-        { if (noteState.username.isDefined) "responsible" -> noteState.username.get else BSONDocument()}
+        id = doc.getAs[BSONObjectID](NOTE_ID).map(id => id.stringify),
+        content = doc.getAs[String](NOTE_CONTENT).get,
+        expiration = doc.getAs[DateTime](NOTE_EXPIRATION),
+        location = doc.getAs[Location](NOTE_LOCATION),
+        previousNotes = doc.getAs[List[BSONObjectID]](NOTE_PREVIOUS_NOTES).map(l => l.map(bsonID => bsonID.stringify)),
+        state = doc.getAs[NoteState](NOTE_STATE).get,
+        module = doc.getAs[BSONObjectID](NOTE_MODULE).map(m => m.stringify)
       )
     }
   }
@@ -102,13 +106,13 @@ object Note {
   implicit object NotetoBSON extends BSONDocumentWriter[Note] {
     def write(note: Note): BSONDocument = {
       BSONDocument(
-        "id" -> { if (note.id.isDefined) BSONObjectID.parse(note.id.get).get else BSONObjectID.generate() },
-        "content" -> note.content,
-        "state" -> note.state,
-        { if (note.expiration.isDefined) "expiration" -> note.expiration.get else BSONDocument() },
-        { if (note.previousNotes.isDefined) "previousNotes" -> BSONArray(note.previousNotes.get.map(e => BSONObjectID.parse(e).get)) else BSONDocument()  },
-        { if (note.location.isDefined) "location" -> note.location.get else BSONDocument() },
-        { if (note.module.isDefined) "module" -> BSONObjectID.parse(note.module.get).get else BSONDocument() }
+        NOTE_ID -> { if (note.id.isDefined) BSONObjectID.parse(note.id.get).get else BSONObjectID.generate() },
+        NOTE_CONTENT -> note.content,
+        NOTE_STATE -> note.state,
+        { if (note.expiration.isDefined) NOTE_EXPIRATION -> note.expiration.get else BSONDocument() },
+        { if (note.previousNotes.isDefined) NOTE_PREVIOUS_NOTES -> BSONArray(note.previousNotes.get.map(e => BSONObjectID.parse(e).get)) else BSONDocument()  },
+        { if (note.location.isDefined) NOTE_LOCATION -> note.location.get else BSONDocument() },
+        { if (note.module.isDefined) NOTE_MODULE -> BSONObjectID.parse(note.module.get).get else BSONDocument() }
       )
     }
   }

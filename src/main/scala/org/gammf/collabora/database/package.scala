@@ -125,7 +125,7 @@ package object database {
   /**
     * the name of the field that contains the note state responsible
     */
-  val NOTE_RESPONSIBLE = "responsible"
+  val NOTE_STATE_RESPONSIBLE = "responsible"
 
 
 

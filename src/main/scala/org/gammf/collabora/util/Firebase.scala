@@ -56,7 +56,6 @@ class Firebase {
     checkValues()
     val http = HttpClientBuilder.create.build
     val response:HttpResponse = http.execute(post)
-    System.out.println(response)
     clear()
   }
 
@@ -69,7 +68,6 @@ class Firebase {
     }else{
       val payload = "{\"notification\": { \"title\": \"" + attributes("title") + "\", \"body\": \"" +
         attributes("body") + "\"}, \"to\" : \"/topics/" + attributes("topic") + "\"}"
-      System.out.println(payload)
       post.setEntity(new StringEntity(payload))
     }
   }

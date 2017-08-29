@@ -93,6 +93,4 @@ object UseFirebase extends App {
   firebase.setBody("BODYESEMPIO")
   firebase.to("collabora-project-id")
   firebase.send()
-  firebase.clear()
-  firebase.send()
 }

@@ -12,8 +12,7 @@ class FirebaseActor(collaborationGetter: ActorRef) extends Actor{
   private val AUTHORIZATION = "AAAAJtSw2Gk:APA91bEXmB5sRFqSnuYIP3qofHQ0RfHrAzTllJ0vYWtHXKZsMdbuXmUKbr16BVZsMO0cMmm_BWE8oLzkFcyuMr_V6O6ilqvLu7TrOgirVES51Ux9PsKfJ17iOMvTF_WtwqEURqMGBbLf"
   private[this] var info: Option[UpdateMessage] = None
   private[this] val firebase: Firebase = new Firebase
-
-
+  
   override def receive:Receive = {
     case PublishNotificationMessage(collaborationID, message) =>
       firebase.setKey(AUTHORIZATION)
@@ -24,7 +23,6 @@ class FirebaseActor(collaborationGetter: ActorRef) extends Actor{
       firebase.setBody(setTextType()+setTextTarget())
       firebase.to(collaborationID)
       firebase.send()
-      firebase.clear()
     case _ => println("[FirebaseActor] Huh?")
   }
 

@@ -14,7 +14,7 @@ import org.gammf.collabora.util.{Firebase, UpdateMessage, UpdateMessageTarget, U
   */
 class FirebaseActor(collaborationGetter: ActorRef) extends Actor{
 
-  private val AUTHORIZATION = "AAAAJtSw2Gk:APA91bEXmB5sRFqSnuYIP3qofHQ0RfHrAzTllJ0vYWtHXKZsMdbuXmUKbr16BVZsMO0cMmm_BWE8oLzkFcyuMr_V6O6ilqvLu7TrOgirVES51Ux9PsKfJ17iOMvTF_WtwqEURqMGBbLf"
+  private final val AUTHORIZATION = "AAAAJtSw2Gk:APA91bEXmB5sRFqSnuYIP3qofHQ0RfHrAzTllJ0vYWtHXKZsMdbuXmUKbr16BVZsMO0cMmm_BWE8oLzkFcyuMr_V6O6ilqvLu7TrOgirVES51Ux9PsKfJ17iOMvTF_WtwqEURqMGBbLf"
   private[this] var info: Option[UpdateMessage] = None
   private[this] val firebase: Firebase = new Firebase
 

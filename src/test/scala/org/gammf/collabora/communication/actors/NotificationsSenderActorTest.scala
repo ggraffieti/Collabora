@@ -24,9 +24,11 @@ class NotificationsSenderActorTest extends TestKit (ActorSystem("CollaboraServer
   val naming:ActorRef = system.actorOf(Props[RabbitMQNamingActor], "naming")
   val channelCreator :ActorRef= system.actorOf(Props[ChannelCreatorActor], "channelCreator")
   val publisherActor:ActorRef = system.actorOf(Props[PublisherActor], "publisher")
-  val notificationActor:ActorRef = system.actorOf(Props(new NotificationsSenderActor(connection, naming, channelCreator, publisherActor)))
+  val collaborationMemberActor:ActorRef = system.actorOf(Props(
+    new CollaborationMembersActor(connection, naming, channelCreator, publisherActor)))
+  val notificationActor:ActorRef = system.actorOf(Props(
+    new NotificationsSenderActor(connection, naming, channelCreator, publisherActor,system,collaborationMemberActor)))
   val dbConnectionActor :ActorRef= system.actorOf(Props[ConnectionManagerActor])
-  val collaborationMemberActor:ActorRef = system.actorOf(Props(new CollaborationMembersActor(connection, naming, channelCreator, publisherActor)))
   val dbMasterActor:ActorRef = system.actorOf(Props.create(classOf[DBMasterActor], system, notificationActor,collaborationMemberActor))
   val subscriber:ActorRef = system.actorOf(Props[SubscriberActor], "subscriber")
   val updatesReceiver :ActorRef= system.actorOf(Props(

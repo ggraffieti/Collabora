@@ -62,11 +62,6 @@ class DBMasterActor(val system: ActorSystem, val notificationActor: ActorRef, va
                                                                                                                          user = query.userID,
                                                                                                                          note = Some(query.note),
                                                                                                                          collaborationId = Some(query.collaborationID)))
-                                      firebaseActor ! PublishNotificationMessage(query.collaborationID,UpdateMessage(target = UpdateMessageTarget.NOTE,
-                                                                                                                      messageType = getUpdateTypeFromQueryMessage(query),
-                                                                                                                      user = query.userID,
-                                                                                                                      note = Some(query.note),
-                                                                                                                      collaborationId = Some(query.collaborationID)))
 
       case query: QueryCollaborationMessage => query match {
         case _: InsertCollaborationMessage => collaborationMemberActor ! PublishMemberAddedMessage(query.userID, CollaborationMessage(user=query.userID,collaboration = query.collaboration))
@@ -81,11 +76,6 @@ class DBMasterActor(val system: ActorSystem, val notificationActor: ActorRef, va
                                                                                                                             user = query.userID,
                                                                                                                             module = Some(query.module),
                                                                                                                             collaborationId = Some(query.collaborationID)))
-                                        firebaseActor ! PublishNotificationMessage(query.collaborationID,UpdateMessage(target = UpdateMessageTarget.MODULE,
-                                                                                                                      messageType = getUpdateTypeFromQueryMessage(query),
-                                                                                                                      user = query.userID,
-                                                                                                                      module = Some(query.module),
-                                                                                                                      collaborationId = Some(query.collaborationID)))
 
       case query: QueryUserMessage => query match {
         case _: InsertUserMessage => getCollaborarionsActor! InsertUserMessage(query.user, query.collaborationID, query.userID)
@@ -94,11 +84,6 @@ class DBMasterActor(val system: ActorSystem, val notificationActor: ActorRef, va
                                                                                               user = query.userID,
                                                                                               member = Some(query.user),
                                                                                               collaborationId = Some(query.collaborationID)))
-          firebaseActor ! PublishNotificationMessage(query.collaborationID,UpdateMessage(target = UpdateMessageTarget.MEMBER,
-                                                                                        messageType = getUpdateTypeFromQueryMessage(query),
-                                                                                        user = query.userID,
-                                                                                        member = Some(query.user),
-                                                                                        collaborationId = Some(query.collaborationID)))
 
         case _ => notificationActor ! PublishNotificationMessage(query.collaborationID, UpdateMessage(target = UpdateMessageTarget.MEMBER,
                                                                                                       messageType = getUpdateTypeFromQueryMessage(query),

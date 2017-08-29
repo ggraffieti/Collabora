@@ -1,12 +1,11 @@
 package org.gammf.collabora.database.actors
 
 import akka.actor.{Actor, ActorRef, ActorSystem, Props}
-import org.gammf.collabora.communication.actors.{FirebaseActor, NotificationsSenderActor}
+import org.gammf.collabora.communication.actors.{FirebaseActor}
 import org.gammf.collabora.communication.messages.{PublishMemberAddedMessage, PublishNotificationMessage}
 import org.gammf.collabora.database.messages._
-import org.gammf.collabora.util.UpdateMessageTarget.UpdateMessageTarget
 import org.gammf.collabora.util.UpdateMessageType.UpdateMessageType
-import org.gammf.collabora.util.{Collaboration, CollaborationMessage, UpdateMessage, UpdateMessageImpl, UpdateMessageTarget, UpdateMessageType}
+import org.gammf.collabora.util.{CollaborationMessage, UpdateMessage, UpdateMessageTarget, UpdateMessageType}
 
 /**
   * An actor that coordinate, create and act like a gateway for every request from and to the DB. It also create all the needed actors
@@ -108,6 +107,8 @@ class DBMasterActor(val system: ActorSystem, val notificationActor: ActorRef, va
                                                                                                       collaborationId = Some(query.collaborationID)))
       }
     }
+
+    case fail: QueryFailMessage => fail.error.printStackTrace() // TODO error handling
   }
 
   private def getUpdateTypeFromQueryMessage(query: QueryMessage): UpdateMessageType = query match {

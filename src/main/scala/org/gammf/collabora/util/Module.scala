@@ -44,13 +44,15 @@ object Module {
       (JsPath \ "state").write[String]
     )(unlift(Module.unapply))
 
+  import org.gammf.collabora.database._
+
   implicit object BSONtoModule extends BSONDocumentReader[Module] {
     def read(doc: BSONDocument): Module = {
       Module(
-        id = doc.getAs[BSONObjectID]("id").map(id => id.stringify),
-        description = doc.getAs[String]("description").get,
-        previousModules = doc.getAs[List[BSONObjectID]]("previousModules").map(l => l.map(bsonID => bsonID.stringify)),
-        state = doc.getAs[String]("state").get
+        id = doc.getAs[BSONObjectID](MODULE_ID).map(id => id.stringify),
+        description = doc.getAs[String](MODULE_DESCRIPTION).get,
+        previousModules = doc.getAs[List[BSONObjectID]](MODULE_PREVIOUS_MODULES).map(l => l.map(bsonID => bsonID.stringify)),
+        state = doc.getAs[String](MODULE_STATE).get
       )
     }
   }
@@ -58,10 +60,10 @@ object Module {
   implicit object ModuletoBSON extends BSONDocumentWriter[Module] {
     def write(module: Module): BSONDocument = {
       BSONDocument(
-        "id" -> { if (module.id.isDefined) BSONObjectID.parse(module.id.get).get else BSONObjectID.generate() },
-        "description" -> module.description,
-        "state" -> module.state,
-        { if (module.previousModules.isDefined) "previousModules" -> BSONArray(module.previousModules.get.map(
+        MODULE_ID -> { if (module.id.isDefined) BSONObjectID.parse(module.id.get).get else BSONObjectID.generate() },
+        MODULE_DESCRIPTION -> module.description,
+        MODULE_STATE -> module.state,
+        { if (module.previousModules.isDefined) MODULE_PREVIOUS_MODULES -> BSONArray(module.previousModules.get.map(
             e => BSONObjectID.parse(e).get))
           else BSONDocument()
         }

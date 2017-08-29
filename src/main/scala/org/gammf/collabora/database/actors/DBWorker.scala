@@ -1,31 +1,75 @@
 package org.gammf.collabora.database.actors
 
-import akka.actor.{Actor, ActorRef}
-import org.gammf.collabora.database.messages.AskConnectionMessage
-import reactivemongo.api.{FailoverStrategy, MongoConnection}
+import akka.actor.Actor
+import org.gammf.collabora.database.messages.{DBWorkerMessage, QueryFailMessage}
+import reactivemongo.api.MongoConnection
 import reactivemongo.api.collections.bson.BSONCollection
-
-import scala.concurrent.ExecutionContext.Implicits.global
+import reactivemongo.bson.BSONDocument
 
 import scala.concurrent.Future
 
 /**
-  * A DB worker, it ask for a connection at start time and perform queries.
-  * @param connectionActor the actor that mantains the connection with the DB.
+  * The representation of a DBWorker. A DBWorker is an actor that performs query, and reply at the applicant actor with a
+  * DBWorkerMessage.
   */
-abstract class DBWorker(val connectionActor: ActorRef) extends Actor {
+trait DBWorker extends Actor {
 
-  protected var connection: Option[MongoConnection] = None
-
-  override def preStart(): Unit = connectionActor ! new AskConnectionMessage()
-
-  protected def getCollaborationsCollection: Future[BSONCollection] = {
-    if (connection.isDefined)
-      connection.get.database("collabora", FailoverStrategy())
-        .map(_.collection("collaboration", FailoverStrategy()))
-    else
-      throw new Error("Collection collaboration not found") // TODO more specific error
-  }
+  private[this] val defaultFailStrategy: PartialFunction[Throwable, DBWorkerMessage] = { case e: Exception => QueryFailMessage(e) }
 
 
+  /**
+    * @return the database connection
+    */
+  protected def connection: Option[MongoConnection]
+
+  /**
+    * @return a future that contains a connection with the collaborations collection.
+    */
+  protected def getCollaborationsCollection: Future[BSONCollection]
+  /**
+    * @return a future that contains a connection with the user collection.
+    */
+  protected def getUsersCollection: Future[BSONCollection]
+
+  /**
+    * Perform an update query. An update query is a query that select a document in the collection, and edit it.
+    * DO NOT use this methot to insert or delete documents.
+    * @param selector the selector used to find the document to update
+    * @param query the new document that have to be inserted in the collection, overwrite the ones found by the selector.
+    * @param okMessage the message that have to be returned if the query is correcly done
+    * @param failStrategy the fail strategy that have to be used if somethings went wrong. The default strategy returns a
+    *                     [[QueryFailMessage]] that contains the Exception.
+    *
+    * @return a DBWorkerMessage, representing the success or the failure of the query
+    */
+  protected def update(selector: BSONDocument,
+             query: BSONDocument,
+             okMessage: DBWorkerMessage,
+             failStrategy: PartialFunction[Throwable, DBWorkerMessage] = defaultFailStrategy): Future[DBWorkerMessage]
+
+  /**
+    * Insert the document in the collection
+    * @param document the document that will be inserted in the collection
+    * @param okMessage the message that have to be returned if the query is correcly done
+    * @param failStrategy the fail strategy that have to be used if somethings went wrong. The default strategy returns a
+    *                     [[QueryFailMessage]] that contains the Exception.
+    *
+    * @return a DBWorkerMessage, representing the success or the failure of the query
+    */
+  protected def insert(document: BSONDocument,
+             okMessage: DBWorkerMessage,
+             failStrategy: PartialFunction[Throwable, DBWorkerMessage] = defaultFailStrategy): Future[DBWorkerMessage]
+
+  /**
+    * Remove a document that match the given selector.
+    * @param selector the selector.
+    * @param okMessage the message that have to be returned if the query is correcly done
+    * @param failStrategy the fail strategy that have to be used if somethings went wrong. The default strategy returns a
+    *                     [[QueryFailMessage]] that contains the Exception.
+    *
+    * @return a DBWorkerMessage, representing the success or the failure of the query
+    */
+  protected def delete(selector: BSONDocument,
+             okMessage: DBWorkerMessage,
+             failStrategy: PartialFunction[Throwable, DBWorkerMessage] = defaultFailStrategy): Future[DBWorkerMessage]
 }

@@ -64,14 +64,14 @@ class NotificationsSenderActorTest extends TestKit (ActorSystem("CollaboraServer
   "A NotificationsSender actor" should {
 
     "communicate with RabbitMQNamingActor" in {
-      within(500 millis){
+      within(5 seconds){
         naming ! ChannelNamesRequestMessage(CommunicationType.NOTIFICATIONS)
         expectMsg(ChannelNamesResponseMessage("notifications", None))
       }
     }
 
     "communicate with channelCreatorActor" in {
-      within(500 millis){
+      within(5 seconds){
         channelCreator ! PublishingChannelCreationMessage(connection, "notifications", None)
         expectMsgType[ChannelCreatedMessage]
       }

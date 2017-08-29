@@ -14,12 +14,15 @@ import scala.concurrent.ExecutionContext.Implicits.global
   * @param connectionActor the actor that mantains the connection with the DB.
   * @param collaborationActor the actor that manage the exchange "collaborations"
   */
-class DBWorkerGetCollaborationActor(connectionActor: ActorRef, collaborationActor: ActorRef) extends DBWorker(connectionActor) with Stash {
+class DBWorkerGetCollaborationActor(connectionActor: ActorRef, collaborationActor: ActorRef) extends CollaborationsDBWorker(connectionActor) with Stash {
   override def receive: Receive = {
+
     case m: GetConnectionMessage =>
       connection = Some(m.connection)
       unstashAll()
+
     case _ if connection.isEmpty => stash()
+
     case message: InsertUserMessage =>
       getCollaborationsCollection onComplete {
         case Success(collaborations) =>

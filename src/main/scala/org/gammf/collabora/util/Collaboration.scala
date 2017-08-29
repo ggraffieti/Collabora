@@ -1,6 +1,5 @@
 package org.gammf.collabora.util
 
-import org.gammf.collabora.util.CollaborationRight.CollaborationRight
 import org.gammf.collabora.util.CollaborationType.CollaborationType
 import play.api.libs.json._
 import play.api.libs.functional.syntax._
@@ -26,44 +25,6 @@ trait Collaboration {
       ", modules= " + modules +
       ", notes= " + notes +
     " }"
-  }
-}
-
-/**
-  * Represents a user inside a collaboration.
-  * @param user the username
-  * @param right the right privilege
-  */
-case class CollaborationUser(user: String, right: CollaborationRight)
-
-object CollaborationUser {
-
-  implicit val collaborationUserReads: Reads[CollaborationUser] = (
-    (JsPath \ "user").read[String] and
-      (JsPath \ "right").read[CollaborationRight]
-    )(CollaborationUser.apply _)
-
-  implicit val collaborationUserWrites: Writes[CollaborationUser] = (
-    (JsPath \ "user").write[String] and
-      (JsPath \ "right").write[CollaborationRight]
-    )(unlift(CollaborationUser.unapply))
-
-  implicit object BSONtoCollaborationUser extends BSONDocumentReader[CollaborationUser] {
-    def read(doc: BSONDocument): CollaborationUser = {
-      CollaborationUser(
-        user = doc.getAs[String]("user").get,
-        right = doc.getAs[String]("right").map(r => CollaborationRight.withName(r)).get
-      )
-    }
-  }
-
-  implicit object CollaborationUserToBSON extends BSONDocumentWriter[CollaborationUser] {
-    def write(user: CollaborationUser): BSONDocument = {
-      BSONDocument(
-        "user" -> user.user,
-        "right" -> user.right.toString
-      )
-    }
   }
 }
 
@@ -120,15 +81,17 @@ object Collaboration {
       (JsPath \ "notes").writeNullable[List[Note]]
     )(unlift(Collaboration.unapply))
 
+  import org.gammf.collabora.database._
+
   implicit object BSONtoCollaboration extends BSONDocumentReader[Collaboration] {
     def read(doc: BSONDocument): Collaboration = {
       Collaboration(
-        id = doc.getAs[BSONObjectID]("_id").map(id => id.stringify),
-        name = doc.getAs[String]("name").get,
-        collaborationType = doc.getAs[String]("collaborationType").map(t => CollaborationType.withName(t)).get,
-        users = doc.getAs[List[CollaborationUser]]("users"),
-        modules = doc.getAs[List[Module]]("modules"),
-        notes = doc.getAs[List[Note]]("notes")
+        id = doc.getAs[BSONObjectID](COLLABORATION_ID).map(id => id.stringify),
+        name = doc.getAs[String](COLLABORATION_NAME).get,
+        collaborationType = doc.getAs[String](COLLABORATION_COLLABORATION_TYPE).map(t => CollaborationType.withName(t)).get,
+        users = doc.getAs[List[CollaborationUser]](COLLABORATION_USERS),
+        modules = doc.getAs[List[Module]](COLLABORATION_MODULES),
+        notes = doc.getAs[List[Note]](COLLABORATION_NOTES)
       )
     }
   }
@@ -136,12 +99,12 @@ object Collaboration {
   implicit object CollaborationToBSON extends BSONDocumentWriter[Collaboration] {
     def write(collaboration: Collaboration): BSONDocument = {
       BSONDocument(
-        "_id" -> { if (collaboration.id.isDefined) BSONObjectID.parse(collaboration.id.get).get else BSONObjectID.generate() },
-        "name" -> collaboration.name,
-        "collaborationType" -> collaboration.collaborationType.toString,
-        { if (collaboration.users.isDefined) "users" -> BSONArray(collaboration.users.get.map(e => BSON.write(e))) else BSONDocument() },
-        { if (collaboration.modules.isDefined) "modules" -> BSONArray(collaboration.modules.get) else BSONDocument() },
-        { if (collaboration.notes.isDefined) "notes" -> BSONArray(collaboration.notes.get) else BSONDocument() },
+        COLLABORATION_ID -> { if (collaboration.id.isDefined) BSONObjectID.parse(collaboration.id.get).get else BSONObjectID.generate() },
+        COLLABORATION_NAME -> collaboration.name,
+        COLLABORATION_COLLABORATION_TYPE -> collaboration.collaborationType.toString,
+        { if (collaboration.users.isDefined) COLLABORATION_USERS -> BSONArray(collaboration.users.get.map(e => BSON.write(e))) else BSONDocument() },
+        { if (collaboration.modules.isDefined) COLLABORATION_MODULES -> BSONArray(collaboration.modules.get.map(m => BSON.write(m))) else BSONDocument() },
+        { if (collaboration.notes.isDefined) COLLABORATION_NOTES -> BSONArray(collaboration.notes.get.map(n => BSON.write(n))) else BSONDocument() },
       )
     }
   }

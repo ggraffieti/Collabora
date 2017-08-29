@@ -48,14 +48,14 @@ class CollaborationMembersActorTest extends TestKit (ActorSystem("CollaboraServe
   "A CollaborationMember actor" should {
 
     "communicate with RabbitMQNamingActor" in {
-      within(500 millis){
+      within(5 seconds){
         naming ! ChannelNamesRequestMessage(CommunicationType.COLLABORATIONS)
         expectMsg(ChannelNamesResponseMessage("collaborations", None))
       }
     }
 
     "communicate with channelCreatorActor" in {
-      within(500 millis){
+      within(5 seconds){
         channelCreator ! PublishingChannelCreationMessage(connection, "collaborations", None)
         expectMsgType[ChannelCreatedMessage]
       }

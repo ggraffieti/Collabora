@@ -5,28 +5,26 @@ import com.newmotion.akka.rabbitmq.{ConnectionActor, ConnectionFactory}
 import org.gammf.collabora.communication.messages.{PublishFirebaseNotification, PublishNotificationMessage}
 import org.gammf.collabora.database.actors.{ConnectionManagerActor, DBWorkerGetCollaborationActor}
 import org.gammf.collabora.database.messages.GetCollaboration
-import org.gammf.collabora.util.{UpdateMessage, UpdateMessageTarget, UpdateMessageType}
-import us.raudi.pushraven.Notification
-import us.raudi.pushraven.Pushraven
+import org.gammf.collabora.util.{Firebase, UpdateMessage, UpdateMessageTarget, UpdateMessageType}
 
 class FirebaseActor(collaborationGetter: ActorRef) extends Actor{
 
   private val AUTHORIZATION = "AAAAJtSw2Gk:APA91bEXmB5sRFqSnuYIP3qofHQ0RfHrAzTllJ0vYWtHXKZsMdbuXmUKbr16BVZsMO0cMmm_BWE8oLzkFcyuMr_V6O6ilqvLu7TrOgirVES51Ux9PsKfJ17iOMvTF_WtwqEURqMGBbLf"
   private[this] var info: Option[UpdateMessage] = None
-  private[this] val notification: Notification = new Notification
+  private[this] val firebase: Firebase = new Firebase
+
 
   override def receive:Receive = {
     case PublishNotificationMessage(collaborationID, message) =>
-      Pushraven.setKey(AUTHORIZATION)
+      firebase.setKey(AUTHORIZATION)
       info = Some(message)
       collaborationGetter ! GetCollaboration(collaborationID)
     case PublishFirebaseNotification(collaborationID,collaboration)=>
-      notification.title(collaboration.name)
-                  .text(setTextType()+setTextTarget())
-                  .to(collaborationID)
-      val response = Pushraven.push(notification)
-      System.out.println(response)
-      notification.clear()
+      firebase.setTtile(collaboration.name)
+      firebase.setBody(setTextType()+setTextTarget())
+      firebase.to(collaborationID)
+      firebase.send()
+      firebase.clear()
     case _ => println("[FirebaseActor] Huh?")
   }
 

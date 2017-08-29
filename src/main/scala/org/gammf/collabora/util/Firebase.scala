@@ -35,8 +35,9 @@ class Firebase {
     if(attributes.values.exists(_=="")){
       throw new IllegalArgumentException("miss requests attributes")
     }else{
-      val payload = "{\"notification\": { \"title\": \"" + attributes.get("title") + "\", \"body\": \"" +
-        attributes.get("body") + "\"}, \"to\" : \"/topics/" + attributes.get("topic") + "\"}"
+      val payload = "{\"notification\": { \"title\": \"" + attributes("title") + "\", \"body\": \"" +
+        attributes("body") + "\"}, \"to\" : \"/topics/" + attributes("topic") + "\"}"
+      System.out.println(payload)
       post.get.setEntity(new StringEntity(payload))
     }
     val http = HttpClientBuilder.create.build

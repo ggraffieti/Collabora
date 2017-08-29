@@ -19,7 +19,7 @@ class DBWorkerCollaborationsActorTest extends TestKit (ActorSystem("CollaboraSer
   val channelCreator :ActorRef= system.actorOf(Props[ChannelCreatorActor], "channelCreator")
   val publisherActor:ActorRef = system.actorOf(Props[PublisherActor], "publisher")
   val collaborationMemberActor:ActorRef = system.actorOf(Props(new CollaborationMembersActor(connection, naming, channelCreator, publisherActor)))
-  val notificationActor:ActorRef = system.actorOf(Props(new NotificationsSenderActor(connection, naming, channelCreator, publisherActor,system,collaborationMemberActor)))
+  val notificationActor:ActorRef = system.actorOf(Props(new NotificationsSenderActor(connection, naming, channelCreator, publisherActor,system)))
   val dbConnectionActor :ActorRef= system.actorOf(Props[ConnectionManagerActor])
   val dbMasterActor:ActorRef = system.actorOf(Props.create(classOf[DBMasterActor], system, notificationActor,collaborationMemberActor))
   val connectionManagerActor: ActorRef =  system.actorOf(Props[ConnectionManagerActor])

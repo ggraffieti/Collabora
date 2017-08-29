@@ -26,7 +26,7 @@ class DBMasterActorTest extends TestKit (ActorSystem("CollaboraServer")) with Wo
   val publisherActor: ActorRef = system.actorOf(Props[PublisherActor], "publisher")
   val collaborationMemberActor:ActorRef = system.actorOf(Props(
     new CollaborationMembersActor(connection, naming, channelCreator, publisherActor)))
-  val notificationActor: ActorRef = system.actorOf(Props(new NotificationsSenderActor(connection, naming, channelCreator, publisherActor,system,collaborationMemberActor)))
+  val notificationActor: ActorRef = system.actorOf(Props(new NotificationsSenderActor(connection, naming, channelCreator, publisherActor,system)))
   val dbMasterActor:ActorRef = system.actorOf(Props.create(classOf[DBMasterActor], system, notificationActor,collaborationMemberActor))
   val subscriber:ActorRef = system.actorOf(Props[SubscriberActor], "subscriber")
   val updatesReceiver:ActorRef = system.actorOf(Props(

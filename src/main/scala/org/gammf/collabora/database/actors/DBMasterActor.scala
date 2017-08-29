@@ -19,18 +19,14 @@ class DBMasterActor(val system: ActorSystem, val notificationActor: ActorRef, va
   private var modulesActor: ActorRef = _
   private var notesActor: ActorRef = _
   private var usersActor: ActorRef = _
-  private var firebaseActor: ActorRef = _
-
 
   override def preStart(): Unit = {
     connectionManagerActor = system.actorOf(Props[ConnectionManagerActor])
-
     collaborationsActor = system.actorOf(Props.create(classOf[DBWorkerCollaborationsActor], connectionManagerActor))
     getCollaborarionsActor = system.actorOf(Props.create(classOf[DBWorkerGetCollaborationActor], connectionManagerActor, collaborationMemberActor))
     modulesActor = system.actorOf(Props.create(classOf[DBWorkerModulesActor], connectionManagerActor))
     notesActor = system.actorOf(Props.create(classOf[DBWorkerNotesActor], connectionManagerActor))
     usersActor = system.actorOf(Props.create(classOf[DBWorkerMemberActor], connectionManagerActor))
-    firebaseActor = system.actorOf(Props.create(classOf[FirebaseActor], getCollaborarionsActor))
   }
 
   override def receive: Receive = {

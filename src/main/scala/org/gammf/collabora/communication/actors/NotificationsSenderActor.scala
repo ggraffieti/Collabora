@@ -20,23 +20,16 @@ import play.api.libs.json.Json
   * @param channelCreator the reference to a channel creator actor.
   * @param publisher the reference to a publisher actor.
   * @param system the actor system.
-  * @param collaborationMemberActor the reference to collaboration memeber actor.
   */
 class NotificationsSenderActor(connection: ActorRef, naming: ActorRef, channelCreator: ActorRef,
-                              publisher: ActorRef,system: ActorSystem, collaborationMemberActor: ActorRef) extends Actor with Stash {
+                              publisher: ActorRef,system: ActorSystem) extends Actor with Stash {
 
   private[this] var pubChannel: Option[Channel] = None
   private[this] var pubExchange: Option[String] = None
   private var firebaseActor: ActorRef = _
-  private var connectionManagerActor: ActorRef = _
-  private var collaborationsActor: ActorRef = _
-  private var getCollaborarionsActor: ActorRef = _
 
   override def preStart(): Unit = {
-    connectionManagerActor = system.actorOf(Props[ConnectionManagerActor])
-    collaborationsActor = system.actorOf(Props.create(classOf[DBWorkerCollaborationsActor], connectionManagerActor))
-    getCollaborarionsActor = system.actorOf(Props.create(classOf[DBWorkerGetCollaborationActor], connectionManagerActor, collaborationMemberActor))
-    firebaseActor = system.actorOf(Props.create(classOf[FirebaseActor], getCollaborarionsActor))
+   firebaseActor = system.actorOf(Props.create(classOf[FirebaseActor]))
   }
 
 
@@ -81,7 +74,7 @@ object UseNotificationsSenderActor extends App {
   val publisher = system.actorOf(Props[PublisherActor], "publisher")
   val collaborationActor = system.actorOf(Props(new CollaborationMembersActor(connection, naming, channelCreator, publisher)))
   val notificationsSender = system.actorOf(Props(
-    new NotificationsSenderActor(connection, naming, channelCreator, publisher,system,collaborationActor)), "notifications-sender")
+    new NotificationsSenderActor(connection, naming, channelCreator, publisher,system)), "notifications-sender")
 
   Thread.sleep(1000)
   notificationsSender ! StartMessage

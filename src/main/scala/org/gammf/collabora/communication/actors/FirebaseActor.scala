@@ -10,9 +10,8 @@ import org.gammf.collabora.util.{Firebase, UpdateMessage, UpdateMessageTarget, U
 /**
   * This is an actor that sends Firebase notification about Note,Module,Member operation
   * to all the client that are registered in the specific collaborationID Topic
-  * @param collaborationGetter The actor who will be asked to take the collaboration from the DB
   */
-class FirebaseActor(collaborationGetter: ActorRef) extends Actor{
+class FirebaseActor() extends Actor{
 
   private final val AUTHORIZATION = "AAAAJtSw2Gk:APA91bEXmB5sRFqSnuYIP3qofHQ0RfHrAzTllJ0vYWtHXKZsMdbuXmUKbr16BVZsMO0cMmm_BWE8oLzkFcyuMr_V6O6ilqvLu7TrOgirVES51Ux9PsKfJ17iOMvTF_WtwqEURqMGBbLf"
   private[this] var info: Option[UpdateMessage] = None
@@ -22,12 +21,16 @@ class FirebaseActor(collaborationGetter: ActorRef) extends Actor{
     case PublishNotificationMessage(collaborationID, message) =>
       firebase.setKey(AUTHORIZATION)
       info = Some(message)
-      collaborationGetter ! GetCollaboration(collaborationID)
-    case PublishFirebaseNotification(collaborationID,collaboration)=>
-      firebase.setTtile(collaboration.name)
+      firebase.setTtile(collaborationID)
       firebase.setBody(setUserAndOperation()+setTextTarget())
       firebase.to(collaborationID)
       firebase.send()
+      //collaborationGetter ! GetCollaboration(collaborationID)
+    /*case PublishFirebaseNotification(collaborationID,collaboration)=>
+      firebase.setTtile(collaboration.name)
+      firebase.setBody(setUserAndOperation()+setTextTarget())
+      firebase.to(collaborationID)
+      firebase.send()*/
     case _ => println("[FirebaseActor] Huh?")
   }
 

@@ -22,7 +22,7 @@ class CollaborationMembersActorTest extends TestKit (ActorSystem("CollaboraServe
   val publisher: ActorRef = system.actorOf(Props[PublisherActor], "publisher")
   val collaborationMember: ActorRef = system.actorOf(Props(
     new CollaborationMembersActor(connection, naming, channelCreator, publisher)), "collaboration-members")
-  val notificationActor:ActorRef = system.actorOf(Props(new NotificationsSenderActor(connection, naming, channelCreator, publisher,system,collaborationMember)))
+  val notificationActor:ActorRef = system.actorOf(Props(new NotificationsSenderActor(connection, naming, channelCreator, publisher,system)))
   val dbMasterActor:ActorRef = system.actorOf(Props.create(classOf[DBMasterActor], system, notificationActor,collaborationMember))
   val subscriber:ActorRef = system.actorOf(Props[SubscriberActor], "subscriber")
   val updatesReceiver :ActorRef= system.actorOf(Props(
@@ -41,7 +41,7 @@ class CollaborationMembersActorTest extends TestKit (ActorSystem("CollaboraServe
   }
 
   override implicit val patienceConfig: PatienceConfig = PatienceConfig(
-    timeout = scaled(2 seconds),
+    timeout = scaled(4 seconds),
     interval = scaled(100 millis)
   )
 

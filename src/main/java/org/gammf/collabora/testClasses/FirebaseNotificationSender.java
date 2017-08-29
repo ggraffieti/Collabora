@@ -5,6 +5,9 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
+import us.raudi.pushraven.FcmResponse;
+import us.raudi.pushraven.Notification;
+import us.raudi.pushraven.Pushraven;
 
 /**
  * Simple class that sends a post request to the firebase server in order to delivery a

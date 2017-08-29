@@ -1,7 +1,7 @@
 package org.gammf.collabora.database.actors
 
 import akka.actor.{Actor, ActorRef, ActorSystem, Props}
-import org.gammf.collabora.communication.actors.NotificationsSenderActor
+import org.gammf.collabora.communication.actors.{FirebaseActor, NotificationsSenderActor}
 import org.gammf.collabora.communication.messages.{PublishMemberAddedMessage, PublishNotificationMessage}
 import org.gammf.collabora.database.messages._
 import org.gammf.collabora.util.UpdateMessageTarget.UpdateMessageTarget
@@ -20,6 +20,7 @@ class DBMasterActor(val system: ActorSystem, val notificationActor: ActorRef, va
   private var modulesActor: ActorRef = _
   private var notesActor: ActorRef = _
   private var usersActor: ActorRef = _
+  private var firebaseActor: ActorRef = _
 
 
   override def preStart(): Unit = {
@@ -30,6 +31,7 @@ class DBMasterActor(val system: ActorSystem, val notificationActor: ActorRef, va
     modulesActor = system.actorOf(Props.create(classOf[DBWorkerModulesActor], connectionManagerActor))
     notesActor = system.actorOf(Props.create(classOf[DBWorkerNotesActor], connectionManagerActor))
     usersActor = system.actorOf(Props.create(classOf[DBWorkerMemberActor], connectionManagerActor))
+    firebaseActor = system.actorOf(Props.create(classOf[FirebaseActor], getCollaborarionsActor))
   }
 
   override def receive: Receive = {
@@ -61,6 +63,12 @@ class DBMasterActor(val system: ActorSystem, val notificationActor: ActorRef, va
                                                                                                                          user = query.userID,
                                                                                                                          note = Some(query.note),
                                                                                                                          collaborationId = Some(query.collaborationID)))
+                                      firebaseActor ! PublishNotificationMessage(query.collaborationID,UpdateMessage(target = UpdateMessageTarget.NOTE,
+                                                                                                                      messageType = getUpdateTypeFromQueryMessage(query),
+                                                                                                                      user = query.userID,
+                                                                                                                      note = Some(query.note),
+                                                                                                                      collaborationId = Some(query.collaborationID)))
+
       case query: QueryCollaborationMessage => query match {
         case _: InsertCollaborationMessage => collaborationMemberActor ! PublishMemberAddedMessage(query.userID, CollaborationMessage(user=query.userID,collaboration = query.collaboration))
         case _ => notificationActor ! PublishNotificationMessage(query.collaboration.id.get, UpdateMessage(target = UpdateMessageTarget.COLLABORATION,
@@ -74,6 +82,12 @@ class DBMasterActor(val system: ActorSystem, val notificationActor: ActorRef, va
                                                                                                                             user = query.userID,
                                                                                                                             module = Some(query.module),
                                                                                                                             collaborationId = Some(query.collaborationID)))
+                                        firebaseActor ! PublishNotificationMessage(query.collaborationID,UpdateMessage(target = UpdateMessageTarget.MODULE,
+                                                                                                                      messageType = getUpdateTypeFromQueryMessage(query),
+                                                                                                                      user = query.userID,
+                                                                                                                      module = Some(query.module),
+                                                                                                                      collaborationId = Some(query.collaborationID)))
+
       case query: QueryUserMessage => query match {
         case _: InsertUserMessage => getCollaborarionsActor! InsertUserMessage(query.user, query.collaborationID, query.userID)
           notificationActor ! PublishNotificationMessage(query.collaborationID, UpdateMessage(target = UpdateMessageTarget.MEMBER,
@@ -81,6 +95,11 @@ class DBMasterActor(val system: ActorSystem, val notificationActor: ActorRef, va
                                                                                               user = query.userID,
                                                                                               member = Some(query.user),
                                                                                               collaborationId = Some(query.collaborationID)))
+          firebaseActor ! PublishNotificationMessage(query.collaborationID,UpdateMessage(target = UpdateMessageTarget.MEMBER,
+                                                                                        messageType = getUpdateTypeFromQueryMessage(query),
+                                                                                        user = query.userID,
+                                                                                        member = Some(query.user),
+                                                                                        collaborationId = Some(query.collaborationID)))
 
         case _ => notificationActor ! PublishNotificationMessage(query.collaborationID, UpdateMessage(target = UpdateMessageTarget.MEMBER,
                                                                                                       messageType = getUpdateTypeFromQueryMessage(query),

@@ -10,7 +10,6 @@ import org.gammf.collabora.database.actors.DBMasterActor
 object EntryPoint extends App {
   val system = ActorSystem("CollaboraServer")
 
-  AuthenticationServer.start(system)
 
   val factory = new ConnectionFactory()
   val rabbitConnection = system.actorOf(ConnectionActor.props(factory), "rabbitmq")
@@ -23,6 +22,9 @@ object EntryPoint extends App {
   val subscriber = system.actorOf(Props[SubscriberActor], "subscriber")
   val updatesReceiver = system.actorOf(Props(
     new UpdatesReceiverActor(rabbitConnection, naming, channelCreator, subscriber, dbMasterActor)), "updates-receiver")
+
+  //AuthenticationServer.start(system, dbMasterActor)
+
 
   updatesReceiver ! StartMessage
   notificationActor ! StartMessage

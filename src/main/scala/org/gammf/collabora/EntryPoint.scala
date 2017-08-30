@@ -2,12 +2,17 @@ package org.gammf.collabora
 
 import akka.actor.{ActorSystem, Props}
 import com.newmotion.akka.rabbitmq.{ConnectionActor, ConnectionFactory}
+import org.gammf.collabora.authentication.AuthenticationServer
 import org.gammf.collabora.communication.actors._
 import org.gammf.collabora.communication.messages.StartMessage
 import org.gammf.collabora.database.actors.{ConnectionManagerActor, DBMasterActor, DBWorkerNotesActor, PrintActor}
 
 object EntryPoint extends App {
   val system = ActorSystem("CollaboraServer")
+
+  AuthenticationServer.start(system)
+
+
 
   val factory = new ConnectionFactory()
 

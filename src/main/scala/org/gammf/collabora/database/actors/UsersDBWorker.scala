@@ -6,12 +6,13 @@ import reactivemongo.bson.BSONDocument
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import scala.util.{Failure, Success}
 
 /**
-  * A DBWorker that performs query on the collaboration collection.
+  * A DBWorker that performs query on the user collection.
   * @param connectionActor the actor that mantains the connection with the DB.
   */
-abstract class CollaborationsDBWorker(connectionActor: ActorRef) extends AbstractDBWorker(connectionActor) {
+abstract class UsersDBWorker(connectionActor: ActorRef) extends AbstractDBWorker(connectionActor) {
 
 
   /**
@@ -28,11 +29,12 @@ abstract class CollaborationsDBWorker(connectionActor: ActorRef) extends Abstrac
   override protected def find(selector: BSONDocument,
                               okStrategy: Option[BSONDocument] => DBWorkerMessage,
                               failStrategy: PartialFunction[Throwable, DBWorkerMessage]): Future[DBWorkerMessage] = {
-    getCollaborationsCollection.map(collaborations =>
-      collaborations.find(selector).one[BSONDocument]
+    getUsersCollection.map(users =>
+      users.find(selector).one[BSONDocument]
     ).flatten.map(result => okStrategy(result))
       .recover(failStrategy)
   }
+
 
   /**
     * Perform an update query. An update query is a query that select a document in the collection, and edit it.
@@ -49,8 +51,8 @@ abstract class CollaborationsDBWorker(connectionActor: ActorRef) extends Abstrac
     */
   override protected def update(selector: BSONDocument, query: BSONDocument, okMessage: DBWorkerMessage,
                                 failStrategy: PartialFunction[Throwable, DBWorkerMessage]): Future[DBWorkerMessage] = {
-    getCollaborationsCollection.map(collaborations =>
-      collaborations.update(
+    getUsersCollection.map(users =>
+      users.update(
         selector = selector,
         update = query
       )
@@ -60,8 +62,8 @@ abstract class CollaborationsDBWorker(connectionActor: ActorRef) extends Abstrac
 
   override protected def insert(document: BSONDocument, okMessage: DBWorkerMessage,
                                 failStrategy: PartialFunction[Throwable, DBWorkerMessage]): Future[DBWorkerMessage] = {
-    getCollaborationsCollection.map(collaborations =>
-      collaborations.insert(document)
+    getUsersCollection.map(users =>
+      users.insert(document)
     ).map(_ => okMessage).recover(failStrategy)
   }
 
@@ -77,9 +79,9 @@ abstract class CollaborationsDBWorker(connectionActor: ActorRef) extends Abstrac
     * @return a DBWorkerMessage, representing the success or the failure of the query
     */
   override protected def delete(selector: BSONDocument, okMessage: DBWorkerMessage,
-                      failStrategy: PartialFunction[Throwable, DBWorkerMessage]): Future[DBWorkerMessage] = {
-    getCollaborationsCollection.map(collaborations =>
-      collaborations.remove(selector)
+                                failStrategy: PartialFunction[Throwable, DBWorkerMessage]): Future[DBWorkerMessage] = {
+    getUsersCollection.map(users =>
+      users.remove(selector)
     ).map(_ => okMessage).recover(failStrategy)
   }
 }

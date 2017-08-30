@@ -1,5 +1,3 @@
 package org.gammf.collabora.authentication.messages
 
-class LoginMessage {
-
-}
+case class LoginMessage(username: String)

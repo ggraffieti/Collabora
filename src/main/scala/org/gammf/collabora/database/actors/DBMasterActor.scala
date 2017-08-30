@@ -1,11 +1,17 @@
 package org.gammf.collabora.database.actors
 
 import akka.actor.{Actor, ActorRef, ActorSystem, Props}
-import org.gammf.collabora.communication.actors.{FirebaseActor}
+import akka.pattern.{ask, pipe}
+import akka.util.Timeout
+import org.gammf.collabora.authentication.messages.LoginMessage
 import org.gammf.collabora.communication.messages.{PublishMemberAddedMessage, PublishNotificationMessage}
 import org.gammf.collabora.database.messages._
 import org.gammf.collabora.util.UpdateMessageType.UpdateMessageType
 import org.gammf.collabora.util.{CollaborationMessage, UpdateMessage, UpdateMessageTarget, UpdateMessageType}
+
+import scala.concurrent.duration._
+import scala.concurrent.ExecutionContext.Implicits.global
+
 
 /**
   * An actor that coordinate, create and act like a gateway for every request from and to the DB. It also create all the needed actors
@@ -19,6 +25,7 @@ class DBMasterActor(val system: ActorSystem, val notificationActor: ActorRef, va
   private var modulesActor: ActorRef = _
   private var notesActor: ActorRef = _
   private var usersActor: ActorRef = _
+  private var loginActor: ActorRef = _
 
   override def preStart(): Unit = {
     connectionManagerActor = system.actorOf(Props[ConnectionManagerActor])
@@ -27,6 +34,7 @@ class DBMasterActor(val system: ActorSystem, val notificationActor: ActorRef, va
     modulesActor = system.actorOf(Props.create(classOf[DBWorkerModulesActor], connectionManagerActor))
     notesActor = system.actorOf(Props.create(classOf[DBWorkerNotesActor], connectionManagerActor))
     usersActor = system.actorOf(Props.create(classOf[DBWorkerMemberActor], connectionManagerActor))
+    loginActor = system.actorOf(Props.create(classOf[DBWorkerLogin], connectionManagerActor))
   }
 
   override def receive: Receive = {
@@ -88,6 +96,10 @@ class DBMasterActor(val system: ActorSystem, val notificationActor: ActorRef, va
                                                                                                       collaborationId = Some(query.collaborationID)))
       }
     }
+
+    case message: LoginMessage =>
+      implicit val timeout: Timeout = Timeout(5 seconds)
+      (loginActor ? message).mapTo[AuthenticationMessage] pipeTo sender
 
     case fail: QueryFailMessage => fail.error.printStackTrace() // TODO error handling
   }

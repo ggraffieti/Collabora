@@ -1,7 +1,7 @@
 package org.gammf.collabora.database.actors
 
 import akka.actor.{ActorRef, Stash}
-import org.gammf.collabora.communication.messages.PublishMemberAddedMessage
+import org.gammf.collabora.communication.messages.{PublishFirebaseNotification, PublishMemberAddedMessage}
 import org.gammf.collabora.database.messages._
 import org.gammf.collabora.util.{Collaboration, CollaborationMessage}
 import reactivemongo.bson.{BSONDocument, BSONObjectID}
@@ -33,7 +33,17 @@ class DBWorkerGetCollaborationActor(connectionActor: ActorRef, collaborationActo
           }
         case Failure(e) => e.printStackTrace() // TODO better error strategy
       }
-
+    case message: GetCollaboration =>
+      val s = sender
+      getCollaborationsCollection onComplete {
+        case Success(collaborations) =>
+          val selector = BSONDocument("_id" -> BSONObjectID.parse(message.collaborationID).get)
+          collaborations.find(selector).one onComplete {
+            case Success(c) => s ! PublishFirebaseNotification(message.collaborationID,c.get.as[Collaboration])
+            case Failure(e) => e.printStackTrace() // TODO better error strategy
+          }
+        case Failure(e) => e.printStackTrace() // TODO better error strategy
+      }
   }
 
 }

@@ -1,6 +1,7 @@
 package org.gammf.collabora.database.actors
 
 import akka.actor.{Actor, ActorRef, ActorSystem, Props}
+import org.gammf.collabora.communication.actors.{FirebaseActor}
 import org.gammf.collabora.communication.messages.{PublishMemberAddedMessage, PublishNotificationMessage}
 import org.gammf.collabora.database.messages._
 import org.gammf.collabora.util.UpdateMessageType.UpdateMessageType
@@ -19,10 +20,8 @@ class DBMasterActor(val system: ActorSystem, val notificationActor: ActorRef, va
   private var notesActor: ActorRef = _
   private var usersActor: ActorRef = _
 
-
   override def preStart(): Unit = {
     connectionManagerActor = system.actorOf(Props[ConnectionManagerActor])
-
     collaborationsActor = system.actorOf(Props.create(classOf[DBWorkerCollaborationsActor], connectionManagerActor))
     getCollaborarionsActor = system.actorOf(Props.create(classOf[DBWorkerGetCollaborationActor], connectionManagerActor, collaborationMemberActor))
     modulesActor = system.actorOf(Props.create(classOf[DBWorkerModulesActor], connectionManagerActor))
@@ -59,6 +58,7 @@ class DBMasterActor(val system: ActorSystem, val notificationActor: ActorRef, va
                                                                                                                          user = query.userID,
                                                                                                                          note = Some(query.note),
                                                                                                                          collaborationId = Some(query.collaborationID)))
+
       case query: QueryCollaborationMessage => query match {
         case _: InsertCollaborationMessage => collaborationMemberActor ! PublishMemberAddedMessage(query.userID, CollaborationMessage(user=query.userID,collaboration = query.collaboration))
         case _ => notificationActor ! PublishNotificationMessage(query.collaboration.id.get, UpdateMessage(target = UpdateMessageTarget.COLLABORATION,
@@ -72,6 +72,7 @@ class DBMasterActor(val system: ActorSystem, val notificationActor: ActorRef, va
                                                                                                                             user = query.userID,
                                                                                                                             module = Some(query.module),
                                                                                                                             collaborationId = Some(query.collaborationID)))
+
       case query: QueryUserMessage => query match {
         case _: InsertUserMessage => getCollaborarionsActor! InsertUserMessage(query.user, query.collaborationID, query.userID)
           notificationActor ! PublishNotificationMessage(query.collaborationID, UpdateMessage(target = UpdateMessageTarget.MEMBER,

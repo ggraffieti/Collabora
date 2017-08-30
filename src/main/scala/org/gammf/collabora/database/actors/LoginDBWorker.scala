@@ -18,10 +18,6 @@ class LoginDBWorker(connectionManager: ActorRef) extends UsersDBWorker(connectio
 
     case _ if connection.isEmpty => stash()
 
-    case message: LoginMessage => {
-      getUsersCollection.map(users => users.find("_id" -> message.username).one[BSONDocument])
-        .map(res => res.map(op => op.getOrElse(BSONDocument())))
-        .recover({case _: Exception => BSONDocument()}) pipeTo sender
-    }
+
   }
 }

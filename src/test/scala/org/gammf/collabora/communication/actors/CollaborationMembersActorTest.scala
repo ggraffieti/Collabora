@@ -22,7 +22,7 @@ class CollaborationMembersActorTest extends TestKit (ActorSystem("CollaboraServe
   val publisher: ActorRef = system.actorOf(Props[PublisherActor], "publisher")
   val collaborationMember: ActorRef = system.actorOf(Props(
     new CollaborationMembersActor(connection, naming, channelCreator, publisher)), "collaboration-members")
-  val notificationActor:ActorRef = system.actorOf(Props(new NotificationsSenderActor(connection, naming, channelCreator, publisher)))
+  val notificationActor:ActorRef = system.actorOf(Props(new NotificationsSenderActor(connection, naming, channelCreator, publisher,system)))
   val dbMasterActor:ActorRef = system.actorOf(Props.create(classOf[DBMasterActor], system, notificationActor,collaborationMember))
   val subscriber:ActorRef = system.actorOf(Props[SubscriberActor], "subscriber")
   val updatesReceiver :ActorRef= system.actorOf(Props(
@@ -33,7 +33,7 @@ class CollaborationMembersActorTest extends TestKit (ActorSystem("CollaboraServe
 
   override def beforeAll(): Unit = {
       fakeReceiver("collaborations","maffone","localhost")
-      fakeReceiver("notifications","123456788698540008900400","localhost")
+      fakeReceiver("notifications","59804868f27da3fcfe0a8e20","localhost")
   }
 
   override def afterAll(): Unit = {
@@ -41,7 +41,7 @@ class CollaborationMembersActorTest extends TestKit (ActorSystem("CollaboraServe
   }
 
   override implicit val patienceConfig: PatienceConfig = PatienceConfig(
-    timeout = scaled(2 seconds),
+    timeout = scaled(4 seconds),
     interval = scaled(100 millis)
   )
 
@@ -62,7 +62,7 @@ class CollaborationMembersActorTest extends TestKit (ActorSystem("CollaboraServe
     }
 
     "send collaboration to user that have just added and a notification to all the old member of collaboration" in {
-      val message = "{\"messageType\": \"CREATION\",\"target\" : \"MEMBER\",\"user\" : \"maffone\",\"member\": {\"user\": \"maffone\",\"right\": \"WRITE\"},\"collaborationId\":\"123456788698540008900400\"}"
+      val message = "{\"messageType\": \"CREATION\",\"target\" : \"MEMBER\",\"user\" : \"maffone\",\"member\": {\"user\": \"maffone\",\"right\": \"WRITE\"},\"collaborationId\":\"59804868f27da3fcfe0a8e20\"}"
       notificationActor ! StartMessage
       collaborationMember ! StartMessage
       updatesReceiver ! StartMessage
@@ -74,7 +74,7 @@ class CollaborationMembersActorTest extends TestKit (ActorSystem("CollaboraServe
       System.out.println(msgCollab)
       System.out.println(msgNotif)
       assert(msgNotif.startsWith("{\"target\":\"MEMBER\",\"messageType\":\"CREATION\",\"user\":\"maffone\",\"member\"")
-            && msgCollab.startsWith("{\"user\":\"maffone\",\"collaboration\":{\"id\":\"123456788698540008900400\",\"name\":\"simplecollaboration\",\"collaborationType\":\"GROUP\""))
+            && msgCollab.startsWith("{\"user\":\"maffone\",\"collaboration\":{\"id\":\"59804868f27da3fcfe0a8e20\",\"name\":\"Prova Project\",\"collaborationType\":\"GROUP\""))
     }
 
 

@@ -9,6 +9,8 @@ import akka.http.scaladsl.server.directives.Credentials
 
 import scala.concurrent.{ExecutionContextExecutor, Future}
 
+import scala.concurrent.ExecutionContext.Implicits.global
+
 object AuthenticationServer {
 
   def myUserPassAuthenticator(credentials: Credentials): Future[Option[String]] =

@@ -24,7 +24,7 @@ class DBMasterActor(val system: ActorSystem, val notificationActor: ActorRef, va
   private var getCollaborarionsActor: ActorRef = _
   private var modulesActor: ActorRef = _
   private var notesActor: ActorRef = _
-  private var usersActor: ActorRef = _
+  private var membersActor: ActorRef = _
   private var loginActor: ActorRef = _
 
   override def preStart(): Unit = {
@@ -33,7 +33,7 @@ class DBMasterActor(val system: ActorSystem, val notificationActor: ActorRef, va
     getCollaborarionsActor = system.actorOf(Props.create(classOf[DBWorkerGetCollaborationActor], connectionManagerActor, collaborationMemberActor))
     modulesActor = system.actorOf(Props.create(classOf[DBWorkerModulesActor], connectionManagerActor))
     notesActor = system.actorOf(Props.create(classOf[DBWorkerNotesActor], connectionManagerActor))
-    usersActor = system.actorOf(Props.create(classOf[DBWorkerMemberActor], connectionManagerActor))
+    membersActor = system.actorOf(Props.create(classOf[DBWorkerMemberActor], connectionManagerActor))
     loginActor = system.actorOf(Props.create(classOf[DBWorkerLogin], connectionManagerActor))
   }
 
@@ -55,9 +55,9 @@ class DBMasterActor(val system: ActorSystem, val notificationActor: ActorRef, va
         case UpdateMessageType.DELETION => modulesActor ! DeleteModuleMessage(message.module.get, message.collaborationId.get, message.user)
       }
       case UpdateMessageTarget.MEMBER => message.messageType match {
-        case UpdateMessageType.CREATION => usersActor ! InsertUserMessage(message.member.get, message.collaborationId.get, message.user)
-        case UpdateMessageType.UPDATING => usersActor ! UpdateUserMessage(message.member.get, message.collaborationId.get, message.user)
-        case UpdateMessageType.DELETION => usersActor ! DeleteUserMessage(message.member.get, message.collaborationId.get, message.user)
+        case UpdateMessageType.CREATION => membersActor ! InsertMemberMessage(message.member.get, message.collaborationId.get, message.user)
+        case UpdateMessageType.UPDATING => membersActor ! UpdateMemberMessage(message.member.get, message.collaborationId.get, message.user)
+        case UpdateMessageType.DELETION => membersActor ! DeleteMemberMessage(message.member.get, message.collaborationId.get, message.user)
       }
     }
     case QueryOkMessage(queryGoneWell) => queryGoneWell match {
@@ -81,8 +81,8 @@ class DBMasterActor(val system: ActorSystem, val notificationActor: ActorRef, va
                                                                                                                             module = Some(query.module),
                                                                                                                             collaborationId = Some(query.collaborationID)))
 
-      case query: QueryUserMessage => query match {
-        case _: InsertUserMessage => getCollaborarionsActor! InsertUserMessage(query.user, query.collaborationID, query.userID)
+      case query: QueryMemberMessage => query match {
+        case _: InsertMemberMessage => getCollaborarionsActor ! InsertMemberMessage(query.user, query.collaborationID, query.userID)
           notificationActor ! PublishNotificationMessage(query.collaborationID, UpdateMessage(target = UpdateMessageTarget.MEMBER,
                                                                                               messageType = getUpdateTypeFromQueryMessage(query),
                                                                                               user = query.userID,
@@ -105,8 +105,8 @@ class DBMasterActor(val system: ActorSystem, val notificationActor: ActorRef, va
   }
 
   private def getUpdateTypeFromQueryMessage(query: QueryMessage): UpdateMessageType = query match {
-    case _: InsertNoteMessage | _: InsertCollaborationMessage | _: InsertModuleMessage | _: InsertUserMessage => UpdateMessageType.CREATION
-    case _: UpdateNoteMessage | _: UpdateCollaborationMessage | _: UpdateModuleMessage | _: UpdateUserMessage => UpdateMessageType.UPDATING
-    case _: DeleteNoteMessage | _: DeleteCollaborationMessage | _: DeleteModuleMessage | _: DeleteUserMessage => UpdateMessageType.DELETION
+    case _: InsertNoteMessage | _: InsertCollaborationMessage | _: InsertModuleMessage | _: InsertMemberMessage => UpdateMessageType.CREATION
+    case _: UpdateNoteMessage | _: UpdateCollaborationMessage | _: UpdateModuleMessage | _: UpdateMemberMessage => UpdateMessageType.UPDATING
+    case _: DeleteNoteMessage | _: DeleteCollaborationMessage | _: DeleteModuleMessage | _: DeleteMemberMessage => UpdateMessageType.DELETION
   }
 }

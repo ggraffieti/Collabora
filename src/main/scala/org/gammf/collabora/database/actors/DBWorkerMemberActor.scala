@@ -22,14 +22,14 @@ class DBWorkerMemberActor(connectionActor: ActorRef) extends CollaborationsDBWor
 
     case _ if connection.isEmpty => stash()
 
-    case message: InsertUserMessage =>
+    case message: InsertMemberMessage =>
       update(
         selector = BSONDocument(COLLABORATION_ID -> BSONObjectID.parse(message.collaborationID).get),
         query = BSONDocument("$push" -> BSONDocument(COLLABORATION_USERS -> message.user)),
         okMessage = QueryOkMessage(message)
       ) pipeTo sender
 
-    case message: UpdateUserMessage =>
+    case message: UpdateMemberMessage =>
       update(
         selector = BSONDocument(
           COLLABORATION_ID -> BSONObjectID.parse(message.collaborationID).get,
@@ -39,7 +39,7 @@ class DBWorkerMemberActor(connectionActor: ActorRef) extends CollaborationsDBWor
         okMessage = QueryOkMessage(message)
       ) pipeTo sender
 
-    case message: DeleteUserMessage =>
+    case message: DeleteMemberMessage =>
       update(
         selector = BSONDocument(COLLABORATION_ID -> BSONObjectID.parse(message.collaborationID).get),
         query = BSONDocument("$pull" -> BSONDocument(COLLABORATION_USERS -> BSONDocument(COLLABORATION_USER_USERNAME -> message.user.user))),

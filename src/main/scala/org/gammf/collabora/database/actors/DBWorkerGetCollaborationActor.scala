@@ -23,7 +23,7 @@ class DBWorkerGetCollaborationActor(connectionActor: ActorRef, collaborationActo
 
     case _ if connection.isEmpty => stash()
 
-    case message: InsertUserMessage =>
+    case message: InsertMemberMessage =>
       getCollaborationsCollection onComplete {
         case Success(collaborations) =>
           val selector = BSONDocument("_id" -> BSONObjectID.parse(message.collaborationID).get)

@@ -2,10 +2,9 @@ package org.gammf.collabora.authentication
 
 import akka.actor.{ActorRef, ActorSystem}
 import akka.pattern.ask
-import akka.http.scaladsl.Http
+import akka.http.scaladsl.{Http, server}
 import akka.stream.ActorMaterializer
 import akka.http.scaladsl.server.Directives._
-import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.server.directives.Credentials
 import akka.util.Timeout
 import org.gammf.collabora.authentication.messages.LoginMessage
@@ -17,9 +16,9 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 object AuthenticationServer {
 
-  var dbMasterActor: ActorRef = _
+  var authenticationActor: ActorRef = _
 
-  val route = {
+  val route: server.Route = {
     path("login") {
       authenticateBasicAsync(realm = "login", myUserPassAuthenticator) { _ =>
         get {
@@ -30,14 +29,12 @@ object AuthenticationServer {
   }
 
 
-  def start(actorSystem: ActorSystem, dbActor: ActorRef) {
+  def start(actorSystem: ActorSystem, authActor: ActorRef) {
 
-    dbMasterActor = dbActor
+    authenticationActor = authActor
 
     implicit val system: ActorSystem = actorSystem
-
     implicit val materializer: ActorMaterializer = ActorMaterializer()
-    // needed for the future flatMap/onComplete in the end
     implicit val executionContext: ExecutionContextExecutor = system.dispatcher
 
     Http().bindAndHandle(route, "localhost", 9894)
@@ -49,7 +46,7 @@ object AuthenticationServer {
     credentials match {
       case p @ Credentials.Provided(id) =>
         implicit val timeout: Timeout = Timeout(5 seconds)
-        (dbMasterActor ? LoginMessage(id)).mapTo[AuthenticationMessage].map(message => {
+        (authenticationActor ? LoginMessage(id)).mapTo[AuthenticationMessage].map(message => {
           if (message.loginInfo.isDefined && p.verify(message.loginInfo.get.hashedPassword)) Some("OK")
           else None
         }

@@ -3,6 +3,7 @@ package org.gammf.collabora
 import akka.actor.{ActorSystem, Props}
 import com.newmotion.akka.rabbitmq.{ConnectionActor, ConnectionFactory}
 import org.gammf.collabora.authentication.AuthenticationServer
+import org.gammf.collabora.authentication.actors.AuthenticationActor
 import org.gammf.collabora.communication.actors._
 import org.gammf.collabora.communication.messages.StartMessage
 import org.gammf.collabora.database.actors.DBMasterActor
@@ -23,7 +24,9 @@ object EntryPoint extends App {
   val updatesReceiver = system.actorOf(Props(
     new UpdatesReceiverActor(rabbitConnection, naming, channelCreator, subscriber, dbMasterActor)), "updates-receiver")
 
-  AuthenticationServer.start(system, dbMasterActor)
+  val authenticationActor = system.actorOf(Props.create(classOf[AuthenticationActor], dbMasterActor))
+
+  AuthenticationServer.start(system, authenticationActor)
 
 
   updatesReceiver ! StartMessage

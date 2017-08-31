@@ -5,6 +5,7 @@ import akka.pattern.ask
 import akka.http.scaladsl.Http
 import akka.stream.ActorMaterializer
 import akka.http.scaladsl.server.Directives._
+import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.server.directives.Credentials
 import akka.util.Timeout
 import org.gammf.collabora.authentication.messages.LoginMessage
@@ -16,30 +17,32 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 object AuthenticationServer {
 
-
   var dbMasterActor: ActorRef = _
 
-  def start(implicit actorSystem: ActorSystem, dbActor: ActorRef) {
+  val route = {
+    path("login") {
+      authenticateBasicAsync(realm = "login", myUserPassAuthenticator) { _ =>
+        get {
+          complete("OK")
+        }
+      }
+    }
+  }
+
+
+  def start(actorSystem: ActorSystem, dbActor: ActorRef) {
 
     dbMasterActor = dbActor
 
+    implicit val system: ActorSystem = actorSystem
+
     implicit val materializer: ActorMaterializer = ActorMaterializer()
     // needed for the future flatMap/onComplete in the end
-    implicit val executionContext: ExecutionContextExecutor = actorSystem.dispatcher
+    implicit val executionContext: ExecutionContextExecutor = system.dispatcher
 
-    val route = {
-      path("login") {
-          authenticateBasicAsync(realm = "login", myUserPassAuthenticator)  { userName =>
-            get {
-              complete("OK")
-            }
-          }
-      }
-    }
+    Http().bindAndHandle(route, "localhost", 9894)
 
-    Http().bindAndHandle(route, "localhost", 8080)
-
-    println(s"Server online at http://localhost:8080/\n")
+    println(s"Server online at http://localhost:9894/\n")
   }
 
   private def myUserPassAuthenticator(credentials: Credentials): Future[Option[String]] =
@@ -53,5 +56,4 @@ object AuthenticationServer {
         )
       case _ => Future.successful(None)
     }
-
 }

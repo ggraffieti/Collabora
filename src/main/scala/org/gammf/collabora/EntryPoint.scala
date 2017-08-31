@@ -23,7 +23,7 @@ object EntryPoint extends App {
   val updatesReceiver = system.actorOf(Props(
     new UpdatesReceiverActor(rabbitConnection, naming, channelCreator, subscriber, dbMasterActor)), "updates-receiver")
 
-  //AuthenticationServer.start(system, dbMasterActor)
+  AuthenticationServer.start(system, dbMasterActor)
 
 
   updatesReceiver ! StartMessage

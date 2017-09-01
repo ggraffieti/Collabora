@@ -7,7 +7,7 @@ import akka.stream.ActorMaterializer
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.directives.Credentials
 import akka.util.Timeout
-import org.gammf.collabora.authentication.messages.LoginMessage
+import org.gammf.collabora.authentication.messages.{LoginMessage, SendAllCollaborationsMessage}
 import org.gammf.collabora.database.messages.AuthenticationMessage
 
 import scala.concurrent.{ExecutionContextExecutor, Future}
@@ -20,8 +20,9 @@ object AuthenticationServer {
 
   val route: server.Route = {
     path("login") {
-      authenticateBasicAsync(realm = "login", myUserPassAuthenticator) { _ =>
+      authenticateBasicAsync(realm = "login", myUserPassAuthenticator) { username =>
         get {
+          authenticationActor ! SendAllCollaborationsMessage("maffone")
           complete("OK")
         }
       }
@@ -47,7 +48,7 @@ object AuthenticationServer {
       case p @ Credentials.Provided(id) =>
         implicit val timeout: Timeout = Timeout(5 seconds)
         (authenticationActor ? LoginMessage(id)).mapTo[AuthenticationMessage].map(message => {
-          if (message.loginInfo.isDefined && p.verify(message.loginInfo.get.hashedPassword)) Some("OK")
+          if (message.loginInfo.isDefined && p.verify(message.loginInfo.get.hashedPassword)) Some(id)
           else None
         }
         )

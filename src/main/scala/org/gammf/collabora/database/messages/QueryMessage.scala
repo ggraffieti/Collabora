@@ -59,6 +59,16 @@ case class UpdateMemberMessage(user: CollaborationUser, collaborationID: String,
 case class DeleteMemberMessage(user: CollaborationUser, collaborationID: String, userID: String) extends QueryMemberMessage
 
 /**
+  * A trait for user query. A message contains the user, the collaboration id and the user who have performed the update.
+  */
+trait QueryUserMessage extends QueryMessage
+
+case class InsertUserMessage(user: User) extends QueryUserMessage
+case class UpdateUserMessage(username: String, newUser: User) extends QueryUserMessage
+case class DeleteUserMessage(username: String) extends QueryUserMessage
+
+
+/**
   * A trait for query used to retrive collaboration. A message contains the collaboration id
   */
 trait QueryRetriveCollaboration extends QueryMessage {

@@ -9,6 +9,8 @@ import akka.http.scaladsl.server.directives.Credentials
 import akka.util.Timeout
 import org.gammf.collabora.authentication.messages.{LoginMessage, SendAllCollaborationsMessage}
 import org.gammf.collabora.database.messages.AuthenticationMessage
+import org.gammf.collabora.util.User
+import play.api.libs.json.Json
 
 import scala.concurrent.{ExecutionContextExecutor, Future}
 import scala.concurrent.duration._
@@ -20,10 +22,10 @@ object AuthenticationServer {
 
   val route: server.Route = {
     path("login") {
-      authenticateBasicAsync(realm = "login", myUserPassAuthenticator) { username =>
+      authenticateBasicAsync(realm = "login", myUserPassAuthenticator) { user =>
         get {
-          authenticationActor ! SendAllCollaborationsMessage(username)
-          complete("OK")
+          authenticationActor ! SendAllCollaborationsMessage(user.username)
+          complete(Json.toJson(user).toString)
         }
       }
     }
@@ -43,12 +45,12 @@ object AuthenticationServer {
     println(s"Server online at http://localhost:9894/\n")
   }
 
-  private def myUserPassAuthenticator(credentials: Credentials): Future[Option[String]] =
+  private def myUserPassAuthenticator(credentials: Credentials): Future[Option[User]] =
     credentials match {
       case p @ Credentials.Provided(id) =>
         implicit val timeout: Timeout = Timeout(5 seconds)
         (authenticationActor ? LoginMessage(id)).mapTo[AuthenticationMessage].map(message => {
-          if (message.loginInfo.isDefined && p.verify(message.loginInfo.get.hashedPassword)) Some(id)
+          if (message.user.isDefined && p.verify(message.user.get.hashedPassword)) Some(message.user.get)
           else None
         }
         )

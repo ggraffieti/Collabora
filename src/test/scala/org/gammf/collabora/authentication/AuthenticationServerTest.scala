@@ -36,7 +36,7 @@ class AuthenticationServerTest extends WordSpec with Matchers with ScalatestRout
 
     "authenticate the user" in {
       Get("/login") ~> addCredentials(BasicHttpCredentials("maffone", "admin")) ~> AuthenticationServer.route ~> check {
-        responseAs[String] shouldEqual "OK"
+        responseAs[String] shouldEqual "{\"username\":\"maffone\",\"email\":\"alfredo.maffi@studio.unibo.it\",\"name\":\"Alfredo\",\"surname\":\"Maffi\",\"birthday\":\"1994-08-09T05:27:19.199+02:00\"}"
       }
     }
 

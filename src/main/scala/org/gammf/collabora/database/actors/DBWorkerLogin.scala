@@ -4,7 +4,7 @@ import akka.actor.{ActorRef, Stash}
 import akka.pattern.pipe
 import org.gammf.collabora.authentication.messages.LoginMessage
 import org.gammf.collabora.database.messages.{AuthenticationMessage, GetConnectionMessage}
-import org.gammf.collabora.util.LoginUser
+import org.gammf.collabora.util.User
 import reactivemongo.bson.BSONDocument
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -23,7 +23,7 @@ class DBWorkerLogin(connectionManager: ActorRef) extends UsersDBWorker(connectio
       find(
         selector = BSONDocument("_id" -> message.username),
         okStrategy = bsonDocument =>  {
-          if (bsonDocument.isDefined) AuthenticationMessage(Some(bsonDocument.get.as[LoginUser]))
+          if (bsonDocument.isDefined) AuthenticationMessage(Some(bsonDocument.get.as[User]))
           else AuthenticationMessage(None)
         }
       ) pipeTo sender

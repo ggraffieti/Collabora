@@ -1,6 +1,6 @@
 package org.gammf.collabora.database.messages
 
-import org.gammf.collabora.util.LoginUser
+import org.gammf.collabora.util.User
 
 /**
   * A simple trait representing a message created from a db worker
@@ -21,6 +21,6 @@ case class QueryFailMessage(error: Exception) extends DBWorkerMessage
 /**
   * Simple class representing a message used to report login info (username and password) of a user. If no user is
   * found the loginInfo is None.
-  * @param loginInfo username and password if the user is registered. None otherwise.
+  * @param user user object if the user is registered. None otherwise.
   */
-case class AuthenticationMessage(loginInfo: Option[LoginUser]) extends DBWorkerMessage
+case class AuthenticationMessage(user: Option[User]) extends DBWorkerMessage

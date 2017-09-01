@@ -2,10 +2,10 @@ package org.gammf.collabora.database.actors
 
 import akka.actor.{ActorRef, Stash}
 import akka.pattern.pipe
-import org.gammf.collabora.authentication.messages.LoginMessage
-import org.gammf.collabora.database.messages.{AuthenticationMessage, GetConnectionMessage}
+import org.gammf.collabora.authentication.messages.{LoginMessage, SigninMessage}
+import org.gammf.collabora.database.messages._
 import org.gammf.collabora.util.User
-import reactivemongo.bson.BSONDocument
+import reactivemongo.bson.{BSON, BSONDocument}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -26,6 +26,12 @@ class DBWorkerAuthentication(connectionManager: ActorRef) extends UsersDBWorker(
           if (bsonDocument.isDefined) AuthenticationMessage(Some(bsonDocument.get.as[User]))
           else AuthenticationMessage(None)
         }
+      ) pipeTo sender
+
+    case message: SigninMessage =>
+      insert(
+        document = BSON.write(message.user),
+        okMessage = QueryOkMessage(InsertUserMessage(message.user)),
       ) pipeTo sender
 
     case _ => unhandled(_)

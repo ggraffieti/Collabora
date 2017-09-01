@@ -3,7 +3,7 @@ package org.gammf.collabora.database.actors
 import akka.actor.{Actor, ActorRef, ActorSystem, Props}
 import akka.pattern.{ask, pipe}
 import akka.util.Timeout
-import org.gammf.collabora.authentication.messages.LoginMessage
+import org.gammf.collabora.authentication.messages.{LoginMessage, SigninMessage, SigninResponseMessage}
 import org.gammf.collabora.communication.messages.{PublishMemberAddedMessage, PublishNotificationMessage}
 import org.gammf.collabora.database.messages._
 import org.gammf.collabora.util.UpdateMessageType.UpdateMessageType
@@ -25,7 +25,9 @@ class DBMasterActor(val system: ActorSystem, val notificationActor: ActorRef, va
   private var modulesActor: ActorRef = _
   private var notesActor: ActorRef = _
   private var membersActor: ActorRef = _
-  private var loginActor: ActorRef = _
+  private var authenticationActor: ActorRef = _
+
+  implicit val timeout: Timeout = Timeout(5 seconds)
 
   override def preStart(): Unit = {
     connectionManagerActor = system.actorOf(Props[ConnectionManagerActor])
@@ -34,7 +36,7 @@ class DBMasterActor(val system: ActorSystem, val notificationActor: ActorRef, va
     modulesActor = system.actorOf(Props.create(classOf[DBWorkerModulesActor], connectionManagerActor))
     notesActor = system.actorOf(Props.create(classOf[DBWorkerNotesActor], connectionManagerActor))
     membersActor = system.actorOf(Props.create(classOf[DBWorkerMemberActor], connectionManagerActor))
-    loginActor = system.actorOf(Props.create(classOf[DBWorkerAuthentication], connectionManagerActor))
+    authenticationActor = system.actorOf(Props.create(classOf[DBWorkerAuthentication], connectionManagerActor))
   }
 
   override def receive: Receive = {
@@ -98,8 +100,12 @@ class DBMasterActor(val system: ActorSystem, val notificationActor: ActorRef, va
     }
 
     case message: LoginMessage =>
-      implicit val timeout: Timeout = Timeout(5 seconds)
-      (loginActor ? message).mapTo[AuthenticationMessage] pipeTo sender
+      (authenticationActor ? message).mapTo[AuthenticationMessage] pipeTo sender
+
+    case message: SigninMessage =>
+      (authenticationActor ? message).mapTo[DBWorkerMessage].map(message =>
+        SigninResponseMessage(message.isInstanceOf[QueryOkMessage])
+      ) pipeTo sender
 
     case message: GetAllCollaborationsMessage => getCollaborarionsActor ! message
 

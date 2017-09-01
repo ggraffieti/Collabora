@@ -20,7 +20,6 @@ abstract class UsersDBWorker(connectionActor: ActorRef) extends AbstractDBWorker
     * @param selector the selector used to find the document to update. Note that if more than one document match the selector,
     *                 only one is returned (presumably the first document in the collection that match the selector)
     * @param okStrategy the strategy that have to be used to map the document found to a [[DBWorkerMessage]]. The
-    *                   strategy maps from [[ Option[BSONDocument] ]] because the selector shoud not match any document.
     * @param failStrategy the fail strategy that have to be used if somethings went wrong. The default strategy returns a
     *                     [[QueryFailMessage]] that contains the Exception.
     *

@@ -55,7 +55,7 @@ abstract class UsersDBWorker(connectionActor: ActorRef) extends AbstractDBWorker
         selector = selector,
         update = query
       )
-    ).map(_ => okMessage).recover(failStrategy)
+    ).flatten.map(_ => okMessage).recover(failStrategy)
   }
 
 
@@ -63,7 +63,7 @@ abstract class UsersDBWorker(connectionActor: ActorRef) extends AbstractDBWorker
                                 failStrategy: PartialFunction[Throwable, DBWorkerMessage]): Future[DBWorkerMessage] = {
     getUsersCollection.map(users =>
       users.insert(document)
-    ).map(_ => okMessage).recover(failStrategy)
+    ).flatten.map(_ => okMessage).recover(failStrategy)
   }
 
   /**
@@ -81,6 +81,6 @@ abstract class UsersDBWorker(connectionActor: ActorRef) extends AbstractDBWorker
                                 failStrategy: PartialFunction[Throwable, DBWorkerMessage]): Future[DBWorkerMessage] = {
     getUsersCollection.map(users =>
       users.remove(selector)
-    ).map(_ => okMessage).recover(failStrategy)
+    ).flatten.map(_ => okMessage).recover(failStrategy)
   }
 }

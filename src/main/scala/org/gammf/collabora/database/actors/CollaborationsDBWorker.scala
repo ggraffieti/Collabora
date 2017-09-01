@@ -54,7 +54,7 @@ abstract class CollaborationsDBWorker(connectionActor: ActorRef) extends Abstrac
         selector = selector,
         update = query
       )
-    ).map(_ => okMessage).recover(failStrategy)
+    ).flatten.map(_ => okMessage).recover(failStrategy)
   }
 
 
@@ -62,7 +62,7 @@ abstract class CollaborationsDBWorker(connectionActor: ActorRef) extends Abstrac
                                 failStrategy: PartialFunction[Throwable, DBWorkerMessage]): Future[DBWorkerMessage] = {
     getCollaborationsCollection.map(collaborations =>
       collaborations.insert(document)
-    ).map(_ => okMessage).recover(failStrategy)
+    ).flatten.map(_ => okMessage).recover(failStrategy)
   }
 
   /**
@@ -80,6 +80,6 @@ abstract class CollaborationsDBWorker(connectionActor: ActorRef) extends Abstrac
                       failStrategy: PartialFunction[Throwable, DBWorkerMessage]): Future[DBWorkerMessage] = {
     getCollaborationsCollection.map(collaborations =>
       collaborations.remove(selector)
-    ).map(_ => okMessage).recover(failStrategy)
+    ).flatten.map(_ => okMessage).recover(failStrategy)
   }
 }

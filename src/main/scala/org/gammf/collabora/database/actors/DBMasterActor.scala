@@ -34,7 +34,7 @@ class DBMasterActor(val system: ActorSystem, val notificationActor: ActorRef, va
     modulesActor = system.actorOf(Props.create(classOf[DBWorkerModulesActor], connectionManagerActor))
     notesActor = system.actorOf(Props.create(classOf[DBWorkerNotesActor], connectionManagerActor))
     membersActor = system.actorOf(Props.create(classOf[DBWorkerMemberActor], connectionManagerActor))
-    loginActor = system.actorOf(Props.create(classOf[DBWorkerLogin], connectionManagerActor))
+    loginActor = system.actorOf(Props.create(classOf[DBWorkerAuthentication], connectionManagerActor))
   }
 
   override def receive: Receive = {

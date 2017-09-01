@@ -9,7 +9,7 @@ import reactivemongo.bson.BSONDocument
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class DBWorkerLogin(connectionManager: ActorRef) extends UsersDBWorker(connectionManager) with Stash {
+class DBWorkerAuthentication(connectionManager: ActorRef) extends UsersDBWorker(connectionManager) with Stash {
 
 
   override def receive: Receive = {

@@ -38,6 +38,12 @@ class CollaborationMembersActor(connection: ActorRef, naming: ActorRef, channelC
         case _ => stash()
       }
 
+    case PublishUserLoginMessage(username, message) =>
+      pubChannel match {
+        case Some(channel) => publisher ! PublishMessage(channel, pubExchange.get, Some(username), Json.toJson(message))
+        case _ => stash
+      }
+
     case _ => println("[CollaborationMembersActor] Huh?")
   }
 }

@@ -67,3 +67,9 @@ trait QueryRetriveCollaboration extends QueryMessage {
 
 case class GetCollaboration(collaborationID: String) extends  QueryRetriveCollaboration
 
+/**
+  * Represents a query used to retreive all collaborations of a given user.
+  * @param username the username of the user.
+  */
+case class GetAllCollaborationsMessage(username: String) extends QueryMessage
+

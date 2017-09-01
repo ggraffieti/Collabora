@@ -101,6 +101,8 @@ class DBMasterActor(val system: ActorSystem, val notificationActor: ActorRef, va
       implicit val timeout: Timeout = Timeout(5 seconds)
       (loginActor ? message).mapTo[AuthenticationMessage] pipeTo sender
 
+    case message: GetAllCollaborationsMessage => getCollaborarionsActor ! message
+
     case fail: QueryFailMessage => fail.error.printStackTrace() // TODO error handling
   }
 

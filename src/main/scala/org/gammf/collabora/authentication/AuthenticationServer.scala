@@ -22,7 +22,7 @@ object AuthenticationServer {
     path("login") {
       authenticateBasicAsync(realm = "login", myUserPassAuthenticator) { username =>
         get {
-          authenticationActor ! SendAllCollaborationsMessage("maffone")
+          authenticationActor ! SendAllCollaborationsMessage(username)
           complete("OK")
         }
       }

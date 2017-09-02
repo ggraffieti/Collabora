@@ -206,16 +206,3 @@ trait TopicImpl[A] extends Topic[A] {
     case m :: _ => m + ""
   }
 }
-
-/**
-  * An enumeration containing all the application related topics.
-  */
-object TopicElement extends Enumeration {
-  val communication,
-      rabbitmq,
-      firebase,
-      http = Value
-
-  val database = Value
-  //TODO list all the database related topics
-}

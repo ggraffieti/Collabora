@@ -206,3 +206,45 @@ trait TopicImpl[A] extends Topic[A] {
     case m :: _ => m + ""
   }
 }
+
+object Topic {
+  def apply[A](topics :A*): Topic[A] = {
+    var topic: Topic[A] = EmptyTopic()
+    for (i <- topics.length -1 to 0 by -1) topic = topics(i) :: topic
+    topic
+  }
+}
+
+object UseTopic extends App {
+  import TopicElement._
+
+  println(ActualTopic(Communication, ActualTopic(Rabbitmq, EmptyTopic())))
+  println(Topic(Communication, Rabbitmq))
+  println(Communication :: Rabbitmq :: EmptyTopic())
+  println(Topic(Communication) ++ Topic(Rabbitmq))
+  println(Topic(Communication, Rabbitmq) flatMap(e => Topic(e, e)))
+  println(Topic(Communication, Rabbitmq).main.get)
+  println(Topic(Communication, Rabbitmq).subtopics.get.main.get)
+  println(Topic(Communication, Rabbitmq) map (e => if (e == Communication) 1 else 0))
+
+  println(Topic("boh", "ah") == Topic("boh", "ah"))
+  println(Topic(Communication, Http) == Topic(Communication, Http))
+  println(Topic("boh", "ah") == Topic("boh"))
+  println(Topic("boh") == Topic("boh", "ah"))
+  println(Topic("boh") == Topic("bohh"))
+
+  println(Topic(Communication, Http) size())
+  println(Topic() size())
+  println(Topic() :+ Communication size())
+
+  println(Topic(Communication) > Topic(Communication, Rabbitmq))
+  println(Topic(Communication, Rabbitmq) < Topic(Communication))
+  println(Topic(Communication) > Topic(database))
+  println(Topic(Communication) < Topic(database))
+  println(Topic(Communication, Rabbitmq) > Topic(Communication, Http))
+  println(Topic(Communication, Rabbitmq) < Topic(Communication, Http))
+
+  println(Communication +: Topic(Rabbitmq))
+  println(Topic(Communication) :+ Rabbitmq)
+  println(Topic() :+ Communication :+ Rabbitmq)
+}

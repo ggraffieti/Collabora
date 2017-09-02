@@ -9,6 +9,7 @@ import scala.annotation.tailrec
   * @tparam A the generic topic type class.
   */
 sealed trait Topic[A] {
+
   /**
     * Returns the main topic.
     */
@@ -116,7 +117,20 @@ sealed trait Topic[A] {
   def ::(element: A): Topic[A]
 }
 
+/**
+  * @author Manuel Peruzzi
+  * Represents an actual topic containing at least a main topic.
+  * @param _main the main topic.
+  * @param _subtopics the subtopics.
+  * @tparam A the generic topic type class.
+  */
 case class ActualTopic[A](_main: A, _subtopics: Topic[A]) extends TopicImpl[A]
+
+/**
+  * @author Manuel Peruzzi
+  * Represents an empty topic.
+  * @tparam A the generic topic type class.
+  */
 case class EmptyTopic[A]() extends TopicImpl[A]
 
 object :: {
@@ -191,4 +205,17 @@ trait TopicImpl[A] extends Topic[A] {
     case m :: s if s != EmptyTopic() => m + "." + s.toString
     case m :: _ => m + ""
   }
+}
+
+/**
+  * An enumeration containing all the application related topics.
+  */
+object TopicElement extends Enumeration {
+  val communication,
+      rabbitmq,
+      firebase,
+      http = Value
+
+  val database = Value
+  //TODO list all the database related topics
 }

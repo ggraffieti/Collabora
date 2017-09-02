@@ -1,5 +1,8 @@
 package org.gammf.collabora
 
+import org.gammf.collabora.yellowpages.messages.{ActorOKMessage, RegistrationRequestMessage}
+import org.gammf.collabora.yellowpages.util.ActorYellowPagesEntry
+
 package object yellowpages {
   /**
     * An enumeration containing all the application related topics.
@@ -38,4 +41,9 @@ package object yellowpages {
     // Database related services
     // TODO list all the database related services
   }
+
+  implicit def yellowPageEntry2ActorOK(entry: ActorYellowPagesEntry): ActorOKMessage =
+    ActorOKMessage(entry.reference, entry.topic, entry.service)
+  implicit def registrationRequest2YellowPageEntry(reg: RegistrationRequestMessage): ActorYellowPagesEntry =
+    ActorYellowPagesEntry(reg.actor, reg.topic, reg.service)
 }

@@ -12,10 +12,11 @@ trait YellowPagesMessage
 
 /**
   * Represents a registration request from an actor that wants to be included in the yellow pages.
+  * @param actor the actor that sends the registration request.
   * @param topic the topic to which the actor asks to be registered.
   * @param service the service offered by the actor.
   */
-case class RegistrationRequestMessage(topic: Topic[TopicElement], service: ActorService)
+case class RegistrationRequestMessage(actor: ActorRef, topic: Topic[TopicElement], service: ActorService)
   extends YellowPagesMessage
 
 /**

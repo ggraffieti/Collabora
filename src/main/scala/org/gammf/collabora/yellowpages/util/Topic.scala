@@ -1,4 +1,4 @@
-package org.gammf.collabora.yellowpages
+package org.gammf.collabora.yellowpages.util
 
 import scala.annotation.tailrec
 
@@ -216,7 +216,7 @@ object Topic {
 }
 
 object UseTopic extends App {
-  import TopicElement._
+  import org.gammf.collabora.yellowpages.TopicElement._
 
   println(ActualTopic(Communication, ActualTopic(Rabbitmq, EmptyTopic())))
   println(Topic(Communication, Rabbitmq))

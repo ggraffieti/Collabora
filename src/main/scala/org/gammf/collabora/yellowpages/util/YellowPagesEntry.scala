@@ -1,8 +1,8 @@
-package org.gammf.collabora.yellowpages
+package org.gammf.collabora.yellowpages.util
 
 import akka.actor.ActorRef
-import ActorService.ActorService
-import TopicElement.TopicElement
+import org.gammf.collabora.yellowpages.ActorService.ActorService
+import org.gammf.collabora.yellowpages.TopicElement.TopicElement
 
 /**
   * Represents a generic yellow pages entry.

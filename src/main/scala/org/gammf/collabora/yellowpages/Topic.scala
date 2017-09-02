@@ -116,10 +116,10 @@ sealed trait Topic[A] {
   def ::(element: A): Topic[A]
 }
 
-private[this] case class ActualTopic[A](_main: A, _subtopics: Topic[A]) extends TopicImpl[A]
-private[this] case class EmptyTopic[A]() extends TopicImpl[A]
+case class ActualTopic[A](_main: A, _subtopics: Topic[A]) extends TopicImpl[A]
+case class EmptyTopic[A]() extends TopicImpl[A]
 
-private[this] object :: {
+object :: {
   def unapply[A](topic: Topic[A]): Option[(A, Topic[A])] = topic match {
     case ActualTopic(m, s) => Some((m, s))
     case _ => None

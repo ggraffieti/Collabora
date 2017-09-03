@@ -10,13 +10,15 @@ package object yellowpages {
   object TopicElement extends Enumeration {
     type TopicElement = Value
 
+    // Communication related topics
     val Communication,
         Rabbitmq,
         Firebase,
-        Http = Value
-
-    val database = Value
+        Http,
+    // Database related topics
+        Database
     //TODO list all the database related topics
+    = Value
   }
 
   /**
@@ -26,24 +28,32 @@ package object yellowpages {
     type ActorService = Value
 
     // Yellow pages related services
-    val yellowPagesService = Value
-
+    val YellowPagesService,
     // Communication related services
-    // TODO update the list with http related services
-    val ChannelCreating,
+        ChannelCreating,
         Naming,
         Publishing,
         Subscribing,
         NotificationSending,
         CollaborationSending,
-        UpdatesReceiving = Value
-
+        UpdatesReceiving
+    // TODO update the list with http related services
     // Database related services
     // TODO list all the database related services
+    = Value
   }
 
-  implicit def yellowPageEntry2ActorOK(entry: ActorYellowPagesEntry): ActorOKMessage =
-    ActorOKMessage(entry.reference, entry.topic, entry.service)
+  /**
+    * Implicit conversion from a [[RegistrationRequestMessage]] to a [[ActorYellowPagesEntry]].
+    * Gets useful in the registration phase of an actor in the yellow pages.
+    */
   implicit def registrationRequest2YellowPageEntry(reg: RegistrationRequestMessage): ActorYellowPagesEntry =
     ActorYellowPagesEntry(reg.actor, reg.topic, reg.service)
+
+  /**
+    * Implicit conversion from a [[ActorYellowPagesEntry]] to a [[ActorOKMessage]].
+    * Gets useful to easily sends an actor contained in the yellow pages.
+    */
+  implicit def yellowPageEntry2ActorOK(entry: ActorYellowPagesEntry): ActorOKMessage =
+    ActorOKMessage(entry.reference, entry.topic, entry.service)
 }

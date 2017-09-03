@@ -26,7 +26,7 @@ class DBMasterActorTest extends TestKit (ActorSystem("CollaboraServer")) with Wo
   val SUBSCRIBER_ACTOR_NAME = "subscriber"
   val STRING_ENCODING = "UTF-8"
 
-  val TIMEOUT_SECOND = 60
+  val TIMEOUT_SECOND = 4
   val INTERVAL_MILLIS = 100;
 
   val dbConnectionActor: ActorRef = system.actorOf(Props[ConnectionManagerActor])
@@ -35,8 +35,9 @@ class DBMasterActorTest extends TestKit (ActorSystem("CollaboraServer")) with Wo
   val naming: ActorRef = system.actorOf(Props[RabbitMQNamingActor], NAMING_ACTOR_NAME)
   val channelCreator: ActorRef = system.actorOf(Props[ChannelCreatorActor], CHANNEL_CREATOR_NAME)
   val publisherActor: ActorRef = system.actorOf(Props[PublisherActor], PUBLISHER_ACTOR_NAME)
-  val notificationActor: ActorRef = system.actorOf(Props(new NotificationsSenderActor(connection, naming, channelCreator, publisherActor)))
-  val collaborationMemberActor:ActorRef = system.actorOf(Props(new CollaborationMembersActor(connection, naming, channelCreator, publisherActor)))
+  val collaborationMemberActor:ActorRef = system.actorOf(Props(
+    new CollaborationMembersActor(connection, naming, channelCreator, publisherActor)))
+  val notificationActor: ActorRef = system.actorOf(Props(new NotificationsSenderActor(connection, naming, channelCreator, publisherActor,system)))
   val dbMasterActor:ActorRef = system.actorOf(Props.create(classOf[DBMasterActor], system, notificationActor,collaborationMemberActor))
   val subscriber:ActorRef = system.actorOf(Props[SubscriberActor], SUBSCRIBER_ACTOR_NAME)
   val updatesReceiver:ActorRef = system.actorOf(Props(

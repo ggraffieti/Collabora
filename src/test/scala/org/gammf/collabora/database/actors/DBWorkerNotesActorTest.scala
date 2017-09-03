@@ -25,9 +25,10 @@ class DBWorkerNotesActorTest extends TestKit (ActorSystem("CollaboraServer")) wi
   val naming:ActorRef = system.actorOf(Props[RabbitMQNamingActor], NAMING_ACTOR_NAME)
   val channelCreator :ActorRef= system.actorOf(Props[ChannelCreatorActor], CHANNEL_CREATOR_NAME)
   val publisherActor:ActorRef = system.actorOf(Props[PublisherActor], PUBLISHER_ACTOR_NAME)
-  val notificationActor:ActorRef = system.actorOf(Props(new NotificationsSenderActor(connection, naming, channelCreator, publisherActor)))
-  val dbConnectionActor :ActorRef= system.actorOf(Props[ConnectionManagerActor])
+
   val collaborationMemberActor:ActorRef = system.actorOf(Props(new CollaborationMembersActor(connection, naming, channelCreator, publisherActor)))
+  val notificationActor:ActorRef = system.actorOf(Props(new NotificationsSenderActor(connection, naming, channelCreator, publisherActor,system)))
+  val dbConnectionActor :ActorRef= system.actorOf(Props[ConnectionManagerActor])
   val dbMasterActor:ActorRef = system.actorOf(Props.create(classOf[DBMasterActor], system, notificationActor,collaborationMemberActor))
   val connectionManagerActor: ActorRef =  system.actorOf(Props[ConnectionManagerActor])
   val notesActor:ActorRef = system.actorOf(Props.create(classOf[DBWorkerNotesActor], connectionManagerActor))

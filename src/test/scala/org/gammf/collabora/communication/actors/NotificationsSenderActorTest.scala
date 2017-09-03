@@ -27,7 +27,7 @@ class NotificationsSenderActorTest extends TestKit (ActorSystem("CollaboraServer
   private val EXCHANGE_NAME = "notifications"
   private val ROUTING_KEY = "59806a4af27da3fcfe0ac0ca"
   private val BROKER_HOST = "localhost"
-  val TIMEOUT_SECOND = 50
+  val TIMEOUT_SECOND = 4
   val INTERVAL_MILLIS = 100;
 
   val TASK_WAIT_TIME = 5;
@@ -37,9 +37,11 @@ class NotificationsSenderActorTest extends TestKit (ActorSystem("CollaboraServer
   val naming:ActorRef = system.actorOf(Props[RabbitMQNamingActor], NAMING_ACTOR_NAME)
   val channelCreator :ActorRef= system.actorOf(Props[ChannelCreatorActor], CHANNEL_CREATOR_NAME)
   val publisherActor:ActorRef = system.actorOf(Props[PublisherActor], PUBLISHER_ACTOR_NAME)
-  val notificationActor:ActorRef = system.actorOf(Props(new NotificationsSenderActor(connection, naming, channelCreator, publisherActor)))
+  val collaborationMemberActor:ActorRef = system.actorOf(Props(
+    new CollaborationMembersActor(connection, naming, channelCreator, publisherActor)))
+  val notificationActor:ActorRef = system.actorOf(Props(
+    new NotificationsSenderActor(connection, naming, channelCreator, publisherActor,system)))
   val dbConnectionActor :ActorRef= system.actorOf(Props[ConnectionManagerActor])
-  val collaborationMemberActor:ActorRef = system.actorOf(Props(new CollaborationMembersActor(connection, naming, channelCreator, publisherActor)))
   val dbMasterActor:ActorRef = system.actorOf(Props.create(classOf[DBMasterActor], system, notificationActor,collaborationMemberActor))
   val subscriber:ActorRef = system.actorOf(Props[SubscriberActor], SUBSCRIBER_ACTOR_NAME)
   val updatesReceiver :ActorRef= system.actorOf(Props(
@@ -91,7 +93,7 @@ class NotificationsSenderActorTest extends TestKit (ActorSystem("CollaboraServer
     }
 
     "notify clients when there are updates on db" in {
-      val message = "{\"messageType\": \"CREATION\",\"collaborationId\":\"59806a4af27da3fcfe0ac0ca\",\"target\" : \"NOTE\",\"user\" : \"maffone\",\"note\": {\"content\" : \"c'ho un nervoso che ti ciacherei la testa\",\"expiration\" : \"2017-08-07T08:01:17.171+02:00\",\"location\" : { \"latitude\" : 546, \"longitude\" : 324 },\"previousNotes\" : [ \"5980710df27da3fcfe0ac88e\", \"5980710df27da3fcfe0ac88f\" ],\"state\" : { \"definition\" : \"done\", \"responsible\" : \"maffone\"}}}"
+      val message = "{\"messageType\": \"CREATION\",\"collaborationId\":\"59806a4af27da3fcfe0ac0ca\",\"target\" : \"NOTE\",\"user\" : \"maffone\",\"note\": {\"content\" : \"prova test\",\"expiration\" : \"2017-08-07T08:01:17.171+02:00\",\"location\" : { \"latitude\" : 546, \"longitude\" : 324 },\"previousNotes\" : [ \"5980710df27da3fcfe0ac88e\", \"5980710df27da3fcfe0ac88f\" ],\"state\" : { \"definition\" : \"done\", \"responsible\" : \"maffone\"}}}"
       updatesReceiver ! StartMessage
       notificationActor ! StartMessage
       updatesReceiver ! ClientUpdateMessage(message)
@@ -99,7 +101,7 @@ class NotificationsSenderActorTest extends TestKit (ActorSystem("CollaboraServer
         msg should not be ""
       }
       val startMsg = "{\"target\":\"NOTE\",\"messageType\":\"CREATION\",\"user\":\"maffone\",\"note\":{\"id\":"
-      val endMsg = "\"content\":\"c'ho un nervoso che ti ciacherei la testa\",\"expiration\":\"2017-08-07T08:01:17.171+02:00\",\"location\":{\"latitude\":546,\"longitude\":324},\"previousNotes\":[\"5980710df27da3fcfe0ac88e\",\"5980710df27da3fcfe0ac88f\"],\"state\":{\"definition\":\"done\",\"responsible\":\"maffone\"}},\"collaborationId\":\"59806a4af27da3fcfe0ac0ca\"}"
+      val endMsg = "\"content\":\"prova test\",\"expiration\":\"2017-08-07T08:01:17.171+02:00\",\"location\":{\"latitude\":546,\"longitude\":324},\"previousNotes\":[\"5980710df27da3fcfe0ac88e\",\"5980710df27da3fcfe0ac88f\"],\"state\":{\"definition\":\"done\",\"responsible\":\"maffone\"}},\"collaborationId\":\"59806a4af27da3fcfe0ac0ca\"}"
 
       assert(msg.startsWith(startMsg)&& msg.endsWith(endMsg))
     }

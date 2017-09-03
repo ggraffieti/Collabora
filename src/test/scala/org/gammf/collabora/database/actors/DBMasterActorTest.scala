@@ -18,18 +18,29 @@ class DBMasterActorTest extends TestKit (ActorSystem("CollaboraServer")) with Wo
   private val ROUTING_KEY = "59806a4af27da3fcfe0ac0ca"
   private val BROKER_HOST = "localhost"
 
+  val CONNECTION_ACTOR_NAME = "rabbitmq"
+  val NAMING_ACTOR_NAME = "naming"
+  val CHANNEL_CREATOR_NAME = "channelCreator"
+  val PUBLISHER_ACTOR_NAME = "publisher"
+  val UPDATES_RECEIVER_ACTOR_NAME = "updates-receiver"
+  val SUBSCRIBER_ACTOR_NAME = "subscriber"
+  val STRING_ENCODING = "UTF-8"
+
+  val TIMEOUT_SECOND = 60
+  val INTERVAL_MILLIS = 100;
+
   val dbConnectionActor: ActorRef = system.actorOf(Props[ConnectionManagerActor])
   val factory = new ConnectionFactory()
-  val connection:ActorRef = system.actorOf(ConnectionActor.props(factory), "rabbitmq")
-  val naming: ActorRef = system.actorOf(Props[RabbitMQNamingActor], "naming")
-  val channelCreator: ActorRef = system.actorOf(Props[ChannelCreatorActor], "channelCreator")
-  val publisherActor: ActorRef = system.actorOf(Props[PublisherActor], "publisher")
+  val connection:ActorRef = system.actorOf(ConnectionActor.props(factory), CONNECTION_ACTOR_NAME)
+  val naming: ActorRef = system.actorOf(Props[RabbitMQNamingActor], NAMING_ACTOR_NAME)
+  val channelCreator: ActorRef = system.actorOf(Props[ChannelCreatorActor], CHANNEL_CREATOR_NAME)
+  val publisherActor: ActorRef = system.actorOf(Props[PublisherActor], PUBLISHER_ACTOR_NAME)
   val notificationActor: ActorRef = system.actorOf(Props(new NotificationsSenderActor(connection, naming, channelCreator, publisherActor)))
   val collaborationMemberActor:ActorRef = system.actorOf(Props(new CollaborationMembersActor(connection, naming, channelCreator, publisherActor)))
   val dbMasterActor:ActorRef = system.actorOf(Props.create(classOf[DBMasterActor], system, notificationActor,collaborationMemberActor))
-  val subscriber:ActorRef = system.actorOf(Props[SubscriberActor], "subscriber")
+  val subscriber:ActorRef = system.actorOf(Props[SubscriberActor], SUBSCRIBER_ACTOR_NAME)
   val updatesReceiver:ActorRef = system.actorOf(Props(
-    new UpdatesReceiverActor(connection, naming, channelCreator, subscriber, dbMasterActor)), "updates-receiver")
+    new UpdatesReceiverActor(connection, naming, channelCreator, subscriber, dbMasterActor)), UPDATES_RECEIVER_ACTOR_NAME)
 
   var msg: String = ""
 
@@ -43,7 +54,7 @@ class DBMasterActorTest extends TestKit (ActorSystem("CollaboraServer")) with Wo
     channel.queueBind(queueName, EXCHANGE_NAME, ROUTING_KEY)
     val consumer = new DefaultConsumer(channel) {
       override def handleDelivery(consumerTag: String, envelope: Envelope, properties: AMQP.BasicProperties, body: Array[Byte]): Unit = {
-        msg = new String(body, "UTF-8")
+        msg = new String(body, STRING_ENCODING)
       }
     }
     channel.basicConsume(queueName, true, consumer)
@@ -57,8 +68,8 @@ class DBMasterActorTest extends TestKit (ActorSystem("CollaboraServer")) with Wo
   }
 
   override implicit val patienceConfig: PatienceConfig = PatienceConfig(
-    timeout = scaled(2 seconds),
-    interval = scaled(100 millis)
+    timeout = scaled(TIMEOUT_SECOND seconds),
+    interval = scaled(INTERVAL_MILLIS millis)
   )
 
   "A DBMaster actor" should {

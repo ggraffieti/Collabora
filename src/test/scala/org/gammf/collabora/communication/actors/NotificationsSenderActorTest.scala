@@ -15,22 +15,35 @@ import org.scalatest.concurrent.Eventually
 
 class NotificationsSenderActorTest extends TestKit (ActorSystem("CollaboraServer")) with WordSpecLike with Eventually with DefaultTimeout with Matchers with BeforeAndAfterAll with ImplicitSender {
 
+  val CONNECTION_ACTOR_NAME = "rabbitmq"
+  val NAMING_ACTOR_NAME = "naming"
+  val CHANNEL_CREATOR_NAME = "channelCreator"
+  private val PUBLISHER_ACTOR_NAME = "publisher"
+  val SUBSCRIBER_ACTOR_NAME = "subscriber"
+  val UPDATES_RECEIVER_ACTOR_NAME = "updates-receiver"
+
+  val STRING_ENCODING = "UTF-8"
+
   private val EXCHANGE_NAME = "notifications"
   private val ROUTING_KEY = "59806a4af27da3fcfe0ac0ca"
   private val BROKER_HOST = "localhost"
+  val TIMEOUT_SECOND = 50
+  val INTERVAL_MILLIS = 100;
+
+  val TASK_WAIT_TIME = 5;
 
   val factory = new ConnectionFactory()
-  val connection:ActorRef = system.actorOf(ConnectionActor.props(factory), "rabbitmq")
-  val naming:ActorRef = system.actorOf(Props[RabbitMQNamingActor], "naming")
-  val channelCreator :ActorRef= system.actorOf(Props[ChannelCreatorActor], "channelCreator")
-  val publisherActor:ActorRef = system.actorOf(Props[PublisherActor], "publisher")
+  val connection:ActorRef = system.actorOf(ConnectionActor.props(factory), CONNECTION_ACTOR_NAME)
+  val naming:ActorRef = system.actorOf(Props[RabbitMQNamingActor], NAMING_ACTOR_NAME)
+  val channelCreator :ActorRef= system.actorOf(Props[ChannelCreatorActor], CHANNEL_CREATOR_NAME)
+  val publisherActor:ActorRef = system.actorOf(Props[PublisherActor], PUBLISHER_ACTOR_NAME)
   val notificationActor:ActorRef = system.actorOf(Props(new NotificationsSenderActor(connection, naming, channelCreator, publisherActor)))
   val dbConnectionActor :ActorRef= system.actorOf(Props[ConnectionManagerActor])
   val collaborationMemberActor:ActorRef = system.actorOf(Props(new CollaborationMembersActor(connection, naming, channelCreator, publisherActor)))
   val dbMasterActor:ActorRef = system.actorOf(Props.create(classOf[DBMasterActor], system, notificationActor,collaborationMemberActor))
-  val subscriber:ActorRef = system.actorOf(Props[SubscriberActor], "subscriber")
+  val subscriber:ActorRef = system.actorOf(Props[SubscriberActor], SUBSCRIBER_ACTOR_NAME)
   val updatesReceiver :ActorRef= system.actorOf(Props(
-    new UpdatesReceiverActor(connection, naming, channelCreator, subscriber, dbMasterActor)), "updates-receiver")
+    new UpdatesReceiverActor(connection, naming, channelCreator, subscriber, dbMasterActor)), UPDATES_RECEIVER_ACTOR_NAME)
 
   var msg: String = ""
 
@@ -45,7 +58,7 @@ class NotificationsSenderActorTest extends TestKit (ActorSystem("CollaboraServer
     channel.queueBind(queueName, EXCHANGE_NAME, ROUTING_KEY)
     val consumer = new DefaultConsumer(channel) {
       override def handleDelivery(consumerTag: String, envelope: Envelope, properties: AMQP.BasicProperties, body: Array[Byte]): Unit = {
-        msg = new String(body, "UTF-8")
+        msg = new String(body, STRING_ENCODING)
       }
     }
     channel.basicConsume(queueName, true, consumer)
@@ -57,22 +70,22 @@ class NotificationsSenderActorTest extends TestKit (ActorSystem("CollaboraServer
   }
 
   override implicit val patienceConfig: PatienceConfig = PatienceConfig(
-    timeout = scaled(4 seconds),
-    interval = scaled(100 millis)
+    timeout = scaled(TIMEOUT_SECOND seconds),
+    interval = scaled(INTERVAL_MILLIS millis)
   )
 
   "A NotificationsSender actor" should {
 
     "communicate with RabbitMQNamingActor" in {
-      within(5 seconds){
+      within(TASK_WAIT_TIME seconds){
         naming ! ChannelNamesRequestMessage(CommunicationType.NOTIFICATIONS)
-        expectMsg(ChannelNamesResponseMessage("notifications", None))
+        expectMsg(ChannelNamesResponseMessage(EXCHANGE_NAME, None))
       }
     }
 
     "communicate with channelCreatorActor" in {
-      within(5 seconds){
-        channelCreator ! PublishingChannelCreationMessage(connection, "notifications", None)
+      within(TASK_WAIT_TIME seconds){
+        channelCreator ! PublishingChannelCreationMessage(connection, EXCHANGE_NAME, None)
         expectMsgType[ChannelCreatedMessage]
       }
     }

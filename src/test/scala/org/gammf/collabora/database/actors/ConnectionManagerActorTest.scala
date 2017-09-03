@@ -8,6 +8,8 @@ import akka.actor.{ActorRef, ActorSystem, Props}
 
   class ConnectionManagerActorTest extends TestKit (ActorSystem("CollaboraServer")) with WordSpecLike  with Matchers with BeforeAndAfterAll with ImplicitSender {
 
+    val TASK_WAIT_TIME = 5
+
     val dbConnectionActor:ActorRef = system.actorOf(Props[ConnectionManagerActor])
 
     override def afterAll(): Unit = {
@@ -17,7 +19,7 @@ import akka.actor.{ActorRef, ActorSystem, Props}
     "A ConnectionManager actor" should {
 
       "send back connection message correctly" in {
-        within(5 seconds) {
+        within(TASK_WAIT_TIME seconds) {
           dbConnectionActor ! new AskConnectionMessage()
           expectMsgType[GetConnectionMessage]
         }

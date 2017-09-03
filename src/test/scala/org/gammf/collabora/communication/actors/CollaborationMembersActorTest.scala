@@ -15,6 +15,18 @@ import org.scalatest.concurrent.Eventually
 
 class CollaborationMembersActorTest extends TestKit (ActorSystem("CollaboraServer")) with WordSpecLike with Eventually with DefaultTimeout with Matchers with BeforeAndAfterAll with ImplicitSender {
 
+  val EXCHANGE_NAME_COLLABORATIONS = "collaborations"
+  val COLLABORATION_ROUTING_KEY = "maffone"
+
+  val EXCHANGE_NAME_NOTIFICATIONS = "notifications"
+  val NOTIFICATIONS_ROUTING_KEY = "123456788698540008900400"
+
+  val FAKE_BROKER_HOST = "localhost"
+  val TIMEOUT_SECOND = 30
+  val INTERVAL_MILLIS = 100;
+
+  val TASK_WAIT_TIME = 5;
+
   val factory = new ConnectionFactory()
   val connection:ActorRef = system.actorOf(ConnectionActor.props(factory), "rabbitmq")
   val naming: ActorRef = system.actorOf(Props[RabbitMQNamingActor], "naming")
@@ -30,10 +42,9 @@ class CollaborationMembersActorTest extends TestKit (ActorSystem("CollaboraServe
 
   var msgCollab,msgNotif: String = ""
 
-
   override def beforeAll(): Unit = {
-      fakeReceiver("collaborations","maffone","localhost")
-      fakeReceiver("notifications","123456788698540008900400","localhost")
+      fakeReceiver(EXCHANGE_NAME_COLLABORATIONS, COLLABORATION_ROUTING_KEY, FAKE_BROKER_HOST)
+      fakeReceiver(EXCHANGE_NAME_NOTIFICATIONS, NOTIFICATIONS_ROUTING_KEY, FAKE_BROKER_HOST)
   }
 
   override def afterAll(): Unit = {
@@ -41,22 +52,22 @@ class CollaborationMembersActorTest extends TestKit (ActorSystem("CollaboraServe
   }
 
   override implicit val patienceConfig: PatienceConfig = PatienceConfig(
-    timeout = scaled(2 seconds),
-    interval = scaled(100 millis)
+    timeout = scaled(TIMEOUT_SECOND seconds),
+    interval = scaled(INTERVAL_MILLIS millis)
   )
 
   "A CollaborationMember actor" should {
 
     "communicate with RabbitMQNamingActor" in {
-      within(5 seconds){
+      within(TASK_WAIT_TIME seconds){
         naming ! ChannelNamesRequestMessage(CommunicationType.COLLABORATIONS)
-        expectMsg(ChannelNamesResponseMessage("collaborations", None))
+        expectMsg(ChannelNamesResponseMessage(EXCHANGE_NAME_COLLABORATIONS, None))
       }
     }
 
     "communicate with channelCreatorActor" in {
-      within(5 seconds){
-        channelCreator ! PublishingChannelCreationMessage(connection, "collaborations", None)
+      within(TASK_WAIT_TIME seconds){
+        channelCreator ! PublishingChannelCreationMessage(connection, EXCHANGE_NAME_COLLABORATIONS, None)
         expectMsgType[ChannelCreatedMessage]
       }
     }

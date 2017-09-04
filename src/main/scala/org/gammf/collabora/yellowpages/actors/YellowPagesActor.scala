@@ -1,6 +1,6 @@
 package org.gammf.collabora.yellowpages.actors
 
-import akka.actor.{Actor, ActorRef, Props}
+import akka.actor.{Actor, ActorRef, ActorSystem, Props}
 import org.gammf.collabora.yellowpages.messages._
 import org.gammf.collabora.yellowpages.util.{ActorYellowPagesEntry, Topic}
 import org.gammf.collabora.yellowpages.ActorService._
@@ -15,7 +15,7 @@ trait YellowPagesActor extends Actor {
   val name: String
   private[this] var yellowPages: List[ActorYellowPagesEntry] = List()
   private[this] val getValidYellowPagesActors: Topic[TopicElement] => List[ActorYellowPagesEntry] =
-    topic => yellowPages.filter(yp => yp.topic >= topic && yp.service == YellowPagesService)
+    topic => yellowPages.filter(yp => yp.topic > topic && yp.service == YellowPagesService)
 
   override def receive: Receive = {
     case msg: RegistrationRequestMessage => getValidYellowPagesActors(msg.topic) match {
@@ -23,11 +23,11 @@ trait YellowPagesActor extends Actor {
       case _ => yellowPages = msg :: yellowPages; sender ! RegistrationOKMessage(); println("[" + name + "]" + yellowPages)
     }
 
-    case msg: ActorRequestMessage => yellowPages.filter(yp => msg.topic == yp.topic && msg.service == yp.service) match {
-      case h :: _ => sender ! ActorOKMessage(h.reference, h.topic, h.service)
+    case msg: ActorRequestMessage => yellowPages.filter(yp => msg.topic == yp.topic && msg.service == yp.service && !yp.used) match {
+      case h :: t => sender ! (h: ActorOKMessage); h.used = true; if ((h :: t).forall(yp => yp.used)) (h :: t).foreach(yp => yp.used = false)
       case _ => getValidYellowPagesActors(msg.topic) match {
         case h :: _ => h.reference forward msg
-        case _ => sender ! ActorErrorMessage(msg.topic, msg.service)
+        case _ => sender ! (msg: ActorErrorMessage)
       }
     }
   }

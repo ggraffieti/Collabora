@@ -15,18 +15,6 @@ import org.scalatest.concurrent.Eventually
 
 class CollaborationMembersActorTest extends TestKit (ActorSystem("CollaboraServer")) with WordSpecLike with Eventually with DefaultTimeout with Matchers with BeforeAndAfterAll with ImplicitSender {
 
-  val EXCHANGE_NAME_COLLABORATIONS = "collaborations"
-  val COLLABORATION_ROUTING_KEY = "maffone"
-
-  val EXCHANGE_NAME_NOTIFICATIONS = "notifications"
-  val NOTIFICATIONS_ROUTING_KEY = "59804868f27da3fcfe0a8e20"
-
-  val FAKE_BROKER_HOST = "localhost"
-  val TIMEOUT_SECOND = 4
-  val INTERVAL_MILLIS = 100;
-
-  val TASK_WAIT_TIME = 5;
-
   val factory = new ConnectionFactory()
   val connection:ActorRef = system.actorOf(ConnectionActor.props(factory), "rabbitmq")
   val naming: ActorRef = system.actorOf(Props[RabbitMQNamingActor], "naming")
@@ -43,9 +31,8 @@ class CollaborationMembersActorTest extends TestKit (ActorSystem("CollaboraServe
   var msgCollab,msgNotif: String = ""
 
   override def beforeAll(): Unit = {
-
-      fakeReceiver(EXCHANGE_NAME_COLLABORATIONS, COLLABORATION_ROUTING_KEY, FAKE_BROKER_HOST)
-      fakeReceiver(EXCHANGE_NAME_NOTIFICATIONS, NOTIFICATIONS_ROUTING_KEY, FAKE_BROKER_HOST)
+      fakeReceiver(CommunicationTestUtil.TYPE_COLLABORATIONS, CommunicationTestUtil.COLLABORATION_ROUTING_KEY, CommunicationTestUtil.FAKE_BROKER_HOST)
+      fakeReceiver(CommunicationTestUtil.TYPE_NOTIFICATIONS, CommunicationTestUtil.NOTIFICATIONS_ROUTING_KEY, CommunicationTestUtil.FAKE_BROKER_HOST)
   }
 
   override def afterAll(): Unit = {
@@ -53,22 +40,22 @@ class CollaborationMembersActorTest extends TestKit (ActorSystem("CollaboraServe
   }
 
   override implicit val patienceConfig: PatienceConfig = PatienceConfig(
-    timeout = scaled(TIMEOUT_SECOND seconds),
-    interval = scaled(INTERVAL_MILLIS millis)
+    timeout = scaled(CommunicationTestUtil.TIMEOUT_SECOND seconds),
+    interval = scaled(CommunicationTestUtil.INTERVAL_MILLIS millis)
   )
 
   "A CollaborationMember actor" should {
 
     "communicate with RabbitMQNamingActor" in {
-      within(TASK_WAIT_TIME seconds){
+      within(CommunicationTestUtil.TASK_WAIT_TIME seconds){
         naming ! ChannelNamesRequestMessage(CommunicationType.COLLABORATIONS)
-        expectMsg(ChannelNamesResponseMessage(EXCHANGE_NAME_COLLABORATIONS, None))
+        expectMsg(ChannelNamesResponseMessage(CommunicationTestUtil.TYPE_COLLABORATIONS, None))
       }
     }
 
     "communicate with channelCreatorActor" in {
-      within(TASK_WAIT_TIME seconds){
-        channelCreator ! PublishingChannelCreationMessage(connection, EXCHANGE_NAME_COLLABORATIONS, None)
+      within(CommunicationTestUtil.TASK_WAIT_TIME seconds){
+        channelCreator ! PublishingChannelCreationMessage(connection, CommunicationTestUtil.TYPE_COLLABORATIONS, None)
         expectMsgType[ChannelCreatedMessage]
       }
     }
@@ -89,7 +76,6 @@ class CollaborationMembersActorTest extends TestKit (ActorSystem("CollaboraServe
             && msgCollab.startsWith("{\"user\":\"maffone\",\"collaboration\":{\"id\":\"59804868f27da3fcfe0a8e20\",\"name\":\"Prova Project\",\"collaborationType\":\"GROUP\""))
     }
 
-
   }
 
   def fakeReceiver(exchangeName:String, routingKey:String, brokerHost:String):Unit = {
@@ -102,15 +88,12 @@ class CollaborationMembersActorTest extends TestKit (ActorSystem("CollaboraServe
     channel.queueBind(queueName, exchangeName, routingKey)
     val consumer = new DefaultConsumer(channel) {
       override def handleDelivery(consumerTag: String, envelope: Envelope, properties: AMQP.BasicProperties, body: Array[Byte]): Unit = {
-        val tmpMsg = new String(body, "UTF-8")
+        val tmpMsg = new String(body, CommunicationTestUtil.STRING_ENCODING)
         if (tmpMsg.startsWith("{\"target\":\"MEMBER\",\"messageType\":\"CREATION\",\"user\":\"maffone\",\"member\"")) msgNotif = tmpMsg
         else msgCollab = tmpMsg
       }
     }
     channel.basicConsume(queueName, true, consumer)
   }
-
-
-
 
 }

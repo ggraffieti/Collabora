@@ -11,9 +11,6 @@ class ChannelCreatorActorTest extends TestKit (ActorSystem("CollaboraServer")) w
     val CONNECTION_ACTOR_NAME = "rabbitmq"
     val NAMING_ACTOR_NAME = "naming"
     val CHANNEL_CREATOR_NAME = "channelCreator"
-    val TYPE_UPDATES = "updates"
-    val SERVER_UPDATE = "update.server"
-    val TYPE_COLLABORATIONS = "collaborations"
 
     val factory = new ConnectionFactory()
     val connection:ActorRef = system.actorOf(ConnectionActor.props(factory), CONNECTION_ACTOR_NAME)
@@ -27,9 +24,9 @@ class ChannelCreatorActorTest extends TestKit (ActorSystem("CollaboraServer")) w
     "A ChannelCreator actor" must {
 
       "builds and returns to the sender a specific RabbitMQ channel created on the provided connection" in {
-        channelCreator ! SubscribingChannelCreationMessage(connection, TYPE_UPDATES, SERVER_UPDATE, None)
+        channelCreator ! SubscribingChannelCreationMessage(connection, CommunicationTestUtil.TYPE_UPDATES, CommunicationTestUtil.SERVER_UPDATE, None)
         expectMsgType[ChannelCreatedMessage]
-        channelCreator ! PublishingChannelCreationMessage(connection, TYPE_COLLABORATIONS, None)
+        channelCreator ! PublishingChannelCreationMessage(connection, CommunicationTestUtil.TYPE_COLLABORATIONS, None)
         expectMsgType[ChannelCreatedMessage]
       }
 

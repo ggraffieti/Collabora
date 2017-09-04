@@ -25,4 +25,4 @@ notifications:
       - federico.vitali2@studio.unibo.it
       - mattia.oriani@studio.unibo.it
     on_success: never
-    on_failure: always
+    on_failure: never

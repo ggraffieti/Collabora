@@ -3,6 +3,7 @@ package org.gammf.collabora.communication.actors
 import akka.actor.{ActorRef, ActorSystem, Props}
 import akka.testkit.{ImplicitSender, TestKit}
 import com.newmotion.akka.rabbitmq.{ConnectionActor, ConnectionFactory}
+import org.gammf.collabora.TestUtil
 import org.gammf.collabora.communication.messages.{ChannelCreatedMessage, PublishingChannelCreationMessage, SubscribingChannelCreationMessage}
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
 
@@ -24,9 +25,9 @@ class ChannelCreatorActorTest extends TestKit (ActorSystem("CollaboraServer")) w
     "A ChannelCreator actor" must {
 
       "builds and returns to the sender a specific RabbitMQ channel created on the provided connection" in {
-        channelCreator ! SubscribingChannelCreationMessage(connection, CommunicationTestUtil.TYPE_UPDATES, CommunicationTestUtil.SERVER_UPDATE, None)
+        channelCreator ! SubscribingChannelCreationMessage(connection, TestUtil.TYPE_UPDATES, TestUtil.SERVER_UPDATE, None)
         expectMsgType[ChannelCreatedMessage]
-        channelCreator ! PublishingChannelCreationMessage(connection, CommunicationTestUtil.TYPE_COLLABORATIONS, None)
+        channelCreator ! PublishingChannelCreationMessage(connection, TestUtil.TYPE_COLLABORATIONS, None)
         expectMsgType[ChannelCreatedMessage]
       }
 

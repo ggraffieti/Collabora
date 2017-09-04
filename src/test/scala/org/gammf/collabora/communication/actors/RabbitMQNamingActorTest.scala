@@ -3,9 +3,11 @@ package org.gammf.collabora.communication.actors
 import akka.actor.{ActorRef, ActorSystem, Props}
 import akka.testkit.{ImplicitSender, TestKit}
 import com.newmotion.akka.rabbitmq.{ConnectionActor, ConnectionFactory}
+import org.gammf.collabora.TestUtil
 import org.gammf.collabora.communication.Utils.CommunicationType
 import org.gammf.collabora.communication.messages.{ChannelNamesRequestMessage, ChannelNamesResponseMessage, PublishMemberAddedMessage}
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
+
 import scala.concurrent.duration._
 
 class RabbitMQNamingActorTest extends TestKit (ActorSystem("CollaboraServer")) with WordSpecLike with Matchers with BeforeAndAfterAll with ImplicitSender {
@@ -32,23 +34,23 @@ class RabbitMQNamingActorTest extends TestKit (ActorSystem("CollaboraServer")) w
   "A RabbitMQNaming actor" should {
 
     "handles collaboration naming requests" in {
-      within(CommunicationTestUtil.TASK_WAIT_TIME seconds){
+      within(TestUtil.TASK_WAIT_TIME seconds){
         naming ! ChannelNamesRequestMessage(CommunicationType.COLLABORATIONS)
-        expectMsg(ChannelNamesResponseMessage(CommunicationTestUtil.TYPE_COLLABORATIONS, None))
+        expectMsg(ChannelNamesResponseMessage(TestUtil.TYPE_COLLABORATIONS, None))
       }
     }
 
     "handles updates naming requests" in {
-      within(CommunicationTestUtil.TASK_WAIT_TIME seconds){
+      within(TestUtil.TASK_WAIT_TIME seconds){
         naming ! ChannelNamesRequestMessage(CommunicationType.UPDATES)
-        expectMsg(ChannelNamesResponseMessage(CommunicationTestUtil.TYPE_UPDATES,Some(CommunicationTestUtil.SERVER_UPDATE)))
+        expectMsg(ChannelNamesResponseMessage(TestUtil.TYPE_UPDATES,Some(TestUtil.SERVER_UPDATE)))
       }
     }
 
     "handles notification naming requests" in {
-      within(CommunicationTestUtil.TASK_WAIT_TIME seconds){
+      within(TestUtil.TASK_WAIT_TIME seconds){
         naming ! ChannelNamesRequestMessage(CommunicationType.NOTIFICATIONS)
-        expectMsg(ChannelNamesResponseMessage(CommunicationTestUtil.TYPE_NOTIFICATIONS, None))
+        expectMsg(ChannelNamesResponseMessage(TestUtil.TYPE_NOTIFICATIONS, None))
       }
     }
   }

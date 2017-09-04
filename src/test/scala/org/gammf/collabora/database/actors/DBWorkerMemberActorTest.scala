@@ -3,6 +3,7 @@ package org.gammf.collabora.database.actors
 import akka.actor.{ActorRef, ActorSystem, Props}
 import akka.testkit.{ImplicitSender, TestKit}
 import com.newmotion.akka.rabbitmq.{ConnectionActor, ConnectionFactory}
+import org.gammf.collabora.TestUtil
 import org.gammf.collabora.communication.actors._
 import org.gammf.collabora.database.messages._
 import org.gammf.collabora.util.{CollaborationRight, CollaborationUser}
@@ -16,10 +17,8 @@ class DBWorkerMemberActorTest extends TestKit (ActorSystem("CollaboraServer")) w
   val NAMING_ACTOR_NAME = "naming"
   val CHANNEL_CREATOR_NAME = "channelCreator"
   val PUBLISHER_ACTOR_NAME = "publisher"
+
   val COLLABORATION_USERNAME = "peru"
-  val TEST_COLLABORATION_ID = "59806a4af27da3fcfe0ac0ca"
-  val TEST_USER_ID = "maffone"
-  val TASK_WAIT_TIME = 5
 
   val factory = new ConnectionFactory()
   val connection:ActorRef = system.actorOf(ConnectionActor.props(factory), CONNECTION_ACTOR_NAME)
@@ -46,22 +45,22 @@ class DBWorkerMemberActorTest extends TestKit (ActorSystem("CollaboraServer")) w
 
   "A DBWorkerMember actor" should {
     "insert new user in a collaboration correctly in the db" in {
-      within(TASK_WAIT_TIME second) {
-        usersActor ! InsertUserMessage(user, TEST_COLLABORATION_ID, TEST_USER_ID)
+      within(TestUtil.TASK_WAIT_TIME second) {
+        usersActor ! InsertUserMessage(user, TestUtil.FAKE_ID, TestUtil.FAKE_USER_ID)
         expectMsgType[QueryOkMessage]
       }
     }
 
     "update a user right in a collaboration correctly" in {
-      within(TASK_WAIT_TIME second) {
-        usersActor ! UpdateUserMessage(user, TEST_COLLABORATION_ID, TEST_USER_ID)
+      within(TestUtil.TASK_WAIT_TIME second) {
+        usersActor ! UpdateUserMessage(user, TestUtil.FAKE_ID, TestUtil.FAKE_USER_ID)
         expectMsgType[QueryOkMessage]
       }
     }
 
     "delete a user in a collaboration correctly" in {
-      within(TASK_WAIT_TIME second) {
-        usersActor ! DeleteUserMessage(user, TEST_COLLABORATION_ID, TEST_USER_ID)
+      within(TestUtil.TASK_WAIT_TIME second) {
+        usersActor ! DeleteUserMessage(user,  TestUtil.FAKE_ID, TestUtil.FAKE_USER_ID)
         expectMsgType[QueryOkMessage]
       }
     }

@@ -4,6 +4,7 @@ import akka.actor.{ActorRef, ActorSystem, Props}
 import akka.testkit.{DefaultTimeout, ImplicitSender, TestKit}
 import com.newmotion.akka.rabbitmq.{ConnectionActor, ConnectionFactory}
 import com.rabbitmq.client.{ConnectionFactory, _}
+import org.gammf.collabora.TestUtil
 import org.gammf.collabora.EntryPoint.{notificationActor, system}
 import org.gammf.collabora.communication.Utils.CommunicationType
 import org.gammf.collabora.communication.messages._
@@ -42,15 +43,15 @@ class NotificationsSenderActorTest extends TestKit (ActorSystem("CollaboraServer
 
   override def beforeAll(): Unit ={
     val factory = new ConnectionFactory
-    factory.setHost(CommunicationTestUtil.BROKER_HOST)
+    factory.setHost(TestUtil.BROKER_HOST)
     val connection = factory.newConnection
     val channel = connection.createChannel
-    channel.exchangeDeclare(CommunicationTestUtil.TYPE_NOTIFICATIONS, BuiltinExchangeType.DIRECT, true)
+    channel.exchangeDeclare(TestUtil.TYPE_NOTIFICATIONS, BuiltinExchangeType.DIRECT, true)
     val queueName = channel.queueDeclare.getQueue
-    channel.queueBind(queueName, CommunicationTestUtil.TYPE_NOTIFICATIONS, CommunicationTestUtil.NOTIFICATIONS_ROUTING_KEY)
+    channel.queueBind(queueName, TestUtil.TYPE_NOTIFICATIONS, TestUtil.NOTIFICATIONS_ROUTING_KEY)
     val consumer = new DefaultConsumer(channel) {
       override def handleDelivery(consumerTag: String, envelope: Envelope, properties: AMQP.BasicProperties, body: Array[Byte]): Unit = {
-        msg = new String(body, CommunicationTestUtil.STRING_ENCODING)
+        msg = new String(body, TestUtil.STRING_ENCODING)
       }
     }
     channel.basicConsume(queueName, true, consumer)
@@ -62,22 +63,22 @@ class NotificationsSenderActorTest extends TestKit (ActorSystem("CollaboraServer
   }
 
   override implicit val patienceConfig: PatienceConfig = PatienceConfig(
-    timeout = scaled(CommunicationTestUtil.TIMEOUT_SECOND seconds),
-    interval = scaled(CommunicationTestUtil.INTERVAL_MILLIS millis)
+    timeout = scaled(TestUtil.TIMEOUT_SECOND seconds),
+    interval = scaled(TestUtil.INTERVAL_MILLIS millis)
   )
 
   "A NotificationsSender actor" should {
 
     "communicate with RabbitMQNamingActor" in {
-      within(CommunicationTestUtil.TASK_WAIT_TIME seconds){
+      within(TestUtil.TASK_WAIT_TIME seconds){
         naming ! ChannelNamesRequestMessage(CommunicationType.NOTIFICATIONS)
-        expectMsg(ChannelNamesResponseMessage(CommunicationTestUtil.TYPE_NOTIFICATIONS, None))
+        expectMsg(ChannelNamesResponseMessage(TestUtil.TYPE_NOTIFICATIONS, None))
       }
     }
 
     "communicate with channelCreatorActor" in {
-      within(CommunicationTestUtil.TASK_WAIT_TIME seconds){
-        channelCreator ! PublishingChannelCreationMessage(connection, CommunicationTestUtil.TYPE_NOTIFICATIONS, None)
+      within(TestUtil.TASK_WAIT_TIME seconds){
+        channelCreator ! PublishingChannelCreationMessage(connection, TestUtil.TYPE_NOTIFICATIONS, None)
         expectMsgType[ChannelCreatedMessage]
       }
     }

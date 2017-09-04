@@ -1,8 +1,9 @@
 package org.gammf.collabora.communication.actors
 
 import akka.actor.{ActorRef, ActorSystem, Props}
-import akka.testkit.{ ImplicitSender, TestKit}
+import akka.testkit.{ImplicitSender, TestKit}
 import com.newmotion.akka.rabbitmq.{ConnectionActor, ConnectionFactory}
+import org.gammf.collabora.TestUtil
 import org.gammf.collabora.communication.Utils.CommunicationType
 import org.gammf.collabora.communication.messages._
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
@@ -27,15 +28,15 @@ class UpdatesReceiverActorTest extends TestKit (ActorSystem("CollaboraServer")) 
   "A UpdatesReceived actor" should {
 
     "start correctly" in {
-      within(CommunicationTestUtil.TASK_WAIT_TIME seconds){
+      within(TestUtil.TASK_WAIT_TIME seconds){
         naming ! ChannelNamesRequestMessage(CommunicationType.UPDATES)
-        expectMsg(ChannelNamesResponseMessage(CommunicationTestUtil.TYPE_UPDATES,Some(CommunicationTestUtil.SERVER_UPDATE)))
+        expectMsg(ChannelNamesResponseMessage(TestUtil.TYPE_UPDATES,Some(TestUtil.SERVER_UPDATE)))
       }
     }
 
     "create channel correctly" in {
-      within(CommunicationTestUtil.TASK_WAIT_TIME seconds){
-        channelCreator ! SubscribingChannelCreationMessage(connection, CommunicationTestUtil.TYPE_UPDATES, CommunicationTestUtil.SERVER_UPDATE, None)
+      within(TestUtil.TASK_WAIT_TIME seconds){
+        channelCreator ! SubscribingChannelCreationMessage(connection, TestUtil.TYPE_UPDATES, TestUtil.SERVER_UPDATE, None)
         expectMsgType[ChannelCreatedMessage]
       }
     }

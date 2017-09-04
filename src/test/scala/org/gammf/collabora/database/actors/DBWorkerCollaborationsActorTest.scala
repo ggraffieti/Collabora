@@ -3,6 +3,7 @@ package org.gammf.collabora.database.actors
 import akka.actor.{ActorRef, ActorSystem, Props}
 import akka.testkit.{ImplicitSender, TestKit}
 import com.newmotion.akka.rabbitmq.{ConnectionActor, ConnectionFactory}
+import org.gammf.collabora.TestUtil
 import org.gammf.collabora.communication.actors._
 import org.gammf.collabora.database.messages._
 import org.gammf.collabora.util.{Collaboration, CollaborationRight, CollaborationType, CollaborationUser, Location, Module, NoteState, SimpleCollaboration, SimpleModule, SimpleNote}
@@ -17,8 +18,6 @@ class DBWorkerCollaborationsActorTest extends TestKit (ActorSystem("CollaboraSer
   val NAMING_ACTOR_NAME = "naming"
   val CHANNEL_CREATOR_NAME = "channelCreator"
   val PUBLISHER_ACTOR_NAME = "publisher"
-  val TEST_USER_ID = "maffone"
-  val TASK_WAIT_TIME = 5
 
   val COLLABORATION_ID:String = "123456788698540008123400"
   val COLLABORATION_NAME = "simplecollaboration"
@@ -67,22 +66,22 @@ class DBWorkerCollaborationsActorTest extends TestKit (ActorSystem("CollaboraSer
   "A DBWorkerCollaborations actor" should {
     "insert new collaboration in the db" in {
 
-      within(TASK_WAIT_TIME second) {
-        collaborationsActor ! InsertCollaborationMessage(collab, TEST_USER_ID)
+      within(TestUtil.TASK_WAIT_TIME second) {
+        collaborationsActor ! InsertCollaborationMessage(collab, TestUtil.TEST_USER_ID)
         expectMsgType[QueryOkMessage]
       }
     }
 
     "update a collaboration in the db" in {
-      within(TASK_WAIT_TIME second) {
-        collaborationsActor ! UpdateCollaborationMessage(collab, TEST_USER_ID)
+      within(TestUtil.TASK_WAIT_TIME second) {
+        collaborationsActor ! UpdateCollaborationMessage(collab, TestUtil.TEST_USER_ID)
         expectMsgType[QueryOkMessage]
       }
     }
 
     "delete a collaboration in the db" in {
-      within(TASK_WAIT_TIME second) {
-        collaborationsActor ! DeleteCollaborationMessage(collab, TEST_USER_ID)
+      within(TestUtil.TASK_WAIT_TIME second) {
+        collaborationsActor ! DeleteCollaborationMessage(collab, TestUtil.TEST_USER_ID)
         expectMsgType[QueryOkMessage]
       }
     }

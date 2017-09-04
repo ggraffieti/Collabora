@@ -4,6 +4,7 @@ import akka.actor.{ActorRef, ActorSystem, Props}
 import akka.testkit.{ImplicitSender, TestKit}
 import com.newmotion.akka.rabbitmq.{ConnectionActor, ConnectionFactory}
 import com.rabbitmq.client.{AMQP, BuiltinExchangeType, DefaultConsumer, Envelope}
+import org.gammf.collabora.TestUtil
 import org.gammf.collabora.communication.actors._
 import org.gammf.collabora.communication.messages.{ClientUpdateMessage, StartMessage}
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
@@ -14,20 +15,12 @@ import org.scalatest.concurrent.Eventually
 
 class DBMasterActorTest extends TestKit (ActorSystem("CollaboraServer")) with WordSpecLike with Eventually with Matchers with BeforeAndAfterAll with ImplicitSender {
 
-  private val EXCHANGE_NAME = "notifications"
-  private val ROUTING_KEY = "59806a4af27da3fcfe0ac0ca"
-  private val BROKER_HOST = "localhost"
-
   val CONNECTION_ACTOR_NAME = "rabbitmq"
   val NAMING_ACTOR_NAME = "naming"
   val CHANNEL_CREATOR_NAME = "channelCreator"
   val PUBLISHER_ACTOR_NAME = "publisher"
   val UPDATES_RECEIVER_ACTOR_NAME = "updates-receiver"
   val SUBSCRIBER_ACTOR_NAME = "subscriber"
-  val STRING_ENCODING = "UTF-8"
-
-  val TIMEOUT_SECOND = 4
-  val INTERVAL_MILLIS = 100;
 
   val dbConnectionActor: ActorRef = system.actorOf(Props[ConnectionManagerActor])
   val factory = new ConnectionFactory()
@@ -47,15 +40,15 @@ class DBMasterActorTest extends TestKit (ActorSystem("CollaboraServer")) with Wo
 
   override def beforeAll(): Unit = {
     val factory = new ConnectionFactory
-    factory.setHost(BROKER_HOST)
+    factory.setHost(TestUtil.BROKER_HOST)
     val connection = factory.newConnection
     val channel = connection.createChannel
-    channel.exchangeDeclare(EXCHANGE_NAME, BuiltinExchangeType.DIRECT, true)
+    channel.exchangeDeclare(TestUtil.TYPE_NOTIFICATIONS, BuiltinExchangeType.DIRECT, true)
     val queueName = channel.queueDeclare.getQueue
-    channel.queueBind(queueName, EXCHANGE_NAME, ROUTING_KEY)
+    channel.queueBind(queueName, TestUtil.TYPE_NOTIFICATIONS, TestUtil.ROUTING_KEY)
     val consumer = new DefaultConsumer(channel) {
       override def handleDelivery(consumerTag: String, envelope: Envelope, properties: AMQP.BasicProperties, body: Array[Byte]): Unit = {
-        msg = new String(body, STRING_ENCODING)
+        msg = new String(body, TestUtil.STRING_ENCODING)
       }
     }
     channel.basicConsume(queueName, true, consumer)
@@ -69,8 +62,8 @@ class DBMasterActorTest extends TestKit (ActorSystem("CollaboraServer")) with Wo
   }
 
   override implicit val patienceConfig: PatienceConfig = PatienceConfig(
-    timeout = scaled(TIMEOUT_SECOND seconds),
-    interval = scaled(INTERVAL_MILLIS millis)
+    timeout = scaled(TestUtil.TIMEOUT_SECOND seconds),
+    interval = scaled(TestUtil.INTERVAL_MILLIS millis)
   )
 
   "A DBMaster actor" should {

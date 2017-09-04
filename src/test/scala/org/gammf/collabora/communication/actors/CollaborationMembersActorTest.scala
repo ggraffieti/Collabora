@@ -4,6 +4,7 @@ import akka.actor.{ActorRef, ActorSystem, Props}
 import akka.testkit.{DefaultTimeout, ImplicitSender, TestKit}
 import com.newmotion.akka.rabbitmq.{ConnectionActor, ConnectionFactory}
 import com.rabbitmq.client._
+import org.gammf.collabora.TestUtil
 import org.gammf.collabora.communication.Utils.CommunicationType
 import org.gammf.collabora.communication.messages._
 import org.gammf.collabora.database.actors.DBMasterActor
@@ -31,8 +32,8 @@ class CollaborationMembersActorTest extends TestKit (ActorSystem("CollaboraServe
   var msgCollab,msgNotif: String = ""
 
   override def beforeAll(): Unit = {
-      fakeReceiver(CommunicationTestUtil.TYPE_COLLABORATIONS, CommunicationTestUtil.COLLABORATION_ROUTING_KEY, CommunicationTestUtil.BROKER_HOST)
-      fakeReceiver(CommunicationTestUtil.TYPE_NOTIFICATIONS, CommunicationTestUtil.NOTIFICATIONS_ROUTING_KEY, CommunicationTestUtil.BROKER_HOST)
+      fakeReceiver(TestUtil.TYPE_COLLABORATIONS, TestUtil.COLLABORATION_ROUTING_KEY, TestUtil.BROKER_HOST)
+      fakeReceiver(TestUtil.TYPE_NOTIFICATIONS, TestUtil.NOTIFICATIONS_ROUTING_KEY, TestUtil.BROKER_HOST)
   }
 
   override def afterAll(): Unit = {
@@ -40,22 +41,22 @@ class CollaborationMembersActorTest extends TestKit (ActorSystem("CollaboraServe
   }
 
   override implicit val patienceConfig: PatienceConfig = PatienceConfig(
-    timeout = scaled(CommunicationTestUtil.TIMEOUT_SECOND seconds),
-    interval = scaled(CommunicationTestUtil.INTERVAL_MILLIS millis)
+    timeout = scaled(TestUtil.TIMEOUT_SECOND seconds),
+    interval = scaled(TestUtil.INTERVAL_MILLIS millis)
   )
 
   "A CollaborationMember actor" should {
 
     "communicate with RabbitMQNamingActor" in {
-      within(CommunicationTestUtil.TASK_WAIT_TIME seconds){
+      within(TestUtil.TASK_WAIT_TIME seconds){
         naming ! ChannelNamesRequestMessage(CommunicationType.COLLABORATIONS)
-        expectMsg(ChannelNamesResponseMessage(CommunicationTestUtil.TYPE_COLLABORATIONS, None))
+        expectMsg(ChannelNamesResponseMessage(TestUtil.TYPE_COLLABORATIONS, None))
       }
     }
 
     "communicate with channelCreatorActor" in {
-      within(CommunicationTestUtil.TASK_WAIT_TIME seconds){
-        channelCreator ! PublishingChannelCreationMessage(connection, CommunicationTestUtil.TYPE_COLLABORATIONS, None)
+      within(TestUtil.TASK_WAIT_TIME seconds){
+        channelCreator ! PublishingChannelCreationMessage(connection, TestUtil.TYPE_COLLABORATIONS, None)
         expectMsgType[ChannelCreatedMessage]
       }
     }
@@ -88,7 +89,7 @@ class CollaborationMembersActorTest extends TestKit (ActorSystem("CollaboraServe
     channel.queueBind(queueName, exchangeName, routingKey)
     val consumer = new DefaultConsumer(channel) {
       override def handleDelivery(consumerTag: String, envelope: Envelope, properties: AMQP.BasicProperties, body: Array[Byte]): Unit = {
-        val tmpMsg = new String(body, CommunicationTestUtil.STRING_ENCODING)
+        val tmpMsg = new String(body, TestUtil.STRING_ENCODING)
         if (tmpMsg.startsWith("{\"target\":\"MEMBER\",\"messageType\":\"CREATION\",\"user\":\"maffone\",\"member\"")) msgNotif = tmpMsg
         else msgCollab = tmpMsg
       }

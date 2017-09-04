@@ -239,8 +239,8 @@ object UseTopic extends App {
 
   println(Topic(Communication) > Topic(Communication, Rabbitmq))
   println(Topic(Communication, Rabbitmq) < Topic(Communication))
-  println(Topic(Communication) > Topic(database))
-  println(Topic(Communication) < Topic(database))
+  println(Topic(Communication) > Topic(Database))
+  println(Topic(Communication) < Topic(Database))
   println(Topic(Communication, Rabbitmq) > Topic(Communication, Http))
   println(Topic(Communication, Rabbitmq) < Topic(Communication, Http))
 

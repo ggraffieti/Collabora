@@ -10,12 +10,13 @@ import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.directives.Credentials
 import akka.util.Timeout
 import org.gammf.collabora.authentication.messages._
-import org.gammf.collabora.database.messages.{AuthenticationMessage, DBWorkerMessage}
+import org.gammf.collabora.database.messages.AuthenticationMessage
 import org.gammf.collabora.util.User
 import play.api.libs.json.{JsError, JsSuccess, Json}
 
 import scala.concurrent.{ExecutionContextExecutor, Future}
 import scala.concurrent.duration._
+
 import scala.concurrent.ExecutionContext.Implicits.global
 
 object AuthenticationServer {

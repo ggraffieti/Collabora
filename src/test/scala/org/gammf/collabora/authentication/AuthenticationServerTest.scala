@@ -1,7 +1,7 @@
 package org.gammf.collabora.authentication
 
 import akka.actor.{ActorRef, Props}
-import akka.http.scaladsl.model.StatusCodes
+import akka.http.scaladsl.model.{HttpMethods, HttpRequest, StatusCodes}
 import akka.http.scaladsl.model.headers._
 import akka.http.scaladsl.server.Route
 import org.scalatest.{Matchers, WordSpec}
@@ -32,11 +32,20 @@ class AuthenticationServerTest extends WordSpec with Matchers with ScalatestRout
 
   implicit val timeout: RouteTestTimeout = RouteTestTimeout(5 seconds)
 
+  val rightUser = "{\"username\":\"maffone\",\"email\":\"alfredo.maffi@studio.unibo.it\",\"name\":\"Alfredo\",\"surname\":\"Maffi\",\"birthday\":\"1994-08-09T05:27:19.199+02:00\"}"
+  val insertUser = "{\"username\":\"JDoe\",\"email\":\"john.doe@email.com\",\"name\":\"John\",\"surname\":\"Doe\",\"birthday\":\"1980-01-01T05:27:19.199+02:00\",\"hashedPassword\":\"notSoHashedPassord\"}"
+
+  val postRequest = HttpRequest(
+    method = HttpMethods.POST,
+    uri = "/signin",
+    entity = insertUser
+  )
+
   "The authentication server" should {
 
     "authenticate the user" in {
       Get("/login") ~> addCredentials(BasicHttpCredentials("maffone", "admin")) ~> AuthenticationServer.route ~> check {
-        responseAs[String] shouldEqual "{\"username\":\"maffone\",\"email\":\"alfredo.maffi@studio.unibo.it\",\"name\":\"Alfredo\",\"surname\":\"Maffi\",\"birthday\":\"1994-08-09T05:27:19.199+02:00\"}"
+        responseAs[String] shouldEqual rightUser
       }
     }
 
@@ -63,6 +72,27 @@ class AuthenticationServerTest extends WordSpec with Matchers with ScalatestRout
         status shouldEqual StatusCodes.Unauthorized
         responseAs[String] shouldEqual "The supplied authentication is invalid"
         header[`WWW-Authenticate`].get.challenges.head shouldEqual HttpChallenge("Basic", Some("login"), Map("charset" -> "UTF-8"))
+      }
+    }
+
+    "sign in a new User" in {
+      Post("/signin", insertUser) ~> Route.seal(AuthenticationServer.route) ~> check {
+        status shouldEqual StatusCodes.OK
+        responseAs[String] shouldEqual ""
+      }
+    }
+
+    "reject a signin if the username is already used" in {
+      Post("/signin", insertUser) ~> Route.seal(AuthenticationServer.route) ~> check {
+        status shouldEqual StatusCodes.BadRequest
+        responseAs[String] shouldEqual "username already present"
+      }
+    }
+
+    "reject a malformed request" in {
+      Post("/signin", "{}") ~> Route.seal(AuthenticationServer.route) ~> check {
+        status shouldEqual StatusCodes.BadRequest
+        responseAs[String] shouldEqual "Data passed cannot be unmarshalled to User"
       }
     }
   }

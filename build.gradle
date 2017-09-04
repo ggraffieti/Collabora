@@ -32,10 +32,21 @@ dependencies {
 
 }
 
+
+task restoreDBTask(type: Exec) {
+    if (System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows')) {
+        commandLine 'cmd', '/c', 'mongorestore --drop -d collabora ./MongoDBBackup/collabora/'
+    } else {
+        commandLine 'sh', '-c', 'mongorestore --drop -d collabora ./MongoDBBackup/collabora/'
+    }
+}
+
 task spec(dependsOn: ['testClasses'], type: JavaExec) {
+    tasks.restoreDBTask.execute()
     main = 'org.scalatest.tools.Runner'
     args = ['-R', 'build/classes/test', '-o']
     classpath = sourceSets.test.runtimeClasspath
+    tasks.restoreDBTask.execute()
 }
 
 testClasses.doLast {

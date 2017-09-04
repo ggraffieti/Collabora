@@ -31,8 +31,8 @@ class CollaborationMembersActorTest extends TestKit (ActorSystem("CollaboraServe
   var msgCollab,msgNotif: String = ""
 
   override def beforeAll(): Unit = {
-      fakeReceiver(CommunicationTestUtil.TYPE_COLLABORATIONS, CommunicationTestUtil.COLLABORATION_ROUTING_KEY, CommunicationTestUtil.FAKE_BROKER_HOST)
-      fakeReceiver(CommunicationTestUtil.TYPE_NOTIFICATIONS, CommunicationTestUtil.NOTIFICATIONS_ROUTING_KEY, CommunicationTestUtil.FAKE_BROKER_HOST)
+      fakeReceiver(CommunicationTestUtil.TYPE_COLLABORATIONS, CommunicationTestUtil.COLLABORATION_ROUTING_KEY, CommunicationTestUtil.BROKER_HOST)
+      fakeReceiver(CommunicationTestUtil.TYPE_NOTIFICATIONS, CommunicationTestUtil.NOTIFICATIONS_ROUTING_KEY, CommunicationTestUtil.BROKER_HOST)
   }
 
   override def afterAll(): Unit = {

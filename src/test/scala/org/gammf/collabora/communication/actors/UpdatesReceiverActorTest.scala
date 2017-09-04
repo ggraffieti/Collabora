@@ -14,9 +14,6 @@ class UpdatesReceiverActorTest extends TestKit (ActorSystem("CollaboraServer")) 
   val CONNECTION_ACTOR_NAME = "rabbitmq"
   val NAMING_ACTOR_NAME = "naming"
   val CHANNEL_CREATOR_NAME = "channelCreator"
-  val TYPE_UPDATES = "updates"
-  val SERVER_UPDATE = "update.server"
-  val TASK_WAIT_TIME = 5
 
   val factory = new ConnectionFactory()
   val connection:ActorRef = system.actorOf(ConnectionActor.props(factory), CONNECTION_ACTOR_NAME)
@@ -30,15 +27,15 @@ class UpdatesReceiverActorTest extends TestKit (ActorSystem("CollaboraServer")) 
   "A UpdatesReceived actor" should {
 
     "start correctly" in {
-      within(TASK_WAIT_TIME seconds){
+      within(CommunicationTestUtil.TASK_WAIT_TIME seconds){
         naming ! ChannelNamesRequestMessage(CommunicationType.UPDATES)
-        expectMsg(ChannelNamesResponseMessage(TYPE_UPDATES,Some(SERVER_UPDATE)))
+        expectMsg(ChannelNamesResponseMessage(CommunicationTestUtil.TYPE_UPDATES,Some(CommunicationTestUtil.SERVER_UPDATE)))
       }
     }
 
     "create channel correctly" in {
-      within(TASK_WAIT_TIME seconds){
-        channelCreator ! SubscribingChannelCreationMessage(connection, TYPE_UPDATES, SERVER_UPDATE, None)
+      within(CommunicationTestUtil.TASK_WAIT_TIME seconds){
+        channelCreator ! SubscribingChannelCreationMessage(connection, CommunicationTestUtil.TYPE_UPDATES, CommunicationTestUtil.SERVER_UPDATE, None)
         expectMsgType[ChannelCreatedMessage]
       }
     }

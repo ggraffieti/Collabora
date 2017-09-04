@@ -13,6 +13,7 @@ class RabbitMQNamingActorTest extends TestKit (ActorSystem("CollaboraServer")) w
   val CONNECTION_ACTOR_NAME = "rabbitmq"
   val NAMING_ACTOR_NAME = "naming"
   val CHANNEL_CREATOR_NAME = "channelCreator"
+
   val TYPE_NOTIFICATIONS = "notifications"
   val TYPE_UPDATES = "updates"
   val SERVER_UPDATE = "update.server"
@@ -31,23 +32,23 @@ class RabbitMQNamingActorTest extends TestKit (ActorSystem("CollaboraServer")) w
   "A RabbitMQNaming actor" should {
 
     "handles collaboration naming requests" in {
-      within(TASK_WAIT_TIME seconds){
+      within(CommunicationTestUtil.TASK_WAIT_TIME seconds){
         naming ! ChannelNamesRequestMessage(CommunicationType.COLLABORATIONS)
-        expectMsg(ChannelNamesResponseMessage(TYPE_COLLABORATIONS, None))
+        expectMsg(ChannelNamesResponseMessage(CommunicationTestUtil.TYPE_COLLABORATIONS, None))
       }
     }
 
     "handles updates naming requests" in {
-      within(TASK_WAIT_TIME seconds){
+      within(CommunicationTestUtil.TASK_WAIT_TIME seconds){
         naming ! ChannelNamesRequestMessage(CommunicationType.UPDATES)
-        expectMsg(ChannelNamesResponseMessage(TYPE_UPDATES,Some(SERVER_UPDATE)))
+        expectMsg(ChannelNamesResponseMessage(CommunicationTestUtil.TYPE_UPDATES,Some(CommunicationTestUtil.SERVER_UPDATE)))
       }
     }
 
     "handles notification naming requests" in {
-      within(TASK_WAIT_TIME seconds){
+      within(CommunicationTestUtil.TASK_WAIT_TIME seconds){
         naming ! ChannelNamesRequestMessage(CommunicationType.NOTIFICATIONS)
-        expectMsg(ChannelNamesResponseMessage(TYPE_NOTIFICATIONS, None))
+        expectMsg(ChannelNamesResponseMessage(CommunicationTestUtil.TYPE_NOTIFICATIONS, None))
       }
     }
   }

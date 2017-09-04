@@ -89,18 +89,3 @@ object YellowPagesActor {
   def topicProps(yellowPages: ActorRef, topic: Topic[TopicElement]): Props = Props(TopicYellowPagesActor(
     yellowPages = yellowPages, name = topic + "YellowPagesActor", topic = topic))
 }
-
-object UseYellowPagesActor extends App {
-  val system = ActorSystem("Collabora")
-  val root = system.actorOf(YellowPagesActor.rootProps())
-  val topic1 = system.actorOf(YellowPagesActor.topicProps(root, Topic(Communication, Rabbitmq)))
-  Thread.sleep(1000)
-  val topic2 = system.actorOf(YellowPagesActor.topicProps(root, Topic(Communication)))
-  Thread.sleep(1000)
-  val topic3 = system.actorOf(YellowPagesActor.topicProps(root, Topic(Communication)))
-  Thread.sleep(1000)
-  val test1 = system.actorOf(Props(new TestActor(root)))
-  val test2 = system.actorOf(Props(new TestActor(root)))
-  val test3 = system.actorOf(Props(new TestActor(root)))
-  val test4 = system.actorOf(Props(new TestActor(root)))
-}

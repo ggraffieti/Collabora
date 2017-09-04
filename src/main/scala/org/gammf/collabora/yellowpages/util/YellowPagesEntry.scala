@@ -94,6 +94,7 @@ case class ActorYellowPagesEntryImpl(override val reference: ActorRef, override 
   extends ActorYellowPagesEntry {
   override def equals(obj: Any): Boolean = obj match {
     case e: ActorYellowPagesEntry => e.reference == reference && e.topic == topic && e.service == service
+    case _ => false
   }
   override def ===(that: { def service: ActorService; def topic: Topic[TopicElement]}): Boolean =
     topic == that.topic && service == that.service

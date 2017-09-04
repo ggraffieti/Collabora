@@ -18,7 +18,7 @@ object TestUtil {
 
   val BROKER_HOST = "localhost"
 
-  val TIMEOUT_SECOND = 4
+  val TIMEOUT_SECOND = 10
   val INTERVAL_MILLIS = 100;
   val TASK_WAIT_TIME = 5
   val STRING_ENCODING = "UTF-8"

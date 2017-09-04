@@ -1,7 +1,8 @@
 package org.gammf.collabora
 
-import org.gammf.collabora.yellowpages.messages.{ActorOKMessage, RegistrationRequestMessage}
+import org.gammf.collabora.yellowpages.messages.{ActorErrorMessage, ActorOKMessage, ActorRequestMessage, RegistrationRequestMessage}
 import org.gammf.collabora.yellowpages.util.ActorYellowPagesEntry
+import language.implicitConversions
 
 package object yellowpages {
   /**
@@ -48,12 +49,19 @@ package object yellowpages {
     * Gets useful in the registration phase of an actor in the yellow pages.
     */
   implicit def registrationRequest2YellowPageEntry(reg: RegistrationRequestMessage): ActorYellowPagesEntry =
-    ActorYellowPagesEntry(reg.actor, reg.topic, reg.service)
+    ActorYellowPagesEntry(reference = reg.actor, topic = reg.topic, service = reg.service)
 
   /**
     * Implicit conversion from a [[ActorYellowPagesEntry]] to a [[ActorOKMessage]].
     * Gets useful to easily sends an actor contained in the yellow pages.
     */
   implicit def yellowPageEntry2ActorOK(entry: ActorYellowPagesEntry): ActorOKMessage =
-    ActorOKMessage(entry.reference, entry.topic, entry.service)
+    ActorOKMessage(actor = entry.reference, topic = entry.topic, service = entry.service)
+
+  /**
+    * Implicit conversion from a [[ActorRequestMessage]] to a [[ActorErrorMessage]].
+    * Gets useful to easily sends a message error related to an actor request that, for some reason, can not be satisfied.
+    */
+  implicit def actorRequest2ActorError(act: ActorRequestMessage): ActorErrorMessage =
+    ActorErrorMessage(topic = act.topic, service = act.service)
 }

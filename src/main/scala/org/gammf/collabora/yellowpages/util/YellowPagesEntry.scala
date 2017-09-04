@@ -26,6 +26,18 @@ sealed trait YellowPagesEntry[A, B, C] {
     * Returns the service offered by the entity.
     */
   def service: C
+
+  /**
+    * Returns a boolean flag stating if the entry has been used in the recent time.
+    * @return true if the entry has been used recently, false otherwise.
+    */
+  def used: Boolean
+
+  /**
+    * Sets a boolean flag stating if the entry has been used in the recent time.
+    * @param used a boolean flag stating if the entry has been used recently.
+    */
+  def used_= (used: Boolean): Unit
 }
 
 /**
@@ -39,11 +51,20 @@ sealed trait ActorYellowPagesEntry extends YellowPagesEntry[ActorRef, TopicEleme
   * @param reference the reference to the actor registered to the service.
   * @param topic the topic to which the actor is registered.
   * @param service the service offered by the actor.
+  * @param used a boolean flag stating if the entry has been used recently.
   */
 case class ActorYellowPagesEntryImpl(override val reference: ActorRef, override val topic: Topic[TopicElement],
-                                     override val service: ActorService) extends ActorYellowPagesEntry
+                                     override val service: ActorService, override var used: Boolean = false)
+  extends ActorYellowPagesEntry
 
 object ActorYellowPagesEntry {
+  /**
+    * Apply method to build an [[ActorYellowPagesEntry]] object.
+    * @param reference the actor reference.
+    * @param topic the topic to which the actor is registered.
+    * @param service the service offered by the actor.
+    * @return a new instance of [[ActorYellowPagesEntry]].
+    */
   def apply(reference: ActorRef, topic: Topic[TopicElement], service: ActorService): ActorYellowPagesEntry =
     ActorYellowPagesEntryImpl(reference, topic, service)
 }

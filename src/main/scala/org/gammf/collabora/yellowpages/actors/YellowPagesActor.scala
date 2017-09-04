@@ -23,8 +23,14 @@ trait YellowPagesActor extends Actor {
 
     case msg: ActorRedirectionOKMessage => yellowPages = yellowPages.filterNot(yp => yp == (msg: ActorYellowPagesEntry))
 
-    case msg: ActorRequestMessage => yellowPages.filter(yp => yp === msg && !yp.used) match {
-      case h :: t => sender ! (h: ActorOKMessage); h.used = true; val l = h :: t; if (l.forall(yp => yp.used)) l.foreach(yp => yp.used = false)
+    case msg: ActorRequestMessage => handleActorRequest(yellowPages.filter(yp => yp === msg), msg)
+  }
+
+  private[this] def handleActorRequest(list: List[ActorYellowPagesEntry], msg: ActorRequestMessage): Unit = {
+    if (list.forall(yp => yp.used)) list.foreach(yp => yp.used = false)
+    list match {
+      case h :: t if h.used => handleActorRequest(t, msg)
+      case h :: _ if !h.used => sender ! (h: ActorOKMessage); h.used = true
       case _ => filterValidYPActors(msg) match {
         case h :: _ => h.reference forward msg
         case _ => sender ! (msg: ActorErrorMessage)
@@ -92,8 +98,9 @@ object UseYellowPagesActor extends App {
   val topic2 = system.actorOf(YellowPagesActor.topicProps(root, Topic(Communication)))
   Thread.sleep(1000)
   val topic3 = system.actorOf(YellowPagesActor.topicProps(root, Topic(Communication)))
-  /*val test1 = system.actorOf(Props(new TestActor(root)))
+  Thread.sleep(1000)
+  val test1 = system.actorOf(Props(new TestActor(root)))
   val test2 = system.actorOf(Props(new TestActor(root)))
   val test3 = system.actorOf(Props(new TestActor(root)))
-  val test4 = system.actorOf(Props(new TestActor(root)))*/
+  val test4 = system.actorOf(Props(new TestActor(root)))
 }

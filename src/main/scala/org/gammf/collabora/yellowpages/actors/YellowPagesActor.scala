@@ -14,23 +14,37 @@ import org.gammf.collabora.yellowpages.TopicElement._
 trait YellowPagesActor extends Actor {
   val name: String
   private[this] var yellowPages: List[ActorYellowPagesEntry] = List()
-  private[this] val getValidYellowPagesActors: Topic[TopicElement] => List[ActorYellowPagesEntry] =
-    topic => yellowPages.filter(yp => yp.topic > topic && yp.service == YellowPagesService)
 
+  import org.gammf.collabora.yellowpages.entriesImplicitConversions._
   override def receive: Receive = {
-    case msg: RegistrationRequestMessage => getValidYellowPagesActors(msg.topic) match {
-      case h :: _ => h.reference forward msg
-      case _ => yellowPages = msg :: yellowPages; sender ! RegistrationOKMessage(); println("[" + name + "]" + yellowPages)
-    }
+    case msg: RegistrationRequestMessage => handleActorInsertion(msg)
 
-    case msg: ActorRequestMessage => yellowPages.filter(yp => msg.topic == yp.topic && msg.service == yp.service && !yp.used) match {
-      case h :: t => sender ! (h: ActorOKMessage); h.used = true; if ((h :: t).forall(yp => yp.used)) (h :: t).foreach(yp => yp.used = false)
-      case _ => getValidYellowPagesActors(msg.topic) match {
+    case msg: RedirectionRequestMessage => handleActorInsertion(msg)
+
+    case msg: ActorRedirectionOKMessage => yellowPages = yellowPages.filterNot(yp => yp == (msg: ActorYellowPagesEntry))
+
+    case msg: ActorRequestMessage => yellowPages.filter(yp => yp === msg && !yp.used) match {
+      case h :: t => sender ! (h: ActorOKMessage); h.used = true; val l = h :: t; if (l.forall(yp => yp.used)) l.foreach(yp => yp.used = false)
+      case _ => filterValidYPActors(msg) match {
         case h :: _ => h.reference forward msg
         case _ => sender ! (msg: ActorErrorMessage)
       }
     }
   }
+
+  private[this] def handleActorInsertion(msg: InsertionRequestMessage): Unit = filterValidYPActors(msg) match {
+    case h :: _ => h.reference forward msg
+    case _ => yellowPages = msg :: yellowPages; sendOkResponse(msg); println("[" + name + "]" + yellowPages)
+      if (msg.service == YellowPagesService) yellowPages.filter(yp => yp < msg).foreach(yp => msg.actor ! (yp: RedirectionRequestMessage))
+  }
+
+  private[this] def sendOkResponse(msg: InsertionRequestMessage): Unit = msg match {
+    case _: RegistrationRequestMessage => sender ! RegistrationOKMessage()
+    case m: RedirectionRequestMessage => sender ! (m: ActorRedirectionOKMessage)
+  }
+
+  private[this] def filterValidYPActors: { def service: ActorService; def topic: Topic[TopicElement]} => List[ActorYellowPagesEntry] =
+    msg => yellowPages.filter(yp => yp > msg && yp.service == yellowPages)
 }
 
 /**
@@ -68,4 +82,18 @@ object YellowPagesActor {
     */
   def topicProps(yellowPages: ActorRef, topic: Topic[TopicElement]): Props = Props(TopicYellowPagesActor(
     yellowPages = yellowPages, name = topic + "YellowPagesActor", topic = topic))
+}
+
+object UseYellowPagesActor extends App {
+  val system = ActorSystem("Collabora")
+  val root = system.actorOf(YellowPagesActor.rootProps())
+  val topic1 = system.actorOf(YellowPagesActor.topicProps(root, Topic(Communication, Rabbitmq)))
+  Thread.sleep(1000)
+  val topic2 = system.actorOf(YellowPagesActor.topicProps(root, Topic(Communication)))
+  Thread.sleep(1000)
+  val topic3 = system.actorOf(YellowPagesActor.topicProps(root, Topic(Communication)))
+  /*val test1 = system.actorOf(Props(new TestActor(root)))
+  val test2 = system.actorOf(Props(new TestActor(root)))
+  val test3 = system.actorOf(Props(new TestActor(root)))
+  val test4 = system.actorOf(Props(new TestActor(root)))*/
 }

@@ -67,21 +67,21 @@ class DBWorkerCollaborationsActorTest extends TestKit (ActorSystem("CollaboraSer
     "insert new collaboration in the db" in {
 
       within(TestUtil.TASK_WAIT_TIME second) {
-        collaborationsActor ! InsertCollaborationMessage(collab, TestUtil.TEST_USER_ID)
+        collaborationsActor ! InsertCollaborationMessage(collab, TestUtil.FAKE_USER_ID)
         expectMsgType[QueryOkMessage]
       }
     }
 
     "update a collaboration in the db" in {
       within(TestUtil.TASK_WAIT_TIME second) {
-        collaborationsActor ! UpdateCollaborationMessage(collab, TestUtil.TEST_USER_ID)
+        collaborationsActor ! UpdateCollaborationMessage(collab, TestUtil.FAKE_USER_ID)
         expectMsgType[QueryOkMessage]
       }
     }
 
     "delete a collaboration in the db" in {
       within(TestUtil.TASK_WAIT_TIME second) {
-        collaborationsActor ! DeleteCollaborationMessage(collab, TestUtil.TEST_USER_ID)
+        collaborationsActor ! DeleteCollaborationMessage(collab, TestUtil.FAKE_USER_ID)
         expectMsgType[QueryOkMessage]
       }
     }

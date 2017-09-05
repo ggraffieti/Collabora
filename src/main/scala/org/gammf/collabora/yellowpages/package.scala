@@ -1,7 +1,12 @@
 package org.gammf.collabora
 
+import akka.actor.ActorRef
+import org.gammf.collabora.yellowpages.ActorService.ActorService
+import org.gammf.collabora.yellowpages.TopicElement.TopicElement
 import org.gammf.collabora.yellowpages.messages._
-import org.gammf.collabora.yellowpages.util.ActorYellowPagesEntry
+import org.gammf.collabora.yellowpages.util.{ActorYellowPagesEntry, Topic}
+
+import language.reflectiveCalls
 
 package object yellowpages {
 
@@ -47,26 +52,24 @@ package object yellowpages {
   object entriesImplicitConversions {
     import language.implicitConversions
 
+    private[this] type EntryType = {
+      def actor: ActorRef
+      def topic: Topic[TopicElement]
+      def service: ActorService
+    }
     /**
-      * Implicit conversion from a [[InsertionRequestMessage]] to a [[ActorYellowPagesEntry]].
-      * Gets useful in the registration phase of an actor in the yellow pages.
+      * Implicit conversion from object to [[ActorYellowPagesEntry]].
+      * The object type requirements are expressed by interface structure, accepting every object that provides a definition for actor, topic and service.
       */
-    implicit def insertionRequest2YellowPagesEntry(reg: InsertionRequestMessage): ActorYellowPagesEntry =
-      ActorYellowPagesEntry(reference = reg.actor, topic = reg.topic, service = reg.service)
+    implicit def message2yellowPagesEntry(msg: EntryType): ActorYellowPagesEntry =
+      ActorYellowPagesEntry(reference = msg.actor, topic = msg.topic, service = msg.service)
 
     /**
-      * Implicit conversion from a [[ActorYellowPagesEntry]] to a [[ActorOKMessage]].
+      * Implicit conversion from a [[ActorYellowPagesEntry]] to a [[ActorResponseOKMessage]].
       * Gets useful to easily sends an actor contained in the yellow pages.
       */
-    implicit def yellowPagesEntry2ActorOK(entry: ActorYellowPagesEntry): ActorOKMessage =
-      ActorOKMessage(actor = entry.reference, topic = entry.topic, service = entry.service)
-
-    /**
-      * Implicit conversion from a [[ActorRequestMessage]] to a [[ActorErrorMessage]].
-      * Gets useful to easily send a message error related to an actor request that, for some reason, can not be satisfied.
-      */
-    implicit def actorRequest2ActorError(act: ActorRequestMessage): ActorErrorMessage =
-      ActorErrorMessage(topic = act.topic, service = act.service)
+    implicit def yellowPagesEntry2ActorOK(entry: ActorYellowPagesEntry): ActorResponseOKMessage =
+      ActorResponseOKMessage(actor = entry.reference, topic = entry.topic, service = entry.service)
 
     /**
       * Implicit conversion from a [[ActorYellowPagesEntry]] to [[RedirectionRequestMessage]].
@@ -74,15 +77,5 @@ package object yellowpages {
       */
     implicit def yellowPagesEntry2RedirectionRequest(entry: ActorYellowPagesEntry): RedirectionRequestMessage =
       RedirectionRequestMessage(actor = entry.reference, topic = entry.topic, service = entry.service)
-
-    /**
-      * Implicit conversion from a [[RedirectionRequestMessage]] to [[ActorRedirectionOKMessage]].
-      * Gets useful to easily send a positive response to an [[RedirectionRequestMessage]].
-      */
-    implicit def redirection2RedirectionOK(red: RedirectionRequestMessage): ActorRedirectionOKMessage =
-      ActorRedirectionOKMessage(actor = red.actor, topic = red.topic, service = red.service)
-
-    implicit def RedirectionOk2yellowPagesEntry(red: ActorRedirectionOKMessage): ActorYellowPagesEntry =
-      ActorYellowPagesEntry(reference = red.actor, topic = red.topic, service = red.service)
   }
 }

@@ -7,6 +7,7 @@ import org.gammf.collabora.yellowpages.TopicElement._
 import language.reflectiveCalls
 
 /**
+  * @author Manuel Peruzzi
   * Represents a generic yellow pages entry.
   * Contains the entity reference, the topic to which the entity is registered and the service offered by the entity.
   * @tparam A the generic type used to reference the entity.
@@ -43,46 +44,53 @@ sealed trait YellowPagesEntry[A, B, C] {
 }
 
 /**
+  * @author Manuel Peruzzi
   * Represents a yellow pages entry in the actor world.
   * Contains the actor reference, the topic to which the actor is registered and the service offered by the actor.
   */
 sealed trait ActorYellowPagesEntry extends YellowPagesEntry[ActorRef, TopicElement, ActorService] {
+  protected[this] type EntryParam = {
+    def topic: Topic[TopicElement]
+    def service: ActorService
+  }
+
   /**
     * Similarity method. Compares this entry to some other entry.
     * @param that the other entry to be compared to this entry.
     * @return true if the given entry is similar to this entry, false otherwise.
     */
-  def ===(that: { def topic: Topic[TopicElement]; def service: ActorService }): Boolean
+  def ===(that: EntryParam): Boolean
 
   /**
     * Greater method. Checks if this entry is greater than another object, based on its topic value.
     * @param that the object to be compared to this entry.
     * @return true if this entry is greater than the given object, false otherwise.
     */
-  def >(that: { def topic: Topic[TopicElement]; def service: ActorService }): Boolean
+  def >(that: EntryParam): Boolean
   /**
     * Greater or similar method. Checks if this entry is similar or greater than another object, based on its topic value.
     * @param that the object to be compared to this entry.
     * @return true if this entry is similar or greater than the given object, false otherwise.
     */
-  def >=(that: { def topic: Topic[TopicElement]; def service: ActorService }): Boolean
+  def >=(that: EntryParam): Boolean
 
   /**
     * Lesser method. Checks if this entry is lesser than another object, based on its topic value.
     * @param that the object to be compared to this entry.
     * @return true if this entry is lesser than the given object, false otherwise.
     */
-  def <(that: { def topic: Topic[TopicElement]; def service: ActorService }): Boolean
+  def <(that: EntryParam): Boolean
 
   /**
     * Lesser or similar method. Checks if this entry is similar or lesser than another object, based on its topic value.
     * @param that the object to be compared to this entry.
     * @return true if this entry is similar or lesser than the given object, false otherwise.
     */
-  def <=(that: { def topic: Topic[TopicElement]; def service: ActorService }): Boolean
+  def <=(that: EntryParam): Boolean
 }
 
 /**
+  * @author Manuel Peruzzi
   * Simple implementation of a yellow pages entry in the actor world.
   * @param reference the reference to the actor registered to the service.
   * @param topic the topic to which the actor is registered.
@@ -96,19 +104,17 @@ case class ActorYellowPagesEntryImpl(override val reference: ActorRef, override 
     case e: ActorYellowPagesEntry => e.reference == reference && e.topic == topic && e.service == service
     case _ => false
   }
-  override def ===(that: { def service: ActorService; def topic: Topic[TopicElement]}): Boolean =
-    topic == that.topic && service == that.service
-  override def >(that: { def service: ActorService; def topic: Topic[TopicElement]}): Boolean =
-    (that.service == YellowPagesService && topic > that.topic) || (that.service != YellowPagesService && topic >= that.topic)
-  override def >=(that: { def service: ActorService; def topic: Topic[TopicElement]}): Boolean =
-    this > that || this === that
-  override def <(that: { def service: ActorService; def topic: Topic[TopicElement]}): Boolean =
-    (that.service == YellowPagesService && topic < that.topic) || (that.service != YellowPagesService && topic <= that.topic)
-  override def <=(that: { def service: ActorService; def topic: Topic[TopicElement]}): Boolean =
-    this < that || this === that
+  override def ===(that: EntryParam): Boolean = topic == that.topic && service == that.service
+  override def >(that: EntryParam): Boolean = (that.service == YellowPagesService && topic > that.topic) ||
+    (that.service != YellowPagesService && topic >= that.topic)
+  override def >=(that: EntryParam): Boolean = this > that || this === that
+  override def <(that: EntryParam): Boolean = (that.service == YellowPagesService && topic < that.topic) ||
+    (that.service != YellowPagesService && topic <= that.topic)
+  override def <=(that: EntryParam): Boolean = this < that || this === that
 }
 
 object ActorYellowPagesEntry {
+
   /**
     * Apply method to build an [[ActorYellowPagesEntry]] object.
     * @param reference the actor reference.

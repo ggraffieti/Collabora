@@ -55,13 +55,6 @@ sealed trait Topic[A] {
   def flatMap[B](f: A => Topic[B]): Topic[B]
 
   /**
-    * Equals method. Compares this topic to some other topic.
-    * @param that the other topic to be compared to this topic.
-    * @return true if the given topic is equals to this, false otherwise.
-    */
-  def ==(that: Topic[A]): Boolean
-
-  /**
     * Greater method. Checks if this topic is greater than some other topic.
     * @param that the other topic to be compared to this topic.
     * @return true if this topic is greater than the given topic, false otherwise.
@@ -178,10 +171,13 @@ trait TopicImpl[A] extends Topic[A] {
     case m :: s => f(m) ++ (s flatMap f)
     case _ => EmptyTopic()
   }
-  override def ==(topic: Topic[A]): Boolean = this match {
-    case _ if size != topic.size => false
-    case m :: s => m == topic.main.get && s == topic.subtopics.get
-    case _ => true
+  override def equals(obj: Any): Boolean = obj match {
+    case topic: Topic[A] => this match {
+      case _ if size != topic.size => false
+      case m :: s => m == topic.main.get && s == topic.subtopics.get
+      case _ => true
+    }
+    case _ => false
   }
   override def >(topic: Topic[A]): Boolean = this match {
     case _ if size >= topic.size => false
@@ -213,38 +209,4 @@ object Topic {
     for (i <- topics.length -1 to 0 by -1) topic = topics(i) :: topic
     topic
   }
-}
-
-object UseTopic extends App {
-  import org.gammf.collabora.yellowpages.TopicElement._
-
-  println(ActualTopic(Communication, ActualTopic(Rabbitmq, EmptyTopic())))
-  println(Topic(Communication, Rabbitmq))
-  println(Communication :: Rabbitmq :: EmptyTopic())
-  println(Topic(Communication) ++ Topic(Rabbitmq))
-  println(Topic(Communication, Rabbitmq) flatMap(e => Topic(e, e)))
-  println(Topic(Communication, Rabbitmq).main.get)
-  println(Topic(Communication, Rabbitmq).subtopics.get.main.get)
-  println(Topic(Communication, Rabbitmq) map (e => if (e == Communication) 1 else 0))
-
-  println(Topic("boh", "ah") == Topic("boh", "ah"))
-  println(Topic(Communication, Http) == Topic(Communication, Http))
-  println(Topic("boh", "ah") == Topic("boh"))
-  println(Topic("boh") == Topic("boh", "ah"))
-  println(Topic("boh") == Topic("bohh"))
-
-  println(Topic(Communication, Http) size())
-  println(Topic() size())
-  println(Topic() :+ Communication size())
-
-  println(Topic(Communication) > Topic(Communication, Rabbitmq))
-  println(Topic(Communication, Rabbitmq) < Topic(Communication))
-  println(Topic(Communication) > Topic(Database))
-  println(Topic(Communication) < Topic(Database))
-  println(Topic(Communication, Rabbitmq) > Topic(Communication, Http))
-  println(Topic(Communication, Rabbitmq) < Topic(Communication, Http))
-
-  println(Communication +: Topic(Rabbitmq))
-  println(Topic(Communication) :+ Rabbitmq)
-  println(Topic() :+ Communication :+ Rabbitmq)
 }

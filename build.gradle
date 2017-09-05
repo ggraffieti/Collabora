@@ -15,6 +15,9 @@ repositories {
 dependencies {
     compile "org.scala-lang:scala-library:${scalaVersion}"
     compile group: 'com.typesafe.akka', name: 'akka-actor_2.12', version: "${akkaVersion}"
+    compile "com.typesafe.akka:akka-stream_2.12:${akkaVersion}"
+    compile "com.typesafe.akka:akka-http_2.12:${akkaHttpVersion}"
+    compile "com.typesafe.akka:akka-http-testkit_2.12:${akkaHttpVersion}"
     compile "org.reactivemongo:reactivemongo_2.12:${reactiveMongoVersion}"
     compile "org.reactivemongo:reactivemongo-play-json_2.12:${reactiveMongoPlayJSONVersion}"
     compile "org.reactivemongo:play2-reactivemongo_2.12:${reactiveMongoPlayVersion}"
@@ -29,7 +32,17 @@ dependencies {
 
 }
 
+
+task restoreDBTask(type: Exec) {
+    if (System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows')) {
+        commandLine 'cmd', '/c', 'mongorestore --drop -d collabora ./MongoDBBackup/collabora/'
+    } else {
+        commandLine 'sh', '-c', 'mongorestore --drop -d collabora ./MongoDBBackup/collabora/'
+    }
+}
+
 task spec(dependsOn: ['testClasses'], type: JavaExec) {
+    tasks.restoreDBTask.execute()
     main = 'org.scalatest.tools.Runner'
     args = ['-R', 'build/classes/test', '-o']
     classpath = sourceSets.test.runtimeClasspath

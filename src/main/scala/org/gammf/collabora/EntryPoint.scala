@@ -2,13 +2,16 @@ package org.gammf.collabora
 
 import akka.actor.{ActorSystem, Props}
 import com.newmotion.akka.rabbitmq.{ConnectionActor, ConnectionFactory}
+import org.gammf.collabora.authentication.AuthenticationServer
+import org.gammf.collabora.authentication.actors.AuthenticationActor
 import org.gammf.collabora.communication.actors._
 import org.gammf.collabora.communication.messages.StartMessage
 import org.gammf.collabora.database.actors.DBMasterActor
 
 object EntryPoint extends App {
-
   val system = ActorSystem("CollaboraServer")
+
+
   val factory = new ConnectionFactory()
   val rabbitConnection = system.actorOf(ConnectionActor.props(factory), "rabbitmq")
   val naming = system.actorOf(Props[RabbitMQNamingActor], "naming")
@@ -20,6 +23,11 @@ object EntryPoint extends App {
   val subscriber = system.actorOf(Props[SubscriberActor], "subscriber")
   val updatesReceiver = system.actorOf(Props(
     new UpdatesReceiverActor(rabbitConnection, naming, channelCreator, subscriber, dbMasterActor)), "updates-receiver")
+
+  val authenticationActor = system.actorOf(Props.create(classOf[AuthenticationActor], dbMasterActor))
+
+  AuthenticationServer.start(system, authenticationActor)
+
 
   updatesReceiver ! StartMessage
   notificationActor ! StartMessage

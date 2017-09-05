@@ -16,8 +16,9 @@ package object yellowpages {
   object TopicElement extends Enumeration {
     type TopicElement = Value
 
+    val General,
     // Communication related topics
-    val Communication,
+    Communication,
     Rabbitmq,
     Firebase,
     Http,
@@ -35,6 +36,7 @@ package object yellowpages {
 
     // Yellow pages related services
     val YellowPagesService,
+    Printing,
     // Communication related services
     ChannelCreating,
     Naming,

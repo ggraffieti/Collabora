@@ -17,6 +17,9 @@ The universal collaboration tool, from big projects to shopping lists.
     - a client with a read access can only visualize notes and modules
     - a client with a write access can also create, update and delete notes and modules
     - an admin client, in addition to having a write access, can edit/remove the collaboration, add/remove members and change their access rights
+- Management of client data
+    - the user sensible information, acquired at the registration stage, are not divulged
+    - login required in order to access private data
 
 ## Contributing
 This repository contains a university course project. Please, do not fork it or send us your ideas until this message is here (~ mid September 2017).

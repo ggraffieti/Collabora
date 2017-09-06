@@ -17,9 +17,9 @@ class DBWorkerMemberActorTest extends TestKit (ActorSystem("CollaboraServer")) w
   val naming:ActorRef = system.actorOf(Props[RabbitMQNamingActor], "naming")
   val channelCreator :ActorRef= system.actorOf(Props[ChannelCreatorActor], "channelCreator")
   val publisherActor:ActorRef = system.actorOf(Props[PublisherActor], "publisher")
-  val notificationActor:ActorRef = system.actorOf(Props(new NotificationsSenderActor(connection, naming, channelCreator, publisherActor)))
-  val dbConnectionActor :ActorRef= system.actorOf(Props[ConnectionManagerActor])
   val collaborationMemberActor:ActorRef = system.actorOf(Props(new CollaborationMembersActor(connection, naming, channelCreator, publisherActor)))
+  val notificationActor:ActorRef = system.actorOf(Props(new NotificationsSenderActor(connection, naming, channelCreator, publisherActor,system)))
+  val dbConnectionActor :ActorRef= system.actorOf(Props[ConnectionManagerActor])
   val dbMasterActor:ActorRef = system.actorOf(Props.create(classOf[DBMasterActor], system, notificationActor,collaborationMemberActor))
   val connectionManagerActor: ActorRef =  system.actorOf(Props[ConnectionManagerActor])
   val usersActor:ActorRef = system.actorOf(Props.create(classOf[DBWorkerMemberActor], connectionManagerActor))
@@ -37,21 +37,21 @@ class DBWorkerMemberActorTest extends TestKit (ActorSystem("CollaboraServer")) w
   "A DBWorkerMember actor" should {
     "insert new user in a collaboration correctly in the db" in {
       within(5 second) {
-        usersActor ! InsertUserMessage(user, "59806a4af27da3fcfe0ac0ca", "maffone")
+        usersActor ! InsertMemberMessage(user, "59806a4af27da3fcfe0ac0ca", "maffone")
         expectMsgType[QueryOkMessage]
       }
     }
 
     "update a user right in a collaboration correctly" in {
       within(5 second) {
-        usersActor ! UpdateUserMessage(user, "59806a4af27da3fcfe0ac0ca", "maffone")
+        usersActor ! UpdateMemberMessage(user, "59806a4af27da3fcfe0ac0ca", "maffone")
         expectMsgType[QueryOkMessage]
       }
     }
 
     "delete a user in a collaboration correctly" in {
       within(5 second) {
-        usersActor ! DeleteUserMessage(user, "59806a4af27da3fcfe0ac0ca", "maffone")
+        usersActor ! DeleteMemberMessage(user, "59806a4af27da3fcfe0ac0ca", "maffone")
         expectMsgType[QueryOkMessage]
       }
     }

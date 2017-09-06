@@ -1,7 +1,6 @@
 package org.gammf.collabora.communication.messages
 
-import org.gammf.collabora.util.{CollaborationMessage, UpdateMessage}
-import play.api.libs.json.JsValue
+import org.gammf.collabora.util.{AllCollaborationsMessage, Collaboration, CollaborationMessage, UpdateMessage}
 
 /**
   * Simple trait that represent a message about the communication.
@@ -30,3 +29,7 @@ case class PublishNotificationMessage(collaborationID: String, message: UpdateMe
 case class PublishMemberAddedMessage(username: String, message: CollaborationMessage)
   extends CommunicationMessage
 
+case class PublishFirebaseNotification(collaborationID: String, collaboration:Collaboration)
+  extends CommunicationMessage
+
+case class PublishUserLoginMessage(username: String, message: AllCollaborationsMessage)

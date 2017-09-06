@@ -56,7 +56,6 @@ sealed trait ActorYellowPagesEntry extends YellowPagesEntry[ActorRef, TopicEleme
 
   /**
     * Returns the name of the actor.
-    * @return
     */
   def name: String
 

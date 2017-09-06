@@ -6,6 +6,8 @@ import org.gammf.collabora.yellowpages.TopicElement._
 import org.gammf.collabora.yellowpages.messages.{HierarchyNode, HierarchyPrintMessage, HierarchyRequestMessage}
 import org.gammf.collabora.yellowpages.util.Topic
 
+import scala.annotation.tailrec
+
 /**
   * This is an actor that deals with prints on the output console.
   * @param yellowPages the reference to the yellow pages root actor.
@@ -26,7 +28,7 @@ class PrinterActor(override val yellowPages: ActorRef,
     println(); println("CURRENT HIERARCHY {")
     list.sortBy(n => n.level); printLevel(list.head.level)
     printList(list, list.head.level)
-    def printList(l: List[HierarchyNode], lvl: Int): Unit = l match {
+    @tailrec def printList(l: List[HierarchyNode], lvl: Int): Unit = l match {
       case h :: t => val nLvl = math.max(lvl, h.level); if(nLvl > lvl) printLevel(nLvl); printNode(h); printList(t, nLvl)
       case _ => println(); println("} END CURRENT HIERARCHY ")
     }

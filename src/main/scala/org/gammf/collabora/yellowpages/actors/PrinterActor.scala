@@ -20,7 +20,6 @@ class PrinterActor(override val yellowPages: ActorRef,
   override def receive: Receive = ({
     case s: String => println(s)
     case HierarchyPrintMessage(list) => handleHierarchy(list)
-
   }: Receive) orElse super.receive
 
   private[this] def handleHierarchy(list: List[HierarchyNode]): Unit = {
@@ -32,9 +31,9 @@ class PrinterActor(override val yellowPages: ActorRef,
       case _ => println(); println("} END CURRENT HIERARCHY ")
     }
     def printLevel(n: Int): Unit = { println(); println(" Level #" + n + " =>") }
-    def printNode(n: HierarchyNode): Unit = println("   [ Topic: " + n.topic + ", Service: " + n.service + ", Reference: " + n.reference + " ]")
+    def printNode(n: HierarchyNode): Unit =
+      println("   [ Name: " + n.name + ", Topic: " + n.topic + ", Service: " + n.service + ", Reference: " + n.reference + " ]")
   }
-
 }
 
 object PrinterActor {

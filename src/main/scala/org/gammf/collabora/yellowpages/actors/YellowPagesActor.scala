@@ -71,7 +71,7 @@ trait YellowPagesActor extends Actor {
     list = list ++ yellowPages.map(yp => (level, yp))
     yellowPages.filter(yp => yp.service == YellowPagesService).foreach(yp => list = list ++ askYellowPagesActors(yp.reference))
     def askYellowPagesActors(yp: ActorRef): List[(Int, ActorYellowPagesEntry)] = {
-      implicit val timeout: Timeout = Timeout(Duration(5, "seconds"))
+      implicit val timeout: Timeout = Timeout(Duration(1, "seconds"))
       Await.result(yp ? HierarchyRequestMessage(level), timeout.duration).asInstanceOf[HierarchyResponseMessage].actors
     }
     this match {
@@ -80,10 +80,11 @@ trait YellowPagesActor extends Actor {
     }
     def printHierarchy(): Unit = {
       yellowPages.filter(yp => yp.service == Printing) match {
-        case h :: _ => val myself: HierarchyNode = HierarchyNode(l, self.toString(), "General", "RootYellowPagesService")
-          h.reference ! HierarchyPrintMessage(myself :: (list: List[HierarchyNode]))
+        case h :: _ => h.reference ! HierarchyPrintMessage(getMyself(l) :: (list: List[HierarchyNode]))
         case _ => println(list)
       }
+      def getMyself(lvl: Int): HierarchyNode =
+        HierarchyNode(level = lvl, reference = self.toString(), name = name, topic = "General", service = "RootYellowPagesService")
     }
   }
 }

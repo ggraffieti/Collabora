@@ -85,6 +85,6 @@ package object yellowpages {
       * Implicit conversion from a [[List]] of tuples compound by [[ActorYellowPagesEntry]] with a depth level to a [[List]] of [[HierarchyNode]].
       */
     implicit def entryList2hierarchyNodeList(list: List[(Int, ActorYellowPagesEntry)]): List[HierarchyNode] =
-      list.map(yp => HierarchyNode(level = yp._1, reference = yp._2.reference.toString(), topic = yp._2.topic.toString, service = yp._2.service.toString))
+      list.map(yp => HierarchyNode(level = yp._1, reference = yp._2.reference.toString(), name = yp._2.name.toString(), topic = yp._2.topic.toString(), service = yp._2.service.toString()))
   }
 }

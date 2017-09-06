@@ -1,5 +1,7 @@
 package org.gammf.collabora.yellowpages.util
 
+import org.gammf.collabora.yellowpages.TopicElement.TopicElement
+
 import scala.annotation.tailrec
 
 /**
@@ -209,4 +211,5 @@ object Topic {
     for (i <- topics.length -1 to 0 by -1) topic = topics(i) :: topic
     topic
   }
+  type ActorTopic = Topic[TopicElement]
 }

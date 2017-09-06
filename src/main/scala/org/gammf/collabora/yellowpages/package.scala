@@ -2,9 +2,9 @@ package org.gammf.collabora
 
 import akka.actor.ActorRef
 import org.gammf.collabora.yellowpages.ActorService.ActorService
-import org.gammf.collabora.yellowpages.TopicElement.TopicElement
 import org.gammf.collabora.yellowpages.messages._
-import org.gammf.collabora.yellowpages.util.{ActorYellowPagesEntry, Topic}
+import org.gammf.collabora.yellowpages.util.Topic.ActorTopic
+import org.gammf.collabora.yellowpages.util.ActorYellowPagesEntry
 
 import language.reflectiveCalls
 
@@ -57,7 +57,7 @@ package object yellowpages {
     private[this] type EntryType = {
       def reference: ActorRef
       def name: String
-      def topic: Topic[TopicElement]
+      def topic: ActorTopic
       def service: ActorService
     }
     /**
@@ -85,6 +85,6 @@ package object yellowpages {
       * Implicit conversion from a [[List]] of tuples compound by [[ActorYellowPagesEntry]] with a depth level to a [[List]] of [[HierarchyNode]].
       */
     implicit def entryList2hierarchyNodeList(list: List[(Int, ActorYellowPagesEntry)]): List[HierarchyNode] =
-      list.map(yp => HierarchyNode(level = yp._1, reference = yp._2.reference.toString(), name = yp._2.name.toString(), topic = yp._2.topic.toString(), service = yp._2.service.toString()))
+      list.map(yp => HierarchyNode(level = yp._1, reference = yp._2.reference.toString, name = yp._2.name.toString, topic = yp._2.topic.toString, service = yp._2.service.toString))
   }
 }

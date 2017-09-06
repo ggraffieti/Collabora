@@ -2,9 +2,9 @@ package org.gammf.collabora.yellowpages.actors
 
 import akka.actor.{Actor, ActorRef}
 import org.gammf.collabora.yellowpages.ActorService.ActorService
-import org.gammf.collabora.yellowpages.TopicElement.TopicElement
 import org.gammf.collabora.yellowpages.messages._
 import org.gammf.collabora.yellowpages.util.Topic
+import org.gammf.collabora.yellowpages.util.Topic.ActorTopic
 
 /**
   * Represents a simple actor identified by a name, registered to a [[Topic]], offering an [[ActorService]].
@@ -24,7 +24,7 @@ trait BasicActor extends Actor {
   /**
     * Returns the topic to which this actor is registered.
     */
-  def topic: Topic[TopicElement]
+  def topic: ActorTopic
 
   /**
     * Returns the service offered by this actor.

@@ -3,9 +3,9 @@ package org.gammf.collabora.yellowpages.actors
 import akka.actor.{Actor, ActorRef, Props}
 import akka.util.Timeout
 import org.gammf.collabora.yellowpages.messages._
-import org.gammf.collabora.yellowpages.util.{ActorYellowPagesEntry, Topic}
+import org.gammf.collabora.yellowpages.util.ActorYellowPagesEntry
 import org.gammf.collabora.yellowpages.ActorService._
-import org.gammf.collabora.yellowpages.TopicElement._
+import org.gammf.collabora.yellowpages.util.Topic.ActorTopic
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 import akka.pattern.ask
@@ -104,7 +104,7 @@ case class RootYellowPagesActor(override val name: String) extends YellowPagesAc
   */
 case class TopicYellowPagesActor(override val yellowPages: ActorRef,
                                  override val name: String,
-                                 override val topic: Topic[TopicElement],
+                                 override val topic: ActorTopic,
                                  override val service: ActorService = YellowPagesService)
   extends BasicActor with YellowPagesActor {
   override def receive: Receive = super[YellowPagesActor].receive orElse super[BasicActor].receive
@@ -123,6 +123,6 @@ object YellowPagesActor {
     * @param topic the topic to which this actor is going to be registered.
     * @return the [[Props]] to use to create a yellow pages topic actor.
     */
-  def topicProps(yellowPages: ActorRef, topic: Topic[TopicElement], name: String = "Topic_YellowPages"): Props =
+  def topicProps(yellowPages: ActorRef, topic: ActorTopic, name: String = "Topic_YellowPages"): Props =
     Props(TopicYellowPagesActor(yellowPages = yellowPages, name = name, topic = topic))
 }

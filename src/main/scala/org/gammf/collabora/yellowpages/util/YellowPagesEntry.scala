@@ -2,7 +2,8 @@ package org.gammf.collabora.yellowpages.util
 
 import akka.actor.ActorRef
 import org.gammf.collabora.yellowpages.ActorService._
-import org.gammf.collabora.yellowpages.TopicElement._
+import org.gammf.collabora.yellowpages.TopicElement.TopicElement
+import org.gammf.collabora.yellowpages.util.Topic.ActorTopic
 
 import language.reflectiveCalls
 
@@ -50,7 +51,7 @@ sealed trait YellowPagesEntry[A, B, C] {
   */
 sealed trait ActorYellowPagesEntry extends YellowPagesEntry[ActorRef, TopicElement, ActorService] {
   protected[this] type EntryParam = {
-    def topic: Topic[TopicElement]
+    def topic: ActorTopic
     def service: ActorService
   }
 
@@ -103,7 +104,7 @@ sealed trait ActorYellowPagesEntry extends YellowPagesEntry[ActorRef, TopicEleme
   * @param used a boolean flag stating if the entry has been used recently.
   */
 case class ActorYellowPagesEntryImpl(override val reference: ActorRef, override val name: String,
-                                     override val topic: Topic[TopicElement], override val service: ActorService,
+                                     override val topic: ActorTopic, override val service: ActorService,
                                      override var used: Boolean = false) extends ActorYellowPagesEntry {
   override def equals(obj: Any): Boolean = obj match {
     case e: ActorYellowPagesEntry => e.reference == reference && e.name == name && e.topic == topic && e.service == service
@@ -128,6 +129,6 @@ object ActorYellowPagesEntry {
     * @param service the service offered by the actor.
     * @return a new instance of [[ActorYellowPagesEntry]].
     */
-  def apply(reference: ActorRef, name: String, topic: Topic[TopicElement], service: ActorService): ActorYellowPagesEntry =
+  def apply(reference: ActorRef, name: String, topic: ActorTopic, service: ActorService): ActorYellowPagesEntry =
     ActorYellowPagesEntryImpl(reference = reference, name = name, topic = topic, service = service)
 }

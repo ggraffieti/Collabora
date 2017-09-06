@@ -2,11 +2,11 @@ package org.gammf.collabora.yellowpages.messages
 
 import akka.actor.ActorRef
 import org.gammf.collabora.yellowpages.ActorService.ActorService
-import org.gammf.collabora.yellowpages.TopicElement.TopicElement
-import org.gammf.collabora.yellowpages.util.Topic
+import org.gammf.collabora.yellowpages.actors.YellowPagesActor
+import org.gammf.collabora.yellowpages.util.Topic.ActorTopic
 
 /**
-  * Represents a request from an actor to a [[org.gammf.collabora.yellowpages.actors.YellowPagesActor]] that leads to an entry insertion in the yellow pages.
+  * Represents a request from an actor to a [[YellowPagesActor]] that leads to an entry insertion in the yellow pages.
   */
 sealed trait InsertionRequestMessage extends YellowPagesMessage {
 
@@ -23,7 +23,7 @@ sealed trait InsertionRequestMessage extends YellowPagesMessage {
   /**
     * Returns the topic to which the actor is registered.
     */
-  def topic: Topic[TopicElement]
+  def topic: ActorTopic
 
   /**
     * Returns the service offered by the actor.
@@ -39,7 +39,7 @@ sealed trait InsertionRequestMessage extends YellowPagesMessage {
   * @param service the service offered by the actor.
   */
 case class RegistrationRequestMessage(override val reference: ActorRef, override val name: String,
-                                      override val topic: Topic[TopicElement], override val service: ActorService)
+                                      override val topic: ActorTopic, override val service: ActorService)
   extends InsertionRequestMessage
 
 /**
@@ -51,7 +51,7 @@ case class RegistrationRequestMessage(override val reference: ActorRef, override
   * @param service the service of the entry.
   */
 case class RedirectionRequestMessage(override val reference: ActorRef, override val name: String,
-                                     override val topic: Topic[TopicElement], override val service: ActorService)
+                                     override val topic: ActorTopic, override val service: ActorService)
   extends InsertionRequestMessage
 
 /**
@@ -74,5 +74,5 @@ case class RegistrationResponseMessage() extends InsertionResponseMessage
   * @param topic the topic of the entry.
   * @param service the service of the entry.
   */
-case class RedirectionResponseMessage(reference: ActorRef, name: String, topic: Topic[TopicElement], service: ActorService)
+case class RedirectionResponseMessage(reference: ActorRef, name: String, topic: ActorTopic, service: ActorService)
   extends InsertionResponseMessage

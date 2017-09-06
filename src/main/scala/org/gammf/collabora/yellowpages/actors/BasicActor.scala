@@ -31,7 +31,8 @@ trait BasicActor extends Actor {
     */
   def service: ActorService
 
-  override def preStart(): Unit = super.preStart; yellowPages ! RegistrationRequestMessage(self, topic, service)
+  override def preStart(): Unit = super.preStart; yellowPages !
+    RegistrationRequestMessage(reference = self, name = name, topic = topic, service = service)
 
   override def receive: Receive = {
     case RegistrationResponseMessage() => println("[" + name + "] Registration OK.")

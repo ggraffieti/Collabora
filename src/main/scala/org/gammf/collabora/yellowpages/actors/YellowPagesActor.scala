@@ -25,7 +25,7 @@ trait YellowPagesActor extends Actor {
     case msg: RegistrationRequestMessage => handleActorInsertion(msg)
     case msg: RedirectionRequestMessage => handleActorInsertion(msg)
     case msg: RedirectionResponseMessage => handleActorDeletion(msg)
-    case msg: UnregistrationRequestMessage => handleActorDeletion(msg)
+    case msg: DeletionRequestMessage => handleActorDeletion(msg)
     case msg: ActorRequestMessage => handleActorRequest(msg)
     case msg: HierarchyRequestMessage => handleHierarchy(msg.level)
   }
@@ -42,10 +42,10 @@ trait YellowPagesActor extends Actor {
     }
     def buildInsertionResponse(msg: InsertionRequestMessage): InsertionResponseMessage = msg match {
       case _: RegistrationRequestMessage => RegistrationResponseMessage()
-      case RedirectionRequestMessage(a, t, s) => RedirectionResponseMessage(a, t, s)
+      case RedirectionRequestMessage(r, n, t, s) => RedirectionResponseMessage(r, n, t, s)
     }
     def delegateActorsToNewYPActor(msg: InsertionRequestMessage): Unit =
-      yellowPages.filter(yp => yp < msg).foreach(yp => msg.actor ! (yp: RedirectionRequestMessage))
+      yellowPages.filter(yp => yp < msg).foreach(yp => msg.reference ! (yp: RedirectionRequestMessage))
   }
 
   private[this] def handleActorRequest(msg: ActorRequestMessage): Unit = {

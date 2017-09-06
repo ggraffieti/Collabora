@@ -55,7 +55,8 @@ package object yellowpages {
     import language.implicitConversions
 
     private[this] type EntryType = {
-      def actor: ActorRef
+      def reference: ActorRef
+      def name: String
       def topic: Topic[TopicElement]
       def service: ActorService
     }
@@ -64,7 +65,7 @@ package object yellowpages {
       * The object type requirements are expressed by interface structure, accepting every object that provides a definition for actor, topic and service.
       */
     implicit def message2yellowPagesEntry(msg: EntryType): ActorYellowPagesEntry =
-      ActorYellowPagesEntry(reference = msg.actor, topic = msg.topic, service = msg.service)
+      ActorYellowPagesEntry(reference = msg.reference, name = msg.name, topic = msg.topic, service = msg.service)
 
     /**
       * Implicit conversion from a [[ActorYellowPagesEntry]] to a [[ActorResponseOKMessage]].
@@ -78,7 +79,7 @@ package object yellowpages {
       * Gets useful to easily send a redirection message, in order to move an entry to a different [[org.gammf.collabora.yellowpages.actors.YellowPagesActor]].
       */
     implicit def yellowPagesEntry2RedirectionRequest(entry: ActorYellowPagesEntry): RedirectionRequestMessage =
-      RedirectionRequestMessage(actor = entry.reference, topic = entry.topic, service = entry.service)
+      RedirectionRequestMessage(reference = entry.reference, name = entry.name, topic = entry.topic, service = entry.service)
 
     /**
       * Implicit conversion from a [[List]] of tuples compound by [[ActorYellowPagesEntry]] with a depth level to a [[List]] of [[HierarchyNode]].

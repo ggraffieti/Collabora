@@ -46,13 +46,18 @@ sealed trait YellowPagesEntry[A, B, C] {
 /**
   * @author Manuel Peruzzi
   * Represents a yellow pages entry in the actor world.
-  * Contains the actor reference, the topic to which the actor is registered and the service offered by the actor.
+  * Contains the actor reference, the actor name, the topic to which the actor is registered and the service offered by the actor.
   */
 sealed trait ActorYellowPagesEntry extends YellowPagesEntry[ActorRef, TopicElement, ActorService] {
   protected[this] type EntryParam = {
     def topic: Topic[TopicElement]
     def service: ActorService
   }
+
+  /**
+    * Returns the name of the actor.
+    */
+  def name: String
 
   /**
     * Similarity method. Compares this entry to some other entry.
@@ -97,11 +102,11 @@ sealed trait ActorYellowPagesEntry extends YellowPagesEntry[ActorRef, TopicEleme
   * @param service the service offered by the actor.
   * @param used a boolean flag stating if the entry has been used recently.
   */
-case class ActorYellowPagesEntryImpl(override val reference: ActorRef, override val topic: Topic[TopicElement],
-                                     override val service: ActorService, override var used: Boolean = false)
-  extends ActorYellowPagesEntry {
+case class ActorYellowPagesEntryImpl(override val reference: ActorRef, override val name: String,
+                                     override val topic: Topic[TopicElement], override val service: ActorService,
+                                     override var used: Boolean = false) extends ActorYellowPagesEntry {
   override def equals(obj: Any): Boolean = obj match {
-    case e: ActorYellowPagesEntry => e.reference == reference && e.topic == topic && e.service == service
+    case e: ActorYellowPagesEntry => e.reference == reference && e.name == name && e.topic == topic && e.service == service
     case _ => false
   }
   override def ===(that: EntryParam): Boolean = topic == that.topic && service == that.service
@@ -118,10 +123,11 @@ object ActorYellowPagesEntry {
   /**
     * Apply method to build an [[ActorYellowPagesEntry]] object.
     * @param reference the actor reference.
+    * @param name the actor name.
     * @param topic the topic to which the actor is registered.
     * @param service the service offered by the actor.
     * @return a new instance of [[ActorYellowPagesEntry]].
     */
-  def apply(reference: ActorRef, topic: Topic[TopicElement], service: ActorService): ActorYellowPagesEntry =
-    ActorYellowPagesEntryImpl(reference, topic, service)
+  def apply(reference: ActorRef, name: String, topic: Topic[TopicElement], service: ActorService): ActorYellowPagesEntry =
+    ActorYellowPagesEntryImpl(reference = reference, name = name, topic = topic, service = service)
 }

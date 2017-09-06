@@ -6,7 +6,6 @@ import org.gammf.collabora.yellowpages.messages._
 import org.gammf.collabora.yellowpages.util.{ActorYellowPagesEntry, Topic}
 import org.gammf.collabora.yellowpages.ActorService._
 import org.gammf.collabora.yellowpages.TopicElement._
-
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 import akka.pattern.ask
@@ -17,7 +16,7 @@ import akka.pattern.ask
   * Can handle registration requests and actor requests, with the help of some other yellow pages actors.
   */
 trait YellowPagesActor extends Actor {
-  val name: String
+  def name: String
   private[this] var yellowPages: List[ActorYellowPagesEntry] = List()
 
   import org.gammf.collabora.yellowpages.entriesImplicitConversions._
@@ -25,7 +24,7 @@ trait YellowPagesActor extends Actor {
     case msg: RegistrationRequestMessage => handleActorInsertion(msg)
     case msg: RedirectionRequestMessage => handleActorInsertion(msg)
     case msg: RedirectionResponseMessage => handleActorDeletion(msg)
-    case msg: UnregistrationRequestMessage => handleActorDeletion(msg)
+    case msg: DeletionRequestMessage => handleActorDeletion(msg)
     case msg: ActorRequestMessage => handleActorRequest(msg)
     case msg: HierarchyRequestMessage => handleHierarchy(msg.level)
   }
@@ -42,10 +41,10 @@ trait YellowPagesActor extends Actor {
     }
     def buildInsertionResponse(msg: InsertionRequestMessage): InsertionResponseMessage = msg match {
       case _: RegistrationRequestMessage => RegistrationResponseMessage()
-      case RedirectionRequestMessage(a, t, s) => RedirectionResponseMessage(a, t, s)
+      case RedirectionRequestMessage(r, n, t, s) => RedirectionResponseMessage(r, n, t, s)
     }
     def delegateActorsToNewYPActor(msg: InsertionRequestMessage): Unit =
-      yellowPages.filter(yp => yp < msg).foreach(yp => msg.actor ! (yp: RedirectionRequestMessage))
+      yellowPages.filter(yp => yp < msg).foreach(yp => msg.reference ! (yp: RedirectionRequestMessage))
   }
 
   private[this] def handleActorRequest(msg: ActorRequestMessage): Unit = {
@@ -71,7 +70,7 @@ trait YellowPagesActor extends Actor {
     list = list ++ yellowPages.map(yp => (level, yp))
     yellowPages.filter(yp => yp.service == YellowPagesService).foreach(yp => list = list ++ askYellowPagesActors(yp.reference))
     def askYellowPagesActors(yp: ActorRef): List[(Int, ActorYellowPagesEntry)] = {
-      implicit val timeout: Timeout = Timeout(Duration(5, "seconds"))
+      implicit val timeout: Timeout = Timeout(Duration(1, "seconds"))
       Await.result(yp ? HierarchyRequestMessage(level), timeout.duration).asInstanceOf[HierarchyResponseMessage].actors
     }
     this match {
@@ -80,10 +79,11 @@ trait YellowPagesActor extends Actor {
     }
     def printHierarchy(): Unit = {
       yellowPages.filter(yp => yp.service == Printing) match {
-        case h :: _ => val myself: HierarchyNode = HierarchyNode(l, self.toString(), "General", "RootYellowPagesService")
-          h.reference ! HierarchyPrintMessage(myself :: (list: List[HierarchyNode]))
+        case h :: _ => h.reference ! HierarchyPrintMessage(getRoot(l) :: (list: List[HierarchyNode]))
         case _ => println(list)
       }
+      def getRoot(lvl: Int): HierarchyNode =
+        HierarchyNode(level = lvl, reference = self.toString(), name = name, topic = "General", service = "RootYellowPagesService")
     }
   }
 }
@@ -115,7 +115,7 @@ object YellowPagesActor {
     * Factory methods that returns a Props to create a yellow pages root actor.
     * @return the Props to use to create a yellow pages root actor.
     */
-  def rootProps(): Props = Props(RootYellowPagesActor(name = "RootYellowPagesActor"))
+  def rootProps(): Props = Props(RootYellowPagesActor(name = "Root_YellowPages"))
 
   /**
     * Factory methods that returns a [[Props]] to create a yellow pages actor registered to the specified topic.
@@ -123,6 +123,6 @@ object YellowPagesActor {
     * @param topic the topic to which this actor is going to be registered.
     * @return the [[Props]] to use to create a yellow pages topic actor.
     */
-  def topicProps(yellowPages: ActorRef, topic: Topic[TopicElement]): Props = Props(TopicYellowPagesActor(
-    yellowPages = yellowPages, name = topic + "YellowPagesActor", topic = topic))
+  def topicProps(yellowPages: ActorRef, topic: Topic[TopicElement], name: String = "Topic_YellowPages"): Props =
+    Props(TopicYellowPagesActor(yellowPages = yellowPages, name = name, topic = topic))
 }

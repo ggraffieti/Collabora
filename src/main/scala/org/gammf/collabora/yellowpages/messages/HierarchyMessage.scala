@@ -29,7 +29,8 @@ case class HierarchyPrintMessage(actors: List[HierarchyNode])
   * Represents a node in a hierarchical structure.
   * @param level the depth level of the node.
   * @param reference the actor reference of the node.
+  * @param name the actor name of the node.
   * @param topic the actor topic of the node.
   * @param service the actor service of the node.
   */
-case class HierarchyNode(level: Int, reference: String, topic: String, service: String)
+case class HierarchyNode(level: Int, reference: String, name: String, topic: String, service: String)

@@ -50,9 +50,9 @@ object PrinterActor {
 object HierarchyTest extends App {
   val system = ActorSystem("Collabora")
   val root = system.actorOf(YellowPagesActor.rootProps())
-  val printer2 = system.actorOf(PrinterActor.printerProps(root, Topic(Communication, Rabbitmq, Http, Database)))
+  val printer2 = system.actorOf(PrinterActor.printerProps(root, Topic(Communication, RabbitMQ, Http, Database)))
   val topic1 = system.actorOf(YellowPagesActor.topicProps(root, Topic(Communication)))
-  val topic2 = system.actorOf(YellowPagesActor.topicProps(root, Topic(Communication, Rabbitmq)))
+  val topic2 = system.actorOf(YellowPagesActor.topicProps(root, Topic(Communication, RabbitMQ)))
   val printer = system.actorOf(PrinterActor.printerProps(root, Topic(General)))
   val topic3 = system.actorOf(YellowPagesActor.topicProps(root, Topic(Communication, Database)))
   Thread.sleep(1000)

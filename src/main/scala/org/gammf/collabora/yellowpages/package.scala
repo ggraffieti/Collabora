@@ -19,7 +19,7 @@ package object yellowpages {
     val General,
     // Communication related topics
     Communication,
-    Rabbitmq,
+    RabbitMQ,
     Firebase,
     Http,
     // Database related topics

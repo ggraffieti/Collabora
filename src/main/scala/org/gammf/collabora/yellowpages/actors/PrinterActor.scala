@@ -21,7 +21,7 @@ class PrinterActor(override val yellowPages: ActorRef,
                    override val service: ActorService = Printing) extends BasicActor {
   override def receive: Receive = ({
     case HierarchyPrintMessage(list) => handleHierarchy(list)
-    case _ => println(_)
+    case msg => println(msg)
   }: Receive) orElse super.receive
 
   private[this] def handleHierarchy(list: List[HierarchyNode]): Unit = {

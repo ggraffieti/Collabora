@@ -12,9 +12,10 @@ trait YellowPagesMessage
 
 /**
   * Represents a request about a deletion of a yellow pages entries.
-  * @param actor the actor to be unregistered.
+  * @param reference the reference of the actor to be unregistered.
+  * @param name the name of the actor to be unregistered.
   * @param topic the actor topic.
   * @param service the actor service.
   */
-case class UnregistrationRequestMessage(actor: ActorRef, topic: Topic[TopicElement], service: ActorService)
+case class DeletionRequestMessage(reference: ActorRef, name: String, topic: Topic[TopicElement], service: ActorService)
   extends YellowPagesMessage

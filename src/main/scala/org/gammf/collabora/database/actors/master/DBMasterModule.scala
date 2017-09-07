@@ -6,6 +6,13 @@ import org.gammf.collabora.database.actors.worker.DBWorkerModulesActor
 import org.gammf.collabora.database.messages._
 import org.gammf.collabora.util.{UpdateMessage, UpdateMessageTarget, UpdateMessageType}
 
+/**
+  * The master actor that manages all the query about modules.
+  * @param system the actor system, used for create the needed workers.
+  * @param connectionManagerActor The system-unique [[org.gammf.collabora.database.actors.ConnectionManagerActor]], used for mantain a
+  *                               connection with the database
+  * @param notificationActor The actor used for notify the client that a query is went good.
+  */
 class DBMasterModule(system: ActorSystem, connectionManagerActor: ActorRef, notificationActor: ActorRef) extends AbstractDBMaster {
 
   private[this] var moduleWorker: ActorRef = _

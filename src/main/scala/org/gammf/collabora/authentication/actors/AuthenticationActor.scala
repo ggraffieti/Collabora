@@ -1,18 +1,17 @@
 package org.gammf.collabora.authentication.actors
 
 import akka.actor.{Actor, ActorRef}
-import akka.pattern.{ask, pipe}
-import akka.util.Timeout
 import org.gammf.collabora.authentication.messages._
-import org.gammf.collabora.database.messages.{AuthenticationMessage, GetAllCollaborationsMessage}
+import org.gammf.collabora.database.messages.GetAllCollaborationsMessage
 import org.gammf.collabora.util.{Collaboration, CollaborationRight, CollaborationType, CollaborationUser, UpdateMessage, UpdateMessageTarget, UpdateMessageType}
 
-import scala.concurrent.duration._
-import scala.concurrent.ExecutionContext.Implicits.global
 
+/**
+  * The authentication actor is bridge between the [[org.gammf.collabora.authentication.AuthenticationServer]] and the actor system.
+  * Is the only actor that the server seen.
+  * @param dbActor a reference to the [[org.gammf.collabora.database.actors.master.DBMasterActor]] of the system.
+  */
 class AuthenticationActor(private val dbActor: ActorRef) extends Actor {
-
-  private implicit val timeout: Timeout = Timeout(5 seconds)
 
   override def receive: Receive = {
 

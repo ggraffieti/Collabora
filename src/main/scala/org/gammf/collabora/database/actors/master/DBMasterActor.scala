@@ -15,7 +15,7 @@ import scala.concurrent.duration._
 
 
 /**
-  * An actor that coordinate, create and act like a gateway for every request from and to the DB. It also create all the needed actors
+  * An actor that coordinate, create and act like a gateway for every request from and to the DB. It also create all the needed actors.
   * @param system the actor system.
   */
 class DBMasterActor(val system: ActorSystem, val notificationActor: ActorRef, val collaborationMemberActor: ActorRef) extends AbstractDBMaster {

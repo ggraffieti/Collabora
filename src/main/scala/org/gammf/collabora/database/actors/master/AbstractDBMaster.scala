@@ -5,6 +5,9 @@ import org.gammf.collabora.database.messages._
 import org.gammf.collabora.util.UpdateMessageType
 import org.gammf.collabora.util.UpdateMessageType.UpdateMessageType
 
+/**
+  * An abstract implementation of a DBMaster actor. It contains utility methods, used in every DBMaster.
+  */
 abstract class AbstractDBMaster extends Actor {
 
   protected def getUpdateTypeFromQueryMessage(query: QueryMessage): UpdateMessageType = query match {

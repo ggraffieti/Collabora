@@ -6,6 +6,15 @@ import org.gammf.collabora.database.actors.worker.DBWorkerMemberActor
 import org.gammf.collabora.database.messages._
 import org.gammf.collabora.util.{UpdateMessage, UpdateMessageTarget, UpdateMessageType}
 
+/**
+  * The master actor that manages all the query about members.
+  * @param system the actor system, used for create the needed workers.
+  * @param connectionManagerActor The system-unique [[org.gammf.collabora.database.actors.ConnectionManagerActor]], used for mantain a
+  *                               connection with the database
+  * @param notificationActor The actor used for notify the client that a query is went good.
+  * @param getCollaborationActor The actor used for notify the member that it's just been added to a collaboration, and send him the
+  *                              collaboration.
+  */
 class DBMasterMember(system: ActorSystem, connectionManagerActor: ActorRef, notificationActor: ActorRef, getCollaborationActor: ActorRef) extends AbstractDBMaster {
 
   private[this] var memberWorker: ActorRef = _

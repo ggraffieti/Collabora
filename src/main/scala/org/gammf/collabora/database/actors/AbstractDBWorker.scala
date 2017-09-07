@@ -18,7 +18,7 @@ abstract class AbstractDBWorker(val connectionActor: ActorRef) extends DBWorker 
 
   protected var connection: Option[MongoConnection] = None
 
-  override def preStart(): Unit = connectionActor ! new AskConnectionMessage()
+  override def preStart(): Unit = connectionActor ! AskConnectionMessage()
 
   protected def getCollaborationsCollection: Future[BSONCollection] =
     connection.get.database(DB_NAME, FailoverStrategy())

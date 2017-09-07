@@ -26,7 +26,7 @@ class ConnectionManagerActor extends Actor with Stash {
   }
 
   override def receive: Receive = {
-    case _ : AskConnectionMessage => sender() ! new GetConnectionMessage(connection.get)
-    case _ => // do nothing
+    case _ : AskConnectionMessage => sender ! GetConnectionMessage(connection.get)
+    case _ => unhandled(_)
   }
 }

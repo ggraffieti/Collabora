@@ -35,6 +35,7 @@ object AuthenticationServer {
       }
     } ~
     path("signin") {
+      println("SIGN IN")
       post {
         entity(as[String]) { jsonString =>
             Json.parse(jsonString).validate[User] match {
@@ -61,9 +62,9 @@ object AuthenticationServer {
     implicit val materializer: ActorMaterializer = ActorMaterializer()
     implicit val executionContext: ExecutionContextExecutor = system.dispatcher
 
-    Http().bindAndHandle(route, "localhost", 9894)
+    Http().bindAndHandle(route, "192.168.1.160", 9894)
 
-    println(s"Server online at http://localhost:9894/\n")
+    println(s"Server online at http://192.168.1.160:9894/\n")
   }
 
   private def myUserPassAuthenticator(credentials: Credentials): Future[Option[User]] =

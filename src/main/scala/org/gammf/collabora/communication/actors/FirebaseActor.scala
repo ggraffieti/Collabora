@@ -3,7 +3,8 @@ package org.gammf.collabora.communication.actors
 import akka.actor.{Actor, ActorRef, ActorSystem, Props}
 import com.newmotion.akka.rabbitmq.{ConnectionActor, ConnectionFactory}
 import org.gammf.collabora.communication.messages.{PublishFirebaseNotification, PublishNotificationMessage}
-import org.gammf.collabora.database.actors.{ConnectionManagerActor, DBWorkerGetCollaborationActor}
+import org.gammf.collabora.database.actors.ConnectionManagerActor
+import org.gammf.collabora.database.actors.worker.DBWorkerGetCollaborationActor
 import org.gammf.collabora.database.messages.GetCollaboration
 import org.gammf.collabora.util.{Firebase, UpdateMessage, UpdateMessageTarget, UpdateMessageType}
 

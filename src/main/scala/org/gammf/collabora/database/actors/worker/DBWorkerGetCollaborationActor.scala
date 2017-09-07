@@ -1,16 +1,16 @@
-package org.gammf.collabora.database.actors
+package org.gammf.collabora.database.actors.worker
 
 import akka.actor.{ActorRef, Stash}
 import akka.pattern.pipe
 import org.gammf.collabora.communication.messages.{PublishFirebaseNotification, PublishMemberAddedMessage, PublishUserLoginMessage}
+import org.gammf.collabora.database._
 import org.gammf.collabora.database.messages._
 import org.gammf.collabora.util.{AllCollaborationsMessage, Collaboration, CollaborationMessage}
-import org.gammf.collabora.database._
 import reactivemongo.api.Cursor
 import reactivemongo.bson.{BSONDocument, BSONObjectID}
 
-import scala.util.{Failure, Success}
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.util.{Failure, Success}
 
 /***
   * A worker that perform a get on collaboration collection and communicate with CollaborationMembersActor
@@ -52,7 +52,7 @@ class DBWorkerGetCollaborationActor(connectionActor: ActorRef, collaborationActo
       getCollaborationsCollection.map(collaborations =>
         collaborations.find(BSONDocument(COLLABORATION_USERS ->
           BSONDocument("$elemMatch" -> BSONDocument(COLLABORATION_USER_USERNAME -> message.username)))
-        ).cursor[BSONDocument]().collect[List](-1, Cursor.FailOnError[List[BSONDocument]]()))
+        ).cursor[BSONDocument]().collect[List](-1, Cursor.FailOnError[List[BSONDocument]]())) // -1 is no limit list
         .flatten.map(list =>
         PublishUserLoginMessage(message.username,
           AllCollaborationsMessage(message.username, list.map(bson => bson.as[Collaboration])))) pipeTo collaborationActor

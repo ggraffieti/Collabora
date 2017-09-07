@@ -1,4 +1,4 @@
-package org.gammf.collabora.database.actors
+package org.gammf.collabora.database.actors.worker
 
 import akka.actor.Actor
 import org.gammf.collabora.database.messages.{DBWorkerMessage, QueryFailMessage}

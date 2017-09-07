@@ -7,7 +7,8 @@ import com.rabbitmq.client.{ConnectionFactory, _}
 import org.gammf.collabora.EntryPoint.{notificationActor, system}
 import org.gammf.collabora.communication.Utils.CommunicationType
 import org.gammf.collabora.communication.messages._
-import org.gammf.collabora.database.actors.{ConnectionManagerActor, DBMasterActor}
+import org.gammf.collabora.database.actors.ConnectionManagerActor
+import org.gammf.collabora.database.actors.master.DBMasterActor
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
 
 import scala.concurrent.duration._

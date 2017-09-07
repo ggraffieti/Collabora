@@ -1,4 +1,4 @@
-package org.gammf.collabora.database.actors
+package org.gammf.collabora.database.actors.worker
 
 import akka.actor.{ActorRef, Stash}
 import akka.pattern.pipe
@@ -9,7 +9,7 @@ import reactivemongo.bson.{BSON, BSONDocument}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class DBWorkerAuthentication(connectionManager: ActorRef) extends UsersDBWorker(connectionManager) with Stash {
+class DBWorkerAuthenticationActor(connectionManager: ActorRef) extends UsersDBWorker(connectionManager) with Stash {
 
 
   override def receive: Receive = {

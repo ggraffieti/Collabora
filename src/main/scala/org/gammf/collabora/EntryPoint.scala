@@ -6,7 +6,7 @@ import org.gammf.collabora.authentication.AuthenticationServer
 import org.gammf.collabora.authentication.actors.AuthenticationActor
 import org.gammf.collabora.communication.actors._
 import org.gammf.collabora.communication.messages.StartMessage
-import org.gammf.collabora.database.actors.DBMasterActor
+import org.gammf.collabora.database.actors.master.DBMasterActor
 
 object EntryPoint extends App {
   val system = ActorSystem("CollaboraServer")

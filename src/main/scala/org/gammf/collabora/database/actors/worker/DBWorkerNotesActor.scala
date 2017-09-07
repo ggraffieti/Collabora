@@ -1,9 +1,9 @@
-package org.gammf.collabora.database.actors
+package org.gammf.collabora.database.actors.worker
 
 import akka.actor.{ActorRef, Stash}
 import akka.pattern.pipe
-import org.gammf.collabora.database.messages._
 import org.gammf.collabora.database._
+import org.gammf.collabora.database.messages._
 import org.gammf.collabora.util.Note
 import reactivemongo.bson.{BSON, BSONDocument, BSONObjectID}
 

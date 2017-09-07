@@ -16,8 +16,8 @@ class AuthenticationActor(private val dbActor: ActorRef) extends Actor {
 
   override def receive: Receive = {
 
-    case message: LoginMessage => (dbActor ? message).mapTo[AuthenticationMessage] pipeTo sender
-    case message: SigninMessage => (dbActor ? message).mapTo[SigninResponseMessage] pipeTo sender
+    case message: LoginMessage => dbActor forward message
+    case message: SigninMessage => dbActor forward message
     case message: SendAllCollaborationsMessage => dbActor ! GetAllCollaborationsMessage(message.username)
     case message: CreatePrivateCollaborationMessage =>
       dbActor ! UpdateMessage(

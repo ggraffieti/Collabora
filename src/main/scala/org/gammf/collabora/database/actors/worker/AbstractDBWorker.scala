@@ -1,13 +1,12 @@
-package org.gammf.collabora.database.actors
+package org.gammf.collabora.database.actors.worker
 
 import akka.actor.ActorRef
-import org.gammf.collabora.database.messages.AskConnectionMessage
 import org.gammf.collabora.database._
-import reactivemongo.api.{FailoverStrategy, MongoConnection}
+import org.gammf.collabora.database.messages.AskConnectionMessage
 import reactivemongo.api.collections.bson.BSONCollection
+import reactivemongo.api.{FailoverStrategy, MongoConnection}
 
 import scala.concurrent.ExecutionContext.Implicits.global
-
 import scala.concurrent.Future
 
 /**

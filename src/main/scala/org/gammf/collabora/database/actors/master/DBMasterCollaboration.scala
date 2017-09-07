@@ -1,0 +1,45 @@
+package org.gammf.collabora.database.actors.master
+
+import akka.actor.{ActorRef, ActorSystem, Props}
+import org.gammf.collabora.communication.messages.{PublishMemberAddedMessage, PublishNotificationMessage}
+import org.gammf.collabora.database.actors.worker.DBWorkerCollaborationsActor
+import org.gammf.collabora.database.messages._
+import org.gammf.collabora.util.{CollaborationMessage, UpdateMessage, UpdateMessageTarget, UpdateMessageType}
+
+class DBMasterCollaboration(system: ActorSystem, connectionManagerActor: ActorRef, notificationActor: ActorRef, collaborationMemberActor: ActorRef) extends AbstractDBMaster {
+
+  private[this] var collaborationWorker: ActorRef = _
+
+  override def preStart(): Unit = {
+    collaborationWorker = system.actorOf(Props.create(classOf[DBWorkerCollaborationsActor], connectionManagerActor))
+  }
+
+  override def receive: Receive = {
+
+    case message: UpdateMessage => message.target match {
+      case UpdateMessageTarget.COLLABORATION => message.messageType match {
+        case UpdateMessageType.CREATION => collaborationWorker ! InsertCollaborationMessage(message.collaboration.get, message.user)
+        case UpdateMessageType.UPDATING => collaborationWorker ! UpdateCollaborationMessage(message.collaboration.get, message.user)
+        case UpdateMessageType.DELETION => collaborationWorker ! DeleteCollaborationMessage(message.collaboration.get, message.user)
+      }
+    }
+
+    case QueryOkMessage(queryGoneWell) => queryGoneWell match {
+      case query: QueryCollaborationMessage => query match {
+        case _: InsertCollaborationMessage => collaborationMemberActor ! PublishMemberAddedMessage(query.userID, CollaborationMessage(user=query.userID,collaboration = query.collaboration))
+        case _ => notificationActor ! PublishNotificationMessage(query.collaboration.id.get, UpdateMessage(
+          target = UpdateMessageTarget.COLLABORATION,
+          messageType = getUpdateTypeFromQueryMessage(query),
+          user = query.userID,
+          collaboration = Some(query.collaboration),
+          collaborationId = Some(query.collaboration.id.get)))
+      }
+      case _ => unhandled(_)
+    }
+
+    case fail: QueryFailMessage => fail.error.printStackTrace() // TODO error handling
+
+    case _ => unhandled(_)
+
+  }
+}

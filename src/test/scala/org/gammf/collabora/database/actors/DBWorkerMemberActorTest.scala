@@ -46,22 +46,24 @@ class DBWorkerMemberActorTest extends TestKit (ActorSystem("CollaboraServer")) w
 
   "A DBWorkerMember actor" should {
     "insert new user in a collaboration correctly in the db" in {
-      within(TASK_WAIT_TIME second) {
-        usersActor ! InsertUserMessage(user, TEST_COLLABORATION_ID, TEST_USER_ID)
+      within(5 second) {
+        usersActor ! InsertMemberMessage(user, "59806a4af27da3fcfe0ac0ca", "maffone")
+
         expectMsgType[QueryOkMessage]
       }
     }
 
     "update a user right in a collaboration correctly" in {
-      within(TASK_WAIT_TIME second) {
-        usersActor ! UpdateUserMessage(user, TEST_COLLABORATION_ID, TEST_USER_ID)
+      within(5 second) {
+        usersActor ! UpdateMemberMessage(user, "59806a4af27da3fcfe0ac0ca", "maffone")
+
         expectMsgType[QueryOkMessage]
       }
     }
 
     "delete a user in a collaboration correctly" in {
-      within(TASK_WAIT_TIME second) {
-        usersActor ! DeleteUserMessage(user, TEST_COLLABORATION_ID, TEST_USER_ID)
+       within(5 second) {
+        usersActor ! DeleteMemberMessage(user, "59806a4af27da3fcfe0ac0ca", "maffone")
         expectMsgType[QueryOkMessage]
       }
     }

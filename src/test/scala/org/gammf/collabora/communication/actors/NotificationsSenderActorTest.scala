@@ -77,7 +77,7 @@ class NotificationsSenderActorTest extends TestKit (ActorSystem("CollaboraServer
   )
 
   "A NotificationsSender actor" should {
-
+/*
     "communicate with RabbitMQNamingActor" in {
       within(TASK_WAIT_TIME seconds){
         naming ! ChannelNamesRequestMessage(CommunicationType.NOTIFICATIONS)
@@ -106,7 +106,7 @@ class NotificationsSenderActorTest extends TestKit (ActorSystem("CollaboraServer
       assert(msg.startsWith(startMsg)&& msg.endsWith(endMsg))
     }
 
-
+*/
 
   }
 

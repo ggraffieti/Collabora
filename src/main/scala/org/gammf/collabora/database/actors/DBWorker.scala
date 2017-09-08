@@ -32,6 +32,20 @@ trait DBWorker extends Actor {
   protected def getUsersCollection: Future[BSONCollection]
 
   /**
+    * Check if in the collection is present at least one document that match the selector,
+    * @param selector the selector used to find the document to update
+    * @param okStrategy the strategy that have to be used to map the document found to a [[DBWorkerMessage]]. The
+    *                   strategy maps from [[ Option[BSONDocument] ]] because the selector shoud not match any document.
+    * @param failStrategy the fail strategy that have to be used if somethings went wrong. The default strategy returns a
+    *                     [[QueryFailMessage]] that contains the Exception.
+    *
+    * @return a DBWorkerMessage, representing the success or the failure of the query
+    */
+  protected def find(selector: BSONDocument,
+                       okStrategy: Option[BSONDocument] => DBWorkerMessage,
+                       failStrategy: PartialFunction[Throwable, DBWorkerMessage] = defaultFailStrategy): Future[DBWorkerMessage]
+
+  /**
     * Perform an update query. An update query is a query that select a document in the collection, and edit it.
     * DO NOT use this methot to insert or delete documents.
     * @param selector the selector used to find the document to update

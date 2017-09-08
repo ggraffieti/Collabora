@@ -59,7 +59,7 @@ object CollaborationRight extends Enumeration {
 }
 
 object Collaboration {
-  def apply(id: Option[String], name: String, collaborationType: CollaborationType, users: Option[List[CollaborationUser]], modules: Option[List[Module]], notes: Option[List[Note]]): Collaboration = SimpleCollaboration(id, name, collaborationType, users, modules, notes)
+  def apply(id: Option[String] = None, name: String, collaborationType: CollaborationType, users: Option[List[CollaborationUser]] = None, modules: Option[List[Module]] = None, notes: Option[List[Note]] = None): Collaboration = SimpleCollaboration(id, name, collaborationType, users, modules, notes)
 
   def unapply(arg: Collaboration): Option[(Option[String], String, CollaborationType, Option[List[CollaborationUser]], Option[List[Module]], Option[List[Note]])] = Some((arg.id, arg.name, arg.collaborationType, arg.users, arg.modules, arg.notes))
 

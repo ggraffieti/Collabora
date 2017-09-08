@@ -66,7 +66,7 @@ package object database {
   /**
     * The name of the field in the collaboration collection, that contains the member username
     */
-  val COLLABORATION_USER_USERNAME = "user"
+  val COLLABORATION_USER_USERNAME = "username"
 
   /**
     * The name of the field in the collaboration collection, that contains the member right

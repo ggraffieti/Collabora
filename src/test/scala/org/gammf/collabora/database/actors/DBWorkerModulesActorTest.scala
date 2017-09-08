@@ -26,7 +26,7 @@ class DBWorkerModulesActorTest extends TestKit (ActorSystem("CollaboraServer")) 
   val modulesActor:ActorRef = system.actorOf(Props.create(classOf[DBWorkerModulesActor], connectionManagerActor))
   val moduleId:String = "123456788000000000000000"
 
-  val module:Module = SimpleModule(Option(moduleId),"questo è un modulo importante",None,"doing")
+  val module:Module = Module(Option(moduleId),"questo è un modulo importante","doing")
 
   override def beforeAll(): Unit = {
 

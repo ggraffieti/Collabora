@@ -54,8 +54,7 @@ class DBWorkerGetCollaborationActor(connectionActor: ActorRef, collaborationActo
           BSONDocument("$elemMatch" -> BSONDocument(COLLABORATION_USER_USERNAME -> message.username)))
         ).cursor[BSONDocument]().collect[List](-1, Cursor.FailOnError[List[BSONDocument]]())) // -1 is no limit list
         .flatten.map(list =>
-        PublishUserLoginMessage(message.username,
-          AllCollaborationsMessage(message.username, list.map(bson => bson.as[Collaboration])))) pipeTo collaborationActor
+        AllCollaborationsMessage(list.map(bson => bson.as[Collaboration]))) pipeTo sender
 
   }
 

@@ -33,7 +33,7 @@ class AuthenticationServerTest extends WordSpec with Matchers with ScalatestRout
 
   AuthenticationServer.start(system, authenticationActor)
 
-  implicit val timeout: RouteTestTimeout = RouteTestTimeout(50 seconds)
+  implicit val timeout: RouteTestTimeout = RouteTestTimeout(5 seconds)
 
   val insertUser = "{\"username\":\"JDoe\",\"email\":\"john.doe@email.com\",\"name\":\"John\",\"surname\":\"Doe\",\"birthday\":\"1980-01-01T05:27:19.199+02:00\",\"hashedPassword\":\"notSoHashedPassord\"}"
 

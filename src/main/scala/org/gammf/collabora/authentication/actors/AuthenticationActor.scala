@@ -27,7 +27,10 @@ class AuthenticationActor(private val dbActor: ActorRef) extends Actor {
     case message: CreatePrivateCollaborationMessage =>
       (dbActor ? buildInsertPrivateCollaborationMessage(buildPrivateCollaboration(message.username),
         message.username)).mapTo[DBWorkerMessage].map {
-        case _: QueryOkMessage => Some(buildPrivateCollaboration(message.username))
+        case query: QueryOkMessage => query.queryGoneWell match {
+          case q: InsertCollaborationMessage => Some(q.collaboration)
+          case _ => None
+        }
         case _ => None
       } pipeTo sender
   }

@@ -4,11 +4,10 @@ import akka.actor.{ActorRef, ActorSystem, Props}
 import akka.pattern.{ask, pipe}
 import akka.util.Timeout
 import org.gammf.collabora.authentication.messages.{LoginMessage, SigninMessage, SigninResponseMessage}
-import org.gammf.collabora.communication.messages.{PublishMemberAddedMessage, PublishNotificationMessage}
 import org.gammf.collabora.database.actors._
 import org.gammf.collabora.database.actors.worker.{DBWorkerAuthenticationActor, DBWorkerGetCollaborationActor}
 import org.gammf.collabora.database.messages._
-import org.gammf.collabora.util.{CollaborationMessage, UpdateMessage, UpdateMessageTarget, UpdateMessageType}
+import org.gammf.collabora.util.{UpdateMessage, UpdateMessageTarget}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
@@ -59,7 +58,7 @@ class DBMasterActor(val system: ActorSystem, val notificationActor: ActorRef, va
         SigninResponseMessage(message.isInstanceOf[QueryOkMessage])
       ) pipeTo sender
 
-    case message: GetAllCollaborationsMessage => getCollaborarionsActor ! message
+    case message: GetAllCollaborationsMessage => getCollaborarionsActor forward message
 
     case fail: QueryFailMessage => fail.error.printStackTrace() // TODO error handling
   }

@@ -2,6 +2,7 @@ package org.gammf.collabora.database.actors
 import akka.actor.{ActorRef, ActorSystem, Props}
 import akka.testkit.{ImplicitSender, TestKit}
 import com.newmotion.akka.rabbitmq.{ConnectionActor, ConnectionFactory}
+import org.gammf.collabora.TestUtil
 import org.gammf.collabora.communication.actors._
 import org.gammf.collabora.database.messages._
 import org.gammf.collabora.util.{Module, Note, NoteState, SimpleModule, SimpleNote}
@@ -15,10 +16,6 @@ class DBWorkerModulesActorTest extends TestKit (ActorSystem("CollaboraServer")) 
   val NAMING_ACTOR_NAME = "naming"
   val CHANNEL_CREATOR_NAME = "channelCreator"
   val PUBLISHER_ACTOR_NAME = "publisher"
-
-  val TEST_MODULE_ID = "59806a4af27da3fcfe0ac0ca"
-  val TEST_USER_ID = "maffone"
-  val TASK_WAIT_TIME = 5
 
   val factory = new ConnectionFactory()
   val connection:ActorRef = system.actorOf(ConnectionActor.props(factory), CONNECTION_ACTOR_NAME)
@@ -49,22 +46,22 @@ class DBWorkerModulesActorTest extends TestKit (ActorSystem("CollaboraServer")) 
 
   "A DBWorkerModules actor" should {
     "insert new modules in a collaboration correctly in the db" in {
-      within(TASK_WAIT_TIME second) {
-        modulesActor ! InsertModuleMessage(module, TEST_MODULE_ID, TEST_USER_ID)
+      within(TestUtil.TASK_WAIT_TIME second) {
+        modulesActor ! InsertModuleMessage(module, TestUtil.FAKE_ID, TestUtil.FAKE_USER_ID)
         expectMsgType[QueryOkMessage]
       }
     }
 
     "update a module in a collaboration correctly" in {
-      within(TASK_WAIT_TIME second) {
-        modulesActor ! UpdateModuleMessage(module, TEST_MODULE_ID, TEST_USER_ID)
+      within(TestUtil.TASK_WAIT_TIME second) {
+        modulesActor ! UpdateModuleMessage(module, TestUtil.FAKE_ID, TestUtil.FAKE_USER_ID)
         expectMsgType[QueryOkMessage]
       }
     }
 
     "delete a module in a collaboration correctly" in {
-      within(TASK_WAIT_TIME second) {
-        modulesActor ! DeleteModuleMessage(module, TEST_MODULE_ID, TEST_USER_ID)
+      within(TestUtil.TASK_WAIT_TIME second) {
+        modulesActor ! DeleteModuleMessage(module, TestUtil.FAKE_ID, TestUtil.FAKE_USER_ID)
         expectMsgType[QueryOkMessage]
       }
     }

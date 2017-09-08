@@ -15,5 +15,4 @@ package object authentication {
     */
   val SERVER_PORT: Int = 9894
 
-
 }

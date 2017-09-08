@@ -19,12 +19,25 @@ import scala.concurrent.duration._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
+/**
+  * A HTTP Server, that manage login and registration of users in the system.
+  * The server is listen in 2 path: login, to perform login, and signin to perform registration.
+  * For the login the user have to sent a GET request, containing in the HTTP header Authentication the
+  * username and the hashed password.
+  * For the registration the user have to sent a POST request, containint in its body all the data about the user,
+  * and the hashed password.
+  */
 object AuthenticationServer {
-
-  var authenticationActor: ActorRef = _
 
   implicit val timeout: Timeout = Timeout(5 seconds)
 
+  private[this] var authenticationActor: ActorRef = _
+
+  /**
+    * Represents the route of this server. The server listen to /login and /signin.
+    * In /login only GET requests are allowed.
+    * In /signin only POST requests are allowed.
+    */
   val route: server.Route = {
     path("login") {
       authenticateBasicAsync(realm = "login", myUserPassAuthenticator) { user =>
@@ -53,6 +66,11 @@ object AuthenticationServer {
   }
 
 
+  /**
+    * Start the server.
+    * @param actorSystem the actor system of the application.
+    * @param authActor the authentication actor, used as interface with the actor system.
+    */
   def start(actorSystem: ActorSystem, authActor: ActorRef) {
 
     authenticationActor = authActor
@@ -61,9 +79,9 @@ object AuthenticationServer {
     implicit val materializer: ActorMaterializer = ActorMaterializer()
     implicit val executionContext: ExecutionContextExecutor = system.dispatcher
 
-    Http().bindAndHandle(route, "localhost", 9894)
+    Http().bindAndHandle(route, SERVER_IP_ADDRESS, SERVER_PORT)
 
-    println(s"Server online at http://localhost:9894/\n")
+    println(s"Server online at http://$SERVER_IP_ADDRESS:$SERVER_PORT\n")
   }
 
   private def myUserPassAuthenticator(credentials: Credentials): Future[Option[User]] =

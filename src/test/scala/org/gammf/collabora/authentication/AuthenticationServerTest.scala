@@ -8,7 +8,8 @@ import org.scalatest.{Matchers, WordSpec}
 import akka.http.scaladsl.testkit.{RouteTestTimeout, ScalatestRouteTest}
 import com.newmotion.akka.rabbitmq.{ConnectionActor, ConnectionFactory}
 import org.gammf.collabora.communication.actors._
-import org.gammf.collabora.database.actors.{ConnectionManagerActor, DBMasterActor}
+import org.gammf.collabora.database.actors.ConnectionManagerActor
+import org.gammf.collabora.database.actors.master.DBMasterActor
 
 import scala.concurrent.duration._
 

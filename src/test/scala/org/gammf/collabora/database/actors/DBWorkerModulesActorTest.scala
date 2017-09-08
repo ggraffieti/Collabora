@@ -3,6 +3,8 @@ import akka.actor.{ActorRef, ActorSystem, Props}
 import akka.testkit.{ImplicitSender, TestKit}
 import com.newmotion.akka.rabbitmq.{ConnectionActor, ConnectionFactory}
 import org.gammf.collabora.communication.actors._
+import org.gammf.collabora.database.actors.master.DBMasterActor
+import org.gammf.collabora.database.actors.worker.DBWorkerModulesActor
 import org.gammf.collabora.database.messages._
 import org.gammf.collabora.util.{Module, Note, NoteState, SimpleModule, SimpleNote}
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}

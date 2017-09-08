@@ -1,4 +1,4 @@
-package org.gammf.collabora.database.actors
+package org.gammf.collabora.database.actors.worker
 
 import akka.actor.ActorRef
 import org.gammf.collabora.database.messages.{DBWorkerMessage, QueryFailMessage}
@@ -6,7 +6,6 @@ import reactivemongo.bson.BSONDocument
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import scala.util.{Failure, Success}
 
 /**
   * A DBWorker that performs query on the user collection.

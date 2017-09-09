@@ -2,7 +2,7 @@ package org.gammf.collabora.authentication
 
 import akka.actor.{ActorRef, ActorSystem}
 import akka.http.scaladsl.model.HttpResponse
-import akka.http.scaladsl.model.StatusCodes.{BadRequest, OK}
+import akka.http.scaladsl.model.StatusCodes.{BadRequest, InternalServerError, OK}
 import akka.pattern.ask
 import akka.http.scaladsl.{Http, server}
 import akka.stream.ActorMaterializer
@@ -11,10 +11,10 @@ import akka.http.scaladsl.server.directives.Credentials
 import akka.util.Timeout
 import org.gammf.collabora.authentication.messages._
 import org.gammf.collabora.database.messages.AuthenticationMessage
-import org.gammf.collabora.util.User
+import org.gammf.collabora.util.{AllCollaborationsMessage, Collaboration, User}
 import play.api.libs.json.{JsError, JsSuccess, Json}
 
-import scala.concurrent.{ExecutionContextExecutor, Future}
+import scala.concurrent.{Await, ExecutionContextExecutor, Future}
 import scala.concurrent.duration._
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -42,8 +42,13 @@ object AuthenticationServer {
     path("login") {
       authenticateBasicAsync(realm = "login", myUserPassAuthenticator) { user =>
         get {
-          authenticationActor ! SendAllCollaborationsMessage(user.username)
-          complete(Json.toJson(user).toString)
+          complete {
+            (authenticationActor ? SendAllCollaborationsMessage(user.username)).mapTo[AllCollaborationsMessage].map(message =>
+            HttpResponse(OK, entity = Json.toJson(LoginResponse(
+              user = user,
+              collaborations = message.collaborationList
+            )).toString))
+          }
         }
       }
     } ~
@@ -54,8 +59,9 @@ object AuthenticationServer {
               case user: JsSuccess[User] => complete {
                 (authenticationActor ? SigninMessage(user.value)).mapTo[SigninResponseMessage].map(message =>
                   if (message.ok) {
-                    authenticationActor ! CreatePrivateCollaborationMessage(user.value.username)
-                    HttpResponse(OK)
+                    val collaboration = Await.result(authenticationActor ? CreatePrivateCollaborationMessage(user.value.username), timeout.duration).asInstanceOf[Option[Collaboration]]
+                    if (collaboration.isDefined) HttpResponse(OK, entity = Json.toJson(collaboration.get).toString)
+                    else HttpResponse(InternalServerError, entity = "An error occured in private collaboration creation.")
                   } else HttpResponse(BadRequest, entity = "username already present"))
               }
               case _: JsError => complete(HttpResponse(BadRequest, entity = "Data passed cannot be unmarshalled to User"))

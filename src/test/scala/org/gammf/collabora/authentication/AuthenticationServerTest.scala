@@ -7,6 +7,7 @@ import akka.http.scaladsl.server.Route
 import org.scalatest.{Matchers, WordSpec}
 import akka.http.scaladsl.testkit.{RouteTestTimeout, ScalatestRouteTest}
 import com.newmotion.akka.rabbitmq.{ConnectionActor, ConnectionFactory}
+import org.gammf.collabora.authentication.actors.AuthenticationActor
 import org.gammf.collabora.communication.actors._
 import org.gammf.collabora.database.actors.ConnectionManagerActor
 import org.gammf.collabora.database.actors.master.DBMasterActor
@@ -28,12 +29,12 @@ class AuthenticationServerTest extends WordSpec with Matchers with ScalatestRout
   val subscriber:ActorRef = system.actorOf(Props[SubscriberActor], "subscriber")
   val updatesReceiver:ActorRef = system.actorOf(Props(
     new UpdatesReceiverActor(connection, naming, channelCreator, subscriber, dbMasterActor)), "updates-receiver")
+  val authenticationActor: ActorRef = system.actorOf(Props.create(classOf[AuthenticationActor], dbMasterActor))
 
-  AuthenticationServer.start(system, dbMasterActor)
+  AuthenticationServer.start(system, authenticationActor)
 
   implicit val timeout: RouteTestTimeout = RouteTestTimeout(5 seconds)
 
-  val rightUser = "{\"username\":\"maffone\",\"email\":\"alfredo.maffi@studio.unibo.it\",\"name\":\"Alfredo\",\"surname\":\"Maffi\",\"birthday\":\"1994-08-09T05:27:19.199+02:00\"}"
   val insertUser = "{\"username\":\"JDoe\",\"email\":\"john.doe@email.com\",\"name\":\"John\",\"surname\":\"Doe\",\"birthday\":\"1980-01-01T05:27:19.199+02:00\",\"hashedPassword\":\"notSoHashedPassord\"}"
 
   val postRequest = HttpRequest(
@@ -46,7 +47,7 @@ class AuthenticationServerTest extends WordSpec with Matchers with ScalatestRout
 
     "authenticate the user" in {
       Get("/login") ~> addCredentials(BasicHttpCredentials("maffone", "admin")) ~> AuthenticationServer.route ~> check {
-        responseAs[String] shouldEqual rightUser
+        status shouldEqual StatusCodes.OK
       }
     }
 
@@ -79,7 +80,6 @@ class AuthenticationServerTest extends WordSpec with Matchers with ScalatestRout
     "sign in a new User" in {
       Post("/signin", insertUser) ~> Route.seal(AuthenticationServer.route) ~> check {
         status shouldEqual StatusCodes.OK
-        responseAs[String] shouldEqual ""
       }
     }
 

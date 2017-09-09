@@ -7,8 +7,9 @@ import org.gammf.collabora.yellowpages.util.ActorYellowPagesEntry
 import org.gammf.collabora.yellowpages.ActorService._
 import org.gammf.collabora.yellowpages.util.Topic.ActorTopic
 import scala.concurrent.Await
-import scala.concurrent.duration.Duration
 import akka.pattern.ask
+
+import scala.concurrent.duration._
 
 /**
   * @author Manuel Peruzzi
@@ -63,14 +64,17 @@ trait YellowPagesActor extends Actor {
     }
   }
 
-  private[this] def handleActorDeletion(msg: ActorYellowPagesEntry): Unit = yellowPages = yellowPages.filterNot(yp => yp == msg)
+  private[this] def handleActorDeletion(msg: ActorYellowPagesEntry): Unit = yellowPages.filter(yp => yp == msg) match {
+    case h :: _ => yellowPages = yellowPages.filterNot(yp => yp == h)
+    case _ => yellowPages.filter(yp => yp > msg && yp.service == YellowPagesService).foreach(yp => yp.reference forward (msg : DeletionRequestMessage))
+  }
 
   private[this] def handleHierarchy(l: Int): Unit = {
     val level = l+1; var list: List[(Int, ActorYellowPagesEntry)] = List()
     list = list ++ yellowPages.map(yp => (level, yp))
     yellowPages.filter(yp => yp.service == YellowPagesService).foreach(yp => list = list ++ askYellowPagesActors(yp.reference))
     def askYellowPagesActors(yp: ActorRef): List[(Int, ActorYellowPagesEntry)] = {
-      implicit val timeout: Timeout = Timeout(Duration(1, "seconds"))
+      implicit val timeout: Timeout = Timeout(5 seconds)
       Await.result(yp ? HierarchyRequestMessage(level), timeout.duration).asInstanceOf[HierarchyResponseMessage].actors
     }
     this match {

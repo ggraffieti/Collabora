@@ -36,7 +36,7 @@ trait BasicActor extends Actor {
 
   override def receive: Receive = {
     case RegistrationResponseMessage() => println("[" + name + "] Registration OK.")
-      // TODO remove this message from here and handle it in all the subclasses.
-    case _ => println("["+ name + "] Huh?")
+    case InsertionErrorMessage() => println("[" + name + "] Insertion Error.")
+    case _ => println("["+ name + "] Huh?"); unhandled(_)
   }
 }

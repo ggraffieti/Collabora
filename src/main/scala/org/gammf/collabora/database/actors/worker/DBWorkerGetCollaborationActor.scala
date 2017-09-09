@@ -2,10 +2,10 @@ package org.gammf.collabora.database.actors.worker
 
 import akka.actor.{ActorRef, Stash}
 import akka.pattern.pipe
-import org.gammf.collabora.communication.messages.{PublishFirebaseNotification, PublishMemberAddedMessage, PublishUserLoginMessage}
+import org.gammf.collabora.communication.messages.{PublishFirebaseNotification, PublishInCollaborationExchangeMessage}
 import org.gammf.collabora.database._
 import org.gammf.collabora.database.messages._
-import org.gammf.collabora.util.{AllCollaborationsMessage, Collaboration, CollaborationMessage}
+import org.gammf.collabora.util.{ Collaboration, CollaborationMessage}
 import reactivemongo.api.Cursor
 import reactivemongo.bson.{BSONDocument, BSONObjectID}
 
@@ -31,7 +31,7 @@ class DBWorkerGetCollaborationActor(connectionActor: ActorRef, collaborationActo
         case Success(collaborations) =>
           val selector = BSONDocument(COLLABORATION_ID -> BSONObjectID.parse(message.collaborationID).get)
           collaborations.find(selector).one onComplete {
-            case Success(s) => collaborationActor ! PublishMemberAddedMessage(message.user.user,CollaborationMessage(message.userID,s.get.as[Collaboration]))
+            case Success(s) => collaborationActor ! PublishInCollaborationExchangeMessage(message.user.user,CollaborationMessage(message.userID,s.get.as[Collaboration]))
             case Failure(e) => e.printStackTrace() // TODO better error strategy
           }
         case Failure(e) => e.printStackTrace() // TODO better error strategy

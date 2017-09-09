@@ -84,6 +84,13 @@ case class GetCollaboration(collaborationID: String) extends  QueryRetriveCollab
 case class GetAllCollaborationsMessage(username: String) extends QueryMessage
 
 /**
+  * Message used to respond to a [[org.gammf.collabora.database.messages.GetAllCollaborationsMessage]]
+  * giving a list of all the collaborations of the requested user
+  */
+case class AllCollaborationsMessage(collaborationList: List[Collaboration]) extends QueryMessage
+
+
+/**
   * A message that have to be sent to the [[org.gammf.collabora.database.actors.worker.DBWorkerCheckMemberExistenceActor]]
   * to check the existence of a member in the application.
   * @param username the username of the member.

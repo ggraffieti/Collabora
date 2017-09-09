@@ -1,7 +1,7 @@
 package org.gammf.collabora.database.actors.master
 
 import akka.actor.{ActorRef, ActorSystem, Props}
-import org.gammf.collabora.communication.messages.{PublishMemberAddedMessage, PublishNotificationMessage}
+import org.gammf.collabora.communication.messages.{PublishInCollaborationExchangeMessage, PublishNotificationMessage}
 import org.gammf.collabora.database.actors.worker.DBWorkerCollaborationsActor
 import org.gammf.collabora.database.messages._
 import org.gammf.collabora.util.{CollaborationMessage, CollaborationType, UpdateMessage, UpdateMessageTarget, UpdateMessageType}
@@ -38,7 +38,7 @@ class DBMasterCollaboration(system: ActorSystem, connectionManagerActor: ActorRe
 
     case QueryOkMessage(queryGoneWell) => queryGoneWell match {
       case query: QueryCollaborationMessage => query match {
-        case _: InsertCollaborationMessage => collaborationMemberActor ! PublishMemberAddedMessage(query.userID, CollaborationMessage(user=query.userID,collaboration = query.collaboration))
+        case _: InsertCollaborationMessage => collaborationMemberActor ! PublishInCollaborationExchangeMessage(query.userID, CollaborationMessage(user=query.userID,collaboration = query.collaboration))
         case _ => notificationActor ! PublishNotificationMessage(query.collaboration.id.get, UpdateMessage(
           target = UpdateMessageTarget.COLLABORATION,
           messageType = getUpdateTypeFromQueryMessage(query),

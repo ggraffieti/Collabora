@@ -6,8 +6,7 @@ import play.api.libs.json.{JsPath, Reads, Writes}
 /**
   * A very simple trait that represent a collaboration message
   */
-trait CollaborationMessage {
-  def user: String
+trait CollaborationMessage extends CollaborationExchangeMessage {
   def collaboration: Collaboration
 }
 
@@ -26,3 +25,6 @@ object CollaborationMessage {
       (JsPath \ "collaboration").write[Collaboration]
     ) (unlift(CollaborationMessage.unapply))
 }
+
+case class CollaborationMessageImpl(user: String, collaboration: Collaboration) extends CollaborationMessage
+

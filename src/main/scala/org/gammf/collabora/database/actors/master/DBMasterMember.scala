@@ -37,7 +37,7 @@ class DBMasterMember(system: ActorSystem, connectionManagerActor: ActorRef, noti
     case message: UpdateMessage => message.target match {
       case UpdateMessageTarget.MEMBER => message.messageType match {
         case UpdateMessageType.CREATION =>
-          (checkMemberWorker ? IsMemberExistsMessage(message.user)).mapTo[QueryOkMessage].map(query => query.queryGoneWell match {
+          (checkMemberWorker ? IsMemberExistsMessage(message.member.get.user)).mapTo[QueryOkMessage].map(query => query.queryGoneWell match {
             case member: IsMemberExistsResponseMessage =>
               if (member.isRegistered) memberWorker ! InsertMemberMessage(message.member.get, message.collaborationId.get, message.user)
               else publishCollaborationExchangeActor ! PublishErrorMessageInCollaborationExchange(

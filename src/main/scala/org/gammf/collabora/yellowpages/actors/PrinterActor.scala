@@ -55,7 +55,7 @@ object HierarchyTest extends App {
   val system = ActorSystem("Collabora")
   val root = system.actorOf(YellowPagesActor.rootProps())
   val printer2 = system.actorOf(PrinterActor.printerProps(
-    yellowPages = root, topic = Topic() :+ Communication :+ RabbitMQ :+ Http :+ Database))
+    yellowPages = root, topic = Topic() :+ Communication :+ RabbitMQ :+ Database))
   val topic1 = system.actorOf(YellowPagesActor.topicProps(
     yellowPages = root, name = "Communication_YP", topic = Topic() :+ Communication))
   val topic2 = system.actorOf(YellowPagesActor.topicProps(
@@ -63,7 +63,7 @@ object HierarchyTest extends App {
   val printer = system.actorOf(PrinterActor.printerProps(
     yellowPages = root, name = "General_Printer", topic = Topic() :+ General))
   val topic3 = system.actorOf(YellowPagesActor.topicProps(
-    yellowPages = root, name = "Communication/Database_YP", topic = Topic() :+ Communication :+ Http))
+    yellowPages = root, name = "Communication/Database_YP", topic = Topic() :+ Communication))
   Thread.sleep(1000)
   root ! HierarchyRequestMessage(0)
 }

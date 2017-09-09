@@ -6,9 +6,12 @@ import org.gammf.collabora.yellowpages.messages._
 import org.gammf.collabora.yellowpages.util.ActorYellowPagesEntry
 import org.gammf.collabora.yellowpages.ActorService._
 import org.gammf.collabora.yellowpages.util.Topic.ActorTopic
+
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 import akka.pattern.ask
+
+import scala.annotation.tailrec
 
 /**
   * @author Manuel Peruzzi
@@ -32,33 +35,35 @@ trait YellowPagesActor extends Actor {
   private[this] def handleActorInsertion(msg: InsertionRequestMessage): Unit = {
     searchForValidYPActor(msg)
     def searchForValidYPActor(msg: InsertionRequestMessage): Unit = yellowPages.filter(yp => yp > msg && yp.service == YellowPagesService) match {
-        case h :: _ => h.reference forward msg //TODO load balancing about yellow pages actors
-        case _ => insertActor(msg)
+        case h :: _ => h.reference forward msg
+        case _ => evaluateActorInsertion(msg)
       }
-    def insertActor(msg: InsertionRequestMessage): Unit = {
-      yellowPages = msg :: yellowPages; sender ! buildInsertionResponse(msg)
-      if (msg.service == YellowPagesService) delegateActorsToNewYPActor(msg)
+    def evaluateActorInsertion(msg: InsertionRequestMessage): Unit = msg.service match {
+        case YellowPagesService => if (yellowPages.exists(yp => yp === msg)) sender ! InsertionErrorMessage() else insertYPActor(msg)
+        case _ => insertSimpleActor(msg)
     }
-    def buildInsertionResponse(msg: InsertionRequestMessage): InsertionResponseMessage = msg match {
+    def insertYPActor(msg: InsertionRequestMessage): Unit = { insertSimpleActor(msg); delegateActorsToNewYPActor(msg) }
+    def insertSimpleActor(msg: InsertionRequestMessage): Unit = { yellowPages = msg :: yellowPages; sender ! buildResponse(msg) }
+    def buildResponse(msg: InsertionRequestMessage): InsertionResponseMessage = msg match {
       case _: RegistrationRequestMessage => RegistrationResponseMessage()
       case RedirectionRequestMessage(r, n, t, s) => RedirectionResponseMessage(r, n, t, s)
     }
-    def delegateActorsToNewYPActor(msg: InsertionRequestMessage): Unit =
-      yellowPages.filter(yp => yp < msg).foreach(yp => msg.reference ! (yp: RedirectionRequestMessage))
+    def delegateActorsToNewYPActor(msg: InsertionRequestMessage): Unit = yellowPages.filter(yp => yp < msg).foreach(yp => msg.reference ! (yp: RedirectionRequestMessage))
   }
 
   private[this] def handleActorRequest(msg: ActorRequestMessage): Unit = {
     searchForActor(yellowPages.filter(yp => yp === msg), msg)
     def searchForActor(list: List[ActorYellowPagesEntry], msg: ActorRequestMessage): Unit = {
       if (list.forall(yp => yp.used)) list.foreach(yp => yp.used = false)
-      list match {
-        case h :: t if h.used => searchForActor(t, msg)
+      searchForLeastRecentlyUsedActor(list, msg)
+    }
+    @tailrec def searchForLeastRecentlyUsedActor(list: List[ActorYellowPagesEntry], msg: ActorRequestMessage): Unit = list match {
+        case h :: t if h.used => searchForLeastRecentlyUsedActor(t, msg)
         case h :: _ if !h.used => sender ! (h: ActorResponseOKMessage); h.used = true
         case _ => searchForValidYPActor(msg)
-      }
     }
     def searchForValidYPActor(msg: ActorRequestMessage): Unit = yellowPages.filter(yp => yp > msg && yp.service == YellowPagesService) match {
-      case h :: _ => h.reference forward msg //TODO load balancing about yellow pages actors
+      case h :: _ => h.reference forward msg
       case _ => sender ! ActorResponseErrorMessage()
     }
   }

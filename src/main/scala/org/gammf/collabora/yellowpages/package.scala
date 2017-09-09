@@ -21,9 +21,13 @@ package object yellowpages {
     Communication,
     RabbitMQ,
     Firebase,
-    Http,
+    Authentication,
     // Database related topics
-    Database
+    Database,
+    Note,
+    Module,
+    Member,
+    Collaboration
     //TODO list all the database related topics
     = Value
   }
@@ -44,9 +48,11 @@ package object yellowpages {
     Subscribing,
     NotificationSending,
     CollaborationSending,
-    UpdatesReceiving
+    UpdatesReceiving,
     // TODO update the list with http related services
     // Database related services
+    Master,
+    Worker
     // TODO list all the database related services
     = Value
   }
@@ -80,6 +86,12 @@ package object yellowpages {
       */
     implicit def yellowPagesEntry2RedirectionRequest(entry: ActorYellowPagesEntry): RedirectionRequestMessage =
       RedirectionRequestMessage(reference = entry.reference, name = entry.name, topic = entry.topic, service = entry.service)
+
+    /**
+      * Implicit conversion from a [[ActorYellowPagesEntry]] to [[DeletionRequestMessage]]
+      */
+    implicit def yellowPagesEntry2DeleteRequest(entry: ActorYellowPagesEntry): DeletionRequestMessage =
+      DeletionRequestMessage(reference = entry.reference, name = entry.name, topic = entry.topic, service = entry.service)
 
     /**
       * Implicit conversion from a [[List]] of tuples compound by [[ActorYellowPagesEntry]] with a depth level to a [[List]] of [[HierarchyNode]].

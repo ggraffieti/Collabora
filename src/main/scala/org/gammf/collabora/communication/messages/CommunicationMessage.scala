@@ -26,7 +26,15 @@ case class PublishNotificationMessage(collaborationID: String, message: UpdateMe
   * @param username the identifier of the user to which the message is addressed.
   * @param message the message to be published.
   */
-case class PublishInCollaborationExchangeMessage(username: String, message: CollaborationMessage)
+case class PublishCollaborationInCollaborationExchange(username: String, message: CollaborationMessage)
+  extends CommunicationMessage
+
+/**
+  * Represents a message sent to a user, for notify an error occured in the server.
+  * @param username the identifier of the user to which the message is addressed.
+  * @param message the error message to be published.
+  */
+case class PublishErrorMessageInCollaborationExchange(username: String, message: ServerErrorMessage)
   extends CommunicationMessage
 
 

@@ -2,11 +2,13 @@ package org.gammf.collabora.database.actors.master
 
 import akka.actor.{ActorRef, ActorSystem, Props}
 import akka.pattern.ask
-import org.gammf.collabora.communication.messages.PublishNotificationMessage
+import akka.util.Timeout
+import org.gammf.collabora.communication.messages.{PublishCollaborationInCollaborationExchange, PublishErrorMessageInCollaborationExchange, PublishNotificationMessage}
 import org.gammf.collabora.database.actors.worker.{DBWorkerCheckMemberExistenceActor, DBWorkerMemberActor}
 import org.gammf.collabora.database.messages._
-import org.gammf.collabora.util.{UpdateMessage, UpdateMessageTarget, UpdateMessageType}
+import org.gammf.collabora.util.{ServerErrorCode, ServerErrorMessage, UpdateMessage, UpdateMessageTarget, UpdateMessageType}
 
+import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext.Implicits.global
 
 /**
@@ -23,6 +25,8 @@ class DBMasterMember(system: ActorSystem, connectionManagerActor: ActorRef, noti
   private[this] var memberWorker: ActorRef = _
   private[this] var checkMemberWorker: ActorRef = _
 
+  implicit val timeout: Timeout = Timeout(5 seconds)
+
   override def preStart(): Unit = {
     memberWorker = system.actorOf(Props.create(classOf[DBWorkerMemberActor], connectionManagerActor))
     checkMemberWorker = system.actorOf(Props.create(classOf[DBWorkerCheckMemberExistenceActor], connectionManagerActor))
@@ -33,9 +37,14 @@ class DBMasterMember(system: ActorSystem, connectionManagerActor: ActorRef, noti
     case message: UpdateMessage => message.target match {
       case UpdateMessageTarget.MEMBER => message.messageType match {
         case UpdateMessageType.CREATION =>
-          (checkMemberWorker ? IsMemberExistsMessage(message.user)).mapTo[IsMemberExistsResponseMessage].map(member => {
-            if (member.isRegistered) memberWorker ! InsertMemberMessage(message.member.get, message.collaborationId.get, message.user)
-            else publishCollaborationExchangeActor ! Some("body") // TODO correct message
+          (checkMemberWorker ? IsMemberExistsMessage(message.user)).mapTo[QueryOkMessage].map(query => query.queryGoneWell match {
+            case member: IsMemberExistsResponseMessage =>
+              if (member.isRegistered) memberWorker ! InsertMemberMessage(message.member.get, message.collaborationId.get, message.user)
+              else publishCollaborationExchangeActor ! PublishErrorMessageInCollaborationExchange(
+                username = message.user,
+                message = ServerErrorMessage(message.user, message.collaborationId.get, ServerErrorCode.MEMBER_NOT_FOUND)
+              )
+            case _ => unhandled(_)
           })
         case UpdateMessageType.UPDATING => memberWorker ! UpdateMemberMessage(message.member.get, message.collaborationId.get, message.user)
         case UpdateMessageType.DELETION => memberWorker ! DeleteMemberMessage(message.member.get, message.collaborationId.get, message.user)

@@ -4,9 +4,11 @@ import play.api.libs.functional.syntax._
 import play.api.libs.json.{JsPath, Reads, Writes}
 
 /**
-  * A very simple trait that represent a collaboration message
+  * A very simple trait that represent a collaboration message, used for sending a collaboration to a
+  * user that has been just inserted in the collaboration
   */
-trait CollaborationMessage extends CollaborationExchangeMessage {
+trait CollaborationMessage  {
+  def user: String
   def collaboration: Collaboration
 }
 

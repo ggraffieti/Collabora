@@ -2,12 +2,11 @@ package org.gammf.collabora.database.actors.worker
 
 import akka.actor.{ActorRef, Stash}
 import org.gammf.collabora.util.{Collaboration, Module, Note, UpdateMessage, UpdateMessageTarget, UpdateMessageType}
-import reactivemongo.bson.BSONDocument
+import reactivemongo.bson.{BSONDocument, BSONObjectID}
 import org.gammf.collabora.database._
 import org.gammf.collabora.database.messages.{ChangeModuleState, GetConnectionMessage}
 
 import scala.concurrent.Future
-
 import scala.concurrent.ExecutionContext.Implicits.global
 
 /**
@@ -25,8 +24,8 @@ class DBWorkerChangeModuleStateActor(connectionActor: ActorRef, dbActor: ActorRe
 
     case _ if connection.isEmpty => stash()
 
-    case ChangeModuleState(collaborationId, moduleId) => handleModuleChangeState(collaborationId, moduleId)
-
+    case ChangeModuleState(collaborationId, moduleId) =>
+      handleModuleChangeState(collaborationId, moduleId)
   }
 
   private[this] def handleModuleChangeState(collaborationId: String, moduleId: String): Unit = {
@@ -47,7 +46,9 @@ class DBWorkerChangeModuleStateActor(connectionActor: ActorRef, dbActor: ActorRe
                 collaborationId = collaborationId,
                 updatedModule = Module(id = module.id, description = module.description, state = State.DONE)
               )
-            case _ if module.state != State.DOING =>
+            case _ if list.count(note => note.state.definition == State.TODO) != noteListSize &&
+              list.count(note => note.state.definition == State.DONE) != noteListSize &&
+              module.state != State.DOING =>
               dbActor ! buildUpdateMessage(
               collaborationId = collaborationId,
               updatedModule = Module(id = module.id, description = module.description, state = State.DOING)
@@ -69,7 +70,7 @@ class DBWorkerChangeModuleStateActor(connectionActor: ActorRef, dbActor: ActorRe
     */
   private[this] def getModulesNotes(collaborationId: String, moduleId: String): Future[List[Note]] = {
     find(
-      selector = BSONDocument(COLLABORATION_ID -> collaborationId),
+      selector = BSONDocument(COLLABORATION_ID -> BSONObjectID.parse(collaborationId).get),
       okStrategy = bsonDocument => bsonDocument,
       failStrategy = { case _: Exception => None}
     ).map(bson => if (bson.isDefined && bson.get.as[Collaboration].notes.isDefined)
@@ -86,7 +87,7 @@ class DBWorkerChangeModuleStateActor(connectionActor: ActorRef, dbActor: ActorRe
     */
   private[this] def getModule(moduleId: String): Future[Option[Module]] = {
     find(
-      selector = BSONDocument(COLLABORATION_MODULES + "." + MODULE_ID -> moduleId),
+      selector = BSONDocument(COLLABORATION_MODULES + "." + MODULE_ID -> BSONObjectID.parse(moduleId).get),
       okStrategy = bsonDocument => bsonDocument,
       failStrategy = { case _: Exception => None}
     ).map(bson => if (bson.isDefined && bson.get.as[Collaboration].modules.isDefined)

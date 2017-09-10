@@ -5,7 +5,7 @@ import akka.pattern.{ask, pipe}
 import akka.util.Timeout
 import org.gammf.collabora.authentication.messages.{LoginMessage, SigninMessage, SigninResponseMessage}
 import org.gammf.collabora.database.actors._
-import org.gammf.collabora.database.actors.worker.{DBWorkerAuthenticationActor, DBWorkerGetCollaborationActor}
+import org.gammf.collabora.database.actors.worker.{DBWorkerAuthenticationActor, DBWorkerChangeModuleStateActor, DBWorkerGetCollaborationActor}
 import org.gammf.collabora.database.messages._
 import org.gammf.collabora.util.{UpdateMessage, UpdateMessageTarget}
 
@@ -28,12 +28,16 @@ class DBMasterActor(val system: ActorSystem, val notificationActor: ActorRef, va
   private var getCollaborarionsActor: ActorRef = _
   private var authenticationActor: ActorRef = _
 
+  private var changeModuleStateActor: ActorRef = _
+
   implicit val timeout: Timeout = Timeout(5 seconds)
 
   override def preStart(): Unit = {
     connectionManagerActor = system.actorOf(Props[ConnectionManagerActor])
 
-    noteManager = system.actorOf(Props.create(classOf[DBMasterNote], system, connectionManagerActor, notificationActor))
+    changeModuleStateActor = system.actorOf(Props.create(classOf[DBWorkerChangeModuleStateActor], connectionManagerActor, self))
+
+    noteManager = system.actorOf(Props.create(classOf[DBMasterNote], system, connectionManagerActor, notificationActor, changeModuleStateActor))
     collaborationManager = system.actorOf(Props.create(classOf[DBMasterCollaboration], system, connectionManagerActor, notificationActor, collaborationMemberActor))
     moduleManager = system.actorOf(Props.create(classOf[DBMasterModule], system, connectionManagerActor, notificationActor))
 

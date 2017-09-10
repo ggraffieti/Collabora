@@ -105,3 +105,12 @@ case class IsMemberExistsMessage(username: String) extends QueryMessage
   */
 case class IsMemberExistsResponseMessage(username: String, isRegistered: Boolean) extends QueryMessage
 
+/**
+  * A message sent to the [[org.gammf.collabora.database.actors.worker.DBWorkerChangeModuleStateActor]], in
+  * order to change (if necessary) the state of the module. The state of the module is based on the
+  * state of the notes inside it.
+  * @param collaborationId the collaboration id of the collaboration that contains the module.
+  * @param moduleId the id of the module.
+  */
+case class ChangeModuleState(collaborationId: String, moduleId: String) extends QueryMessage
+

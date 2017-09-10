@@ -13,7 +13,7 @@ import org.gammf.collabora.util.{UpdateMessage, UpdateMessageTarget, UpdateMessa
   *                               connection with the database
   * @param notificationActor The actor used for notify the client that a query is went good.
   */
-class DBMasterNote(system: ActorSystem, connectionManagerActor: ActorRef, notificationActor: ActorRef) extends AbstractDBMaster {
+class DBMasterNote(system: ActorSystem, connectionManagerActor: ActorRef, notificationActor: ActorRef, changeModuleStateActor: ActorRef) extends AbstractDBMaster {
 
   private[this] var noteWorker: ActorRef = _
 
@@ -38,6 +38,7 @@ class DBMasterNote(system: ActorSystem, connectionManagerActor: ActorRef, notifi
         user = query.userID,
         note = Some(query.note),
         collaborationId = Some(query.collaborationID)))
+        if (query.note.module.isDefined) changeModuleStateActor ! ChangeModuleState(query.collaborationID, query.note.module.get)
       case _ => unhandled(_)
     }
 

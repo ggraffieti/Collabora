@@ -10,6 +10,12 @@ import scala.concurrent.Future
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
+/**
+  * A Worker that performs module state changement. The changement is based on previous module state and
+  * the state of the notes
+  * @param connectionActor the actor that mantains the connection with the DB.
+  * @param dbActor the DBMaster actor, used for sending the edited module.
+  */
 class DBWorkerChangeModuleStateActor(connectionActor: ActorRef, dbActor: ActorRef) extends CollaborationsDBWorker[Option[BSONDocument]](connectionActor) with Stash {
   override def receive: Receive = {
 

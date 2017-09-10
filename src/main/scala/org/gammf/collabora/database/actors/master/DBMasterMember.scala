@@ -1,10 +1,15 @@
 package org.gammf.collabora.database.actors.master
 
 import akka.actor.{ActorRef, ActorSystem, Props}
-import org.gammf.collabora.communication.messages.PublishNotificationMessage
-import org.gammf.collabora.database.actors.worker.DBWorkerMemberActor
+import akka.pattern.ask
+import akka.util.Timeout
+import org.gammf.collabora.communication.messages.{PublishCollaborationInCollaborationExchange, PublishErrorMessageInCollaborationExchange, PublishNotificationMessage}
+import org.gammf.collabora.database.actors.worker.{DBWorkerCheckMemberExistenceActor, DBWorkerMemberActor}
 import org.gammf.collabora.database.messages._
-import org.gammf.collabora.util.{UpdateMessage, UpdateMessageTarget, UpdateMessageType}
+import org.gammf.collabora.util.{ServerErrorCode, ServerErrorMessage, UpdateMessage, UpdateMessageTarget, UpdateMessageType}
+
+import scala.concurrent.duration._
+import scala.concurrent.ExecutionContext.Implicits.global
 
 /**
   * The master actor that manages all the query about members.
@@ -15,19 +20,32 @@ import org.gammf.collabora.util.{UpdateMessage, UpdateMessageTarget, UpdateMessa
   * @param getCollaborationActor The actor used for notify the member that it's just been added to a collaboration, and send him the
   *                              collaboration.
   */
-class DBMasterMember(system: ActorSystem, connectionManagerActor: ActorRef, notificationActor: ActorRef, getCollaborationActor: ActorRef) extends AbstractDBMaster {
+class DBMasterMember(system: ActorSystem, connectionManagerActor: ActorRef, notificationActor: ActorRef, getCollaborationActor: ActorRef, publishCollaborationExchangeActor: ActorRef) extends AbstractDBMaster {
 
   private[this] var memberWorker: ActorRef = _
+  private[this] var checkMemberWorker: ActorRef = _
+
+  implicit val timeout: Timeout = Timeout(5 seconds)
 
   override def preStart(): Unit = {
     memberWorker = system.actorOf(Props.create(classOf[DBWorkerMemberActor], connectionManagerActor))
+    checkMemberWorker = system.actorOf(Props.create(classOf[DBWorkerCheckMemberExistenceActor], connectionManagerActor))
   }
 
   override def receive: Receive = {
 
     case message: UpdateMessage => message.target match {
       case UpdateMessageTarget.MEMBER => message.messageType match {
-        case UpdateMessageType.CREATION => memberWorker ! InsertMemberMessage(message.member.get, message.collaborationId.get, message.user)
+        case UpdateMessageType.CREATION =>
+          (checkMemberWorker ? IsMemberExistsMessage(message.member.get.user)).mapTo[QueryOkMessage].map(query => query.queryGoneWell match {
+            case member: IsMemberExistsResponseMessage =>
+              if (member.isRegistered) memberWorker ! InsertMemberMessage(message.member.get, message.collaborationId.get, message.user)
+              else publishCollaborationExchangeActor ! PublishErrorMessageInCollaborationExchange(
+                username = message.user,
+                message = ServerErrorMessage(message.user, message.collaborationId.get, ServerErrorCode.MEMBER_NOT_FOUND)
+              )
+            case _ => unhandled(_)
+          })
         case UpdateMessageType.UPDATING => memberWorker ! UpdateMemberMessage(message.member.get, message.collaborationId.get, message.user)
         case UpdateMessageType.DELETION => memberWorker ! DeleteMemberMessage(message.member.get, message.collaborationId.get, message.user)
       }

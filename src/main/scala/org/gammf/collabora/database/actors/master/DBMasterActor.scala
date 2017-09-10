@@ -38,7 +38,7 @@ class DBMasterActor(val system: ActorSystem, val notificationActor: ActorRef, va
     moduleManager = system.actorOf(Props.create(classOf[DBMasterModule], system, connectionManagerActor, notificationActor))
 
     getCollaborarionsActor = system.actorOf(Props.create(classOf[DBWorkerGetCollaborationActor], connectionManagerActor, collaborationMemberActor))
-    memberManager = system.actorOf(Props.create(classOf[DBMasterMember], system, connectionManagerActor, notificationActor, getCollaborarionsActor))
+    memberManager = system.actorOf(Props.create(classOf[DBMasterMember], system, connectionManagerActor, notificationActor, getCollaborarionsActor, collaborationMemberActor))
 
     authenticationActor = system.actorOf(Props.create(classOf[DBWorkerAuthenticationActor], connectionManagerActor))
   }

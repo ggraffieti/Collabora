@@ -12,7 +12,10 @@ import scala.concurrent.ExecutionContext.Implicits.global
   * A worker that performs query on members.
   * @param connectionActor the actor that mantains the connection with the DB.
   */
-class DBWorkerMemberActor(connectionActor: ActorRef) extends CollaborationsDBWorker(connectionActor) with Stash {
+class DBWorkerMemberActor(connectionActor: ActorRef) extends CollaborationsDBWorker[DBWorkerMessage](connectionActor) with Stash {
+
+  private[this] val defaultFailStrategy: PartialFunction[Throwable, DBWorkerMessage] = { case e: Exception => QueryFailMessage(e) }
+
 
   override def receive: Receive = {
 
@@ -26,7 +29,8 @@ class DBWorkerMemberActor(connectionActor: ActorRef) extends CollaborationsDBWor
       update(
         selector = BSONDocument(COLLABORATION_ID -> BSONObjectID.parse(message.collaborationID).get),
         query = BSONDocument("$push" -> BSONDocument(COLLABORATION_USERS -> message.user)),
-        okMessage = QueryOkMessage(message)
+        okMessage = QueryOkMessage(message),
+        failStrategy = defaultFailStrategy
       ) pipeTo sender
 
     case message: UpdateMemberMessage =>
@@ -36,14 +40,16 @@ class DBWorkerMemberActor(connectionActor: ActorRef) extends CollaborationsDBWor
           COLLABORATION_USERS + "." + COLLABORATION_USER_USERNAME -> message.user.user
         ),
         query = BSONDocument("$set" -> BSONDocument(COLLABORATION_USERS + ".$" -> message.user)),
-        okMessage = QueryOkMessage(message)
+        okMessage = QueryOkMessage(message),
+        failStrategy = defaultFailStrategy
       ) pipeTo sender
 
     case message: DeleteMemberMessage =>
       update(
         selector = BSONDocument(COLLABORATION_ID -> BSONObjectID.parse(message.collaborationID).get),
         query = BSONDocument("$pull" -> BSONDocument(COLLABORATION_USERS -> BSONDocument(COLLABORATION_USER_USERNAME -> message.user.user))),
-        okMessage = QueryOkMessage(message)
+        okMessage = QueryOkMessage(message),
+        failStrategy = defaultFailStrategy
       ) pipeTo sender
 
   }

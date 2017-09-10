@@ -13,7 +13,9 @@ import scala.concurrent.ExecutionContext.Implicits.global
   * A worker that performs query on modules.
   * @param connectionActor the actor that mantains the connection with the DB.
   */
-class DBWorkerModulesActor(connectionActor: ActorRef) extends CollaborationsDBWorker(connectionActor) with Stash {
+class DBWorkerModulesActor(connectionActor: ActorRef) extends CollaborationsDBWorker[DBWorkerMessage](connectionActor) with Stash {
+
+  private[this] val defaultFailStrategy: PartialFunction[Throwable, DBWorkerMessage] = { case e: Exception => QueryFailMessage(e) }
 
   override def receive: Receive = {
 
@@ -28,7 +30,8 @@ class DBWorkerModulesActor(connectionActor: ActorRef) extends CollaborationsDBWo
       update(
         selector = BSONDocument(COLLABORATION_ID -> BSONObjectID.parse(message.collaborationID).get),
         query = BSONDocument("$push" -> BSONDocument(COLLABORATION_MODULES -> bsonModule)),
-        okMessage = QueryOkMessage(InsertModuleMessage(bsonModule.as[Module], message.collaborationID, message.userID))
+        okMessage = QueryOkMessage(InsertModuleMessage(bsonModule.as[Module], message.collaborationID, message.userID)),
+        failStrategy = defaultFailStrategy
       ) pipeTo sender
 
     case message: UpdateModuleMessage =>
@@ -38,7 +41,8 @@ class DBWorkerModulesActor(connectionActor: ActorRef) extends CollaborationsDBWo
           COLLABORATION_MODULES + "." + MODULE_ID -> BSONObjectID.parse(message.module.id.get).get
         ),
         query = BSONDocument("$set" -> BSONDocument(COLLABORATION_MODULES + ".$" -> message.module)),
-        okMessage = QueryOkMessage(message)
+        okMessage = QueryOkMessage(message),
+        failStrategy = defaultFailStrategy
       ) pipeTo sender
 
     case message: DeleteModuleMessage =>
@@ -46,8 +50,8 @@ class DBWorkerModulesActor(connectionActor: ActorRef) extends CollaborationsDBWo
         selector = BSONDocument(COLLABORATION_ID -> BSONObjectID.parse(message.collaborationID).get),
         query = BSONDocument("$pull" -> BSONDocument(COLLABORATION_MODULES ->
           BSONDocument(MODULE_ID -> BSONObjectID.parse(message.module.id.get).get))),
-        okMessage = QueryOkMessage(message)
+        okMessage = QueryOkMessage(message),
+        failStrategy = defaultFailStrategy
       ) pipeTo sender
-
   }
 }

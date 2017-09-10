@@ -42,7 +42,7 @@ class DBMasterMember(system: ActorSystem, connectionManagerActor: ActorRef, noti
               if (member.isRegistered) memberWorker ! InsertMemberMessage(message.member.get, message.collaborationId.get, message.user)
               else publishCollaborationExchangeActor ! PublishErrorMessageInCollaborationExchange(
                 username = message.user,
-                message = ServerErrorMessage(message.user, message.collaborationId.get, ServerErrorCode.MEMBER_NOT_FOUND)
+                message = ServerErrorMessage(message.user, ServerErrorCode.MEMBER_NOT_FOUND)
               )
             case _ => unhandled(_)
           })

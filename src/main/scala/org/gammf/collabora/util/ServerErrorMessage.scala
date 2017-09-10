@@ -10,7 +10,6 @@ import play.api.libs.functional.syntax._
   */
 trait ServerErrorMessage {
   def user: String
-  def collaborationId: String
   def errorCode: ServerErrorCode
 }
 
@@ -24,17 +23,16 @@ object ServerErrorCode extends Enumeration {
 
 object ServerErrorMessage {
 
-  def apply(user: String, collaborationId: String, errorCode: ServerErrorCode) =
-    BasicServerErrorMessage(user, collaborationId, errorCode)
+  def apply(user: String, errorCode: ServerErrorCode) =
+    BasicServerErrorMessage(user, errorCode)
 
-  def unapply(arg: ServerErrorMessage): Option[(String, String, ServerErrorCode)] = Some((arg.user, arg.collaborationId, arg.errorCode))
+  def unapply(arg: ServerErrorMessage): Option[(String, ServerErrorCode)] = Some((arg.user, arg.errorCode))
 
   implicit val errorMessageWrites: Writes[ServerErrorMessage] = (
     (JsPath \ "user").write[String] and
-      (JsPath \ "collaborationId").write[String] and
       (JsPath \ "errorCode").write[ServerErrorCode]
   )(unlift(ServerErrorMessage.unapply))
 
 }
 
-case class BasicServerErrorMessage(user: String, collaborationId: String, errorCode: ServerErrorCode) extends ServerErrorMessage
+case class BasicServerErrorMessage(user: String, errorCode: ServerErrorCode) extends ServerErrorMessage

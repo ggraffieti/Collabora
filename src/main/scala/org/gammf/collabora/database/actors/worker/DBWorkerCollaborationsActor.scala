@@ -13,7 +13,10 @@ import scala.concurrent.ExecutionContext.Implicits.global
   * A worker that performs query on collaborations.
   * @param connectionActor the actor that mantains the connection with the DB.
   */
-class DBWorkerCollaborationsActor(connectionActor: ActorRef) extends CollaborationsDBWorker(connectionActor) with Stash {
+class DBWorkerCollaborationsActor(connectionActor: ActorRef) extends CollaborationsDBWorker[DBWorkerMessage](connectionActor) with Stash {
+
+  private[this] val defaultFailStrategy: PartialFunction[Throwable, DBWorkerMessage] = { case e: Exception => QueryFailMessage(e) }
+
 
   override def receive: Receive = {
 
@@ -27,20 +30,23 @@ class DBWorkerCollaborationsActor(connectionActor: ActorRef) extends Collaborati
       val bsonCollaboration: BSONDocument = BSON.write(message.collaboration) // necessary conversion, sets the collaborationID
       insert(
         document = bsonCollaboration,
-        okMessage = QueryOkMessage(InsertCollaborationMessage(bsonCollaboration.as[Collaboration], message.userID))
+        okMessage = QueryOkMessage(InsertCollaborationMessage(bsonCollaboration.as[Collaboration], message.userID)),
+        failStrategy = defaultFailStrategy
       ) pipeTo sender
 
     case message: UpdateCollaborationMessage =>
       update(
         selector = BSONDocument(COLLABORATION_ID -> BSONObjectID.parse(message.collaboration.id.get).get),
         query = BSONDocument("$set" -> BSONDocument(COLLABORATION_NAME -> message.collaboration.name)),
-        okMessage = QueryOkMessage(message)
+        okMessage = QueryOkMessage(message),
+        failStrategy = defaultFailStrategy
       ) pipeTo sender
 
     case message: DeleteCollaborationMessage =>
       delete(
         selector = BSONDocument(COLLABORATION_ID -> BSONObjectID.parse(message.collaboration.id.get).get),
-        okMessage = QueryOkMessage(message)
+        okMessage = QueryOkMessage(message),
+        failStrategy = defaultFailStrategy
       ) pipeTo sender
 
   }

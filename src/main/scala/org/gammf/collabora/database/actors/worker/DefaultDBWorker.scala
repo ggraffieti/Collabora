@@ -21,7 +21,13 @@ import org.gammf.collabora.database.messages.{DBWorkerMessage, QueryFailMessage}
   */
 trait DefaultDBWorker extends DBWorker[DBWorkerMessage] {
 
-  protected def defaultDBWorkerFailStrategy: PartialFunction[Throwable, DBWorkerMessage] =
-    { case e: Exception => QueryFailMessage(e) }
+  /**
+    * The default fail strategy if something in queries gone bad.
+    * @param username the username of the Collabora member that made the request.
+    * @return A [[QueryFailMessage]], containing the error and the username of the user that have
+    *         requested the action.
+    */
+  protected def defaultDBWorkerFailStrategy(username: String): PartialFunction[Throwable, DBWorkerMessage] =
+    { case e: Exception => QueryFailMessage(e, username) }
 
 }

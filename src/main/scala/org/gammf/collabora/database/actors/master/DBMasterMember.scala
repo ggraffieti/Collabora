@@ -3,7 +3,7 @@ package org.gammf.collabora.database.actors.master
 import akka.actor.{ActorRef, ActorSystem, Props}
 import akka.pattern.ask
 import akka.util.Timeout
-import org.gammf.collabora.communication.messages.{PublishCollaborationInCollaborationExchange, PublishErrorMessageInCollaborationExchange, PublishNotificationMessage}
+import org.gammf.collabora.communication.messages.{ PublishErrorMessageInCollaborationExchange, PublishNotificationMessage}
 import org.gammf.collabora.database.actors.worker.{DBWorkerCheckMemberExistenceActor, DBWorkerMemberActor}
 import org.gammf.collabora.database.messages._
 import org.gammf.collabora.util.{ServerErrorCode, ServerErrorMessage, UpdateMessage, UpdateMessageTarget, UpdateMessageType}
@@ -17,8 +17,8 @@ import scala.concurrent.ExecutionContext.Implicits.global
   * @param connectionManagerActor The system-unique [[org.gammf.collabora.database.actors.ConnectionManagerActor]], used for mantain a
   *                               connection with the database
   * @param notificationActor The actor used for notify the client that a query is went good.
-  * @param getCollaborationActor The actor used for notify the member that it's just been added to a collaboration, and send him the
-  *                              collaboration.
+  * @param getCollaborationActor The actor used for notify the member that it's just been added to a collaboration, and send him the collaboration
+  * @param publishCollaborationExchangeActor the actor used for send notifications in the collaboration exchange
   */
 class DBMasterMember(system: ActorSystem, connectionManagerActor: ActorRef, notificationActor: ActorRef, getCollaborationActor: ActorRef, publishCollaborationExchangeActor: ActorRef) extends AbstractDBMaster {
 
@@ -42,7 +42,7 @@ class DBMasterMember(system: ActorSystem, connectionManagerActor: ActorRef, noti
               if (member.isRegistered) memberWorker ! InsertMemberMessage(message.member.get, message.collaborationId.get, message.user)
               else publishCollaborationExchangeActor ! PublishErrorMessageInCollaborationExchange(
                 username = message.user,
-                message = ServerErrorMessage(message.user, message.collaborationId.get, ServerErrorCode.MEMBER_NOT_FOUND)
+                message = ServerErrorMessage(message.user, ServerErrorCode.MEMBER_NOT_FOUND)
               )
             case _ => unhandled(_)
           })
@@ -72,7 +72,10 @@ class DBMasterMember(system: ActorSystem, connectionManagerActor: ActorRef, noti
       case _ => unhandled(_)
     }
 
-    case fail: QueryFailMessage => fail.error.printStackTrace() // TODO error handling
+    case fail: QueryFailMessage => publishCollaborationExchangeActor ! PublishErrorMessageInCollaborationExchange(
+      username = fail.username,
+      message = ServerErrorMessage(user = fail.username, errorCode = ServerErrorCode.SERVER_ERROR)
+    )
 
     case _ => unhandled(_)
   }

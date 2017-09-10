@@ -4,20 +4,22 @@ import akka.actor.{ActorRef, ActorSystem, Props}
 import akka.pattern.{ask, pipe}
 import akka.util.Timeout
 import org.gammf.collabora.authentication.messages.{LoginMessage, SigninMessage, SigninResponseMessage}
+import org.gammf.collabora.communication.messages.PublishErrorMessageInCollaborationExchange
 import org.gammf.collabora.database.actors._
 import org.gammf.collabora.database.actors.worker.{DBWorkerAuthenticationActor, DBWorkerChangeModuleStateActor, DBWorkerGetCollaborationActor}
 import org.gammf.collabora.database.messages._
-import org.gammf.collabora.util.{UpdateMessage, UpdateMessageTarget}
+import org.gammf.collabora.util.{ServerErrorCode, ServerErrorMessage, UpdateMessage, UpdateMessageTarget}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 
-
 /**
-  * An actor that coordinate, create and act like a gateway for every request from and to the DB. It also create all the needed actors.
+  * The actor that coordinate, create and act like a gateway for every request from and to the DB. It also create all the needed actors.
   * @param system the actor system.
+  * @param notificationActor the actor used for sending notification in the notification exchange
+  * @param publishCollaborationExchangeActor the actor used for send notifications in the collaboration exchange
   */
-class DBMasterActor(val system: ActorSystem, val notificationActor: ActorRef, val collaborationMemberActor: ActorRef) extends AbstractDBMaster {
+class DBMasterActor(val system: ActorSystem, val notificationActor: ActorRef, val publishCollaborationExchangeActor: ActorRef) extends AbstractDBMaster {
 
   private[this] var connectionManagerActor: ActorRef = _
   private var noteManager: ActorRef = _
@@ -37,12 +39,12 @@ class DBMasterActor(val system: ActorSystem, val notificationActor: ActorRef, va
 
     changeModuleStateActor = system.actorOf(Props.create(classOf[DBWorkerChangeModuleStateActor], connectionManagerActor, self))
 
-    noteManager = system.actorOf(Props.create(classOf[DBMasterNote], system, connectionManagerActor, notificationActor, changeModuleStateActor))
-    collaborationManager = system.actorOf(Props.create(classOf[DBMasterCollaboration], system, connectionManagerActor, notificationActor, collaborationMemberActor))
-    moduleManager = system.actorOf(Props.create(classOf[DBMasterModule], system, connectionManagerActor, notificationActor))
+    noteManager = system.actorOf(Props.create(classOf[DBMasterNote], system, connectionManagerActor, notificationActor, changeModuleStateActor, publishCollaborationExchangeActor))
+    collaborationManager = system.actorOf(Props.create(classOf[DBMasterCollaboration], system, connectionManagerActor, notificationActor, publishCollaborationExchangeActor))
+    moduleManager = system.actorOf(Props.create(classOf[DBMasterModule], system, connectionManagerActor, notificationActor, publishCollaborationExchangeActor))
 
-    getCollaborarionsActor = system.actorOf(Props.create(classOf[DBWorkerGetCollaborationActor], connectionManagerActor, collaborationMemberActor))
-    memberManager = system.actorOf(Props.create(classOf[DBMasterMember], system, connectionManagerActor, notificationActor, getCollaborarionsActor, collaborationMemberActor))
+    getCollaborarionsActor = system.actorOf(Props.create(classOf[DBWorkerGetCollaborationActor], connectionManagerActor, publishCollaborationExchangeActor))
+    memberManager = system.actorOf(Props.create(classOf[DBMasterMember], system, connectionManagerActor, notificationActor, getCollaborarionsActor, publishCollaborationExchangeActor))
 
     authenticationActor = system.actorOf(Props.create(classOf[DBWorkerAuthenticationActor], connectionManagerActor))
   }
@@ -64,6 +66,9 @@ class DBMasterActor(val system: ActorSystem, val notificationActor: ActorRef, va
 
     case message: GetAllCollaborationsMessage => getCollaborarionsActor forward message
 
-    case fail: QueryFailMessage => fail.error.printStackTrace() // TODO error handling
+    case fail: QueryFailMessage => publishCollaborationExchangeActor ! PublishErrorMessageInCollaborationExchange(
+      username = fail.username,
+      message = ServerErrorMessage(user = fail.username, errorCode = ServerErrorCode.SERVER_ERROR)
+    )
   }
 }

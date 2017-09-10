@@ -13,9 +13,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
   * A worker that performs query on notes.
   * @param connectionActor the actor that mantains the connection with the DB.
   */
-class DBWorkerNotesActor(connectionActor: ActorRef) extends CollaborationsDBWorker[DBWorkerMessage](connectionActor) with Stash {
-
-  private[this] val defaultFailStrategy: PartialFunction[Throwable, DBWorkerMessage] = { case e: Exception => QueryFailMessage(e) }
+class DBWorkerNotesActor(connectionActor: ActorRef) extends CollaborationsDBWorker[DBWorkerMessage](connectionActor) with Stash with DefaultDBWorker {
 
   override def receive: Receive = {
 
@@ -31,7 +29,7 @@ class DBWorkerNotesActor(connectionActor: ActorRef) extends CollaborationsDBWork
         selector = BSONDocument(COLLABORATION_ID -> BSONObjectID.parse(message.collaborationID).get),
         query = BSONDocument("$push" -> BSONDocument(COLLABORATION_NOTES -> bsonNote)),
         okMessage = QueryOkMessage(InsertNoteMessage(bsonNote.as[Note], message.collaborationID, message.userID)),
-        failStrategy = defaultFailStrategy
+        failStrategy = defaultDBWorkerFailStrategy
       ) pipeTo sender
 
     case message: UpdateNoteMessage =>
@@ -42,7 +40,7 @@ class DBWorkerNotesActor(connectionActor: ActorRef) extends CollaborationsDBWork
         ),
         query = BSONDocument("$set" -> BSONDocument(COLLABORATION_NOTES + ".$" -> message.note)),
         okMessage = QueryOkMessage(message),
-        failStrategy = defaultFailStrategy
+        failStrategy = defaultDBWorkerFailStrategy
       ) pipeTo sender
 
     case message: DeleteNoteMessage =>
@@ -51,7 +49,7 @@ class DBWorkerNotesActor(connectionActor: ActorRef) extends CollaborationsDBWork
         query = BSONDocument("$pull" -> BSONDocument(COLLABORATION_NOTES ->
           BSONDocument(NOTE_ID -> BSONObjectID.parse(message.note.id.get).get))),
         okMessage = QueryOkMessage(message),
-        failStrategy = defaultFailStrategy
+        failStrategy = defaultDBWorkerFailStrategy
       ) pipeTo sender
 
   }

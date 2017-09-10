@@ -14,9 +14,7 @@ import scala.concurrent.Future
   * A worker that performs query on modules.
   * @param connectionActor the actor that mantains the connection with the DB.
   */
-class DBWorkerModulesActor(connectionActor: ActorRef) extends CollaborationsDBWorker[DBWorkerMessage](connectionActor) with Stash {
-
-  private[this] val defaultFailStrategy: PartialFunction[Throwable, DBWorkerMessage] = { case e: Exception => QueryFailMessage(e) }
+class DBWorkerModulesActor(connectionActor: ActorRef) extends CollaborationsDBWorker[DBWorkerMessage](connectionActor) with DefaultDBWorker with Stash {
 
   override def receive: Receive = {
 
@@ -32,7 +30,7 @@ class DBWorkerModulesActor(connectionActor: ActorRef) extends CollaborationsDBWo
         selector = BSONDocument(COLLABORATION_ID -> BSONObjectID.parse(message.collaborationID).get),
         query = BSONDocument("$push" -> BSONDocument(COLLABORATION_MODULES -> bsonModule)),
         okMessage = QueryOkMessage(InsertModuleMessage(bsonModule.as[Module], message.collaborationID, message.userID)),
-        failStrategy = defaultFailStrategy
+        failStrategy = defaultDBWorkerFailStrategy
       ) pipeTo sender
 
     case message: UpdateModuleMessage =>
@@ -43,7 +41,7 @@ class DBWorkerModulesActor(connectionActor: ActorRef) extends CollaborationsDBWo
         ),
         query = BSONDocument("$set" -> BSONDocument(COLLABORATION_MODULES + ".$" -> message.module)),
         okMessage = QueryOkMessage(message),
-        failStrategy = defaultFailStrategy
+        failStrategy = defaultDBWorkerFailStrategy
       ) pipeTo sender
 
     case message: DeleteModuleMessage =>
@@ -52,7 +50,7 @@ class DBWorkerModulesActor(connectionActor: ActorRef) extends CollaborationsDBWo
         query = BSONDocument("$pull" -> BSONDocument(COLLABORATION_MODULES ->
           BSONDocument(MODULE_ID -> BSONObjectID.parse(message.module.id.get).get))),
         okMessage = QueryOkMessage(message),
-        failStrategy = defaultFailStrategy
+        failStrategy = defaultDBWorkerFailStrategy
       ).map {
         case queryOk: QueryOkMessage => deleteAllModuleNotes(message.collaborationID, message.module.id.get, queryOk)
         case queryFail: QueryFailMessage => Future.successful(queryFail)
@@ -68,7 +66,7 @@ class DBWorkerModulesActor(connectionActor: ActorRef) extends CollaborationsDBWo
         BSONDocument(NOTE_MODULE -> BSONObjectID.parse(moduleId).get)
       )),
       okMessage = messageOk,
-      failStrategy = defaultFailStrategy
+      failStrategy = defaultDBWorkerFailStrategy
     )
   }
 }

@@ -8,10 +8,7 @@ import org.gammf.collabora.database._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class DBWorkerCheckMemberExistenceActor(connectionActor: ActorRef) extends UsersDBWorker[DBWorkerMessage](connectionActor) with Stash {
-
-  private[this] val defaultFailStrategy: PartialFunction[Throwable, DBWorkerMessage] = { case e: Exception => QueryFailMessage(e) }
-
+class DBWorkerCheckMemberExistenceActor(connectionActor: ActorRef) extends UsersDBWorker[DBWorkerMessage](connectionActor) with DefaultDBWorker with Stash {
 
   override def receive: Receive = {
     case m: GetConnectionMessage =>
@@ -24,7 +21,7 @@ class DBWorkerCheckMemberExistenceActor(connectionActor: ActorRef) extends Users
       find(
         selector = BSONDocument(USER_ID -> message.username),
         okStrategy = bsonDocumet => QueryOkMessage(IsMemberExistsResponseMessage(message.username, bsonDocumet.isDefined)),
-        failStrategy = defaultFailStrategy
+        failStrategy = defaultDBWorkerFailStrategy
       ) pipeTo sender
   }
 }

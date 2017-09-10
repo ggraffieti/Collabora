@@ -12,10 +12,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
   * A worker that performs query on members.
   * @param connectionActor the actor that mantains the connection with the DB.
   */
-class DBWorkerMemberActor(connectionActor: ActorRef) extends CollaborationsDBWorker[DBWorkerMessage](connectionActor) with Stash {
-
-  private[this] val defaultFailStrategy: PartialFunction[Throwable, DBWorkerMessage] = { case e: Exception => QueryFailMessage(e) }
-
+class DBWorkerMemberActor(connectionActor: ActorRef) extends CollaborationsDBWorker[DBWorkerMessage](connectionActor) with DefaultDBWorker with Stash {
 
   override def receive: Receive = {
 
@@ -30,7 +27,7 @@ class DBWorkerMemberActor(connectionActor: ActorRef) extends CollaborationsDBWor
         selector = BSONDocument(COLLABORATION_ID -> BSONObjectID.parse(message.collaborationID).get),
         query = BSONDocument("$push" -> BSONDocument(COLLABORATION_USERS -> message.user)),
         okMessage = QueryOkMessage(message),
-        failStrategy = defaultFailStrategy
+        failStrategy = defaultDBWorkerFailStrategy
       ) pipeTo sender
 
     case message: UpdateMemberMessage =>
@@ -41,7 +38,7 @@ class DBWorkerMemberActor(connectionActor: ActorRef) extends CollaborationsDBWor
         ),
         query = BSONDocument("$set" -> BSONDocument(COLLABORATION_USERS + ".$" -> message.user)),
         okMessage = QueryOkMessage(message),
-        failStrategy = defaultFailStrategy
+        failStrategy = defaultDBWorkerFailStrategy
       ) pipeTo sender
 
     case message: DeleteMemberMessage =>
@@ -49,7 +46,7 @@ class DBWorkerMemberActor(connectionActor: ActorRef) extends CollaborationsDBWor
         selector = BSONDocument(COLLABORATION_ID -> BSONObjectID.parse(message.collaborationID).get),
         query = BSONDocument("$pull" -> BSONDocument(COLLABORATION_USERS -> BSONDocument(COLLABORATION_USER_USERNAME -> message.user.user))),
         okMessage = QueryOkMessage(message),
-        failStrategy = defaultFailStrategy
+        failStrategy = defaultDBWorkerFailStrategy
       ) pipeTo sender
 
   }

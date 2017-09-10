@@ -8,6 +8,7 @@ import org.gammf.collabora.util.Module
 import reactivemongo.bson.{BSON, BSONDocument, BSONObjectID}
 
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 /**
   * A worker that performs query on modules.
@@ -52,6 +53,22 @@ class DBWorkerModulesActor(connectionActor: ActorRef) extends CollaborationsDBWo
           BSONDocument(MODULE_ID -> BSONObjectID.parse(message.module.id.get).get))),
         okMessage = QueryOkMessage(message),
         failStrategy = defaultFailStrategy
-      ) pipeTo sender
+      ).map {
+        case queryOk: QueryOkMessage => deleteAllModuleNotes(message.collaborationID, message.module.id.get, queryOk)
+        case queryFail: QueryFailMessage => Future.successful(queryFail)
+      }.flatten pipeTo sender
+  }
+
+
+  private[this] def deleteAllModuleNotes(collaborationId: String, moduleId: String,
+                                         messageOk: DBWorkerMessage): Future[DBWorkerMessage] = {
+    update(
+      selector = BSONDocument(COLLABORATION_ID -> BSONObjectID.parse(collaborationId).get),
+      query = BSONDocument("$pull" -> BSONDocument(COLLABORATION_NOTES ->
+        BSONDocument(NOTE_MODULE -> BSONObjectID.parse(moduleId).get)
+      )),
+      okMessage = messageOk,
+      failStrategy = defaultFailStrategy
+    )
   }
 }

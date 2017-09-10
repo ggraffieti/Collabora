@@ -28,7 +28,7 @@ class DBWorkerCollaborationsActor(connectionActor: ActorRef) extends Collaborati
       insert(
         document = bsonCollaboration,
         okMessage = QueryOkMessage(InsertCollaborationMessage(bsonCollaboration.as[Collaboration], message.userID)),
-        failStrategy = defaultDBWorkerFailStrategy
+        failStrategy = defaultDBWorkerFailStrategy(message.userID)
       ) pipeTo sender
 
     case message: UpdateCollaborationMessage =>
@@ -36,14 +36,14 @@ class DBWorkerCollaborationsActor(connectionActor: ActorRef) extends Collaborati
         selector = BSONDocument(COLLABORATION_ID -> BSONObjectID.parse(message.collaboration.id.get).get),
         query = BSONDocument("$set" -> BSONDocument(COLLABORATION_NAME -> message.collaboration.name)),
         okMessage = QueryOkMessage(message),
-        failStrategy = defaultDBWorkerFailStrategy
+        failStrategy = defaultDBWorkerFailStrategy(message.userID)
       ) pipeTo sender
 
     case message: DeleteCollaborationMessage =>
       delete(
         selector = BSONDocument(COLLABORATION_ID -> BSONObjectID.parse(message.collaboration.id.get).get),
         okMessage = QueryOkMessage(message),
-        failStrategy = defaultDBWorkerFailStrategy
+        failStrategy = defaultDBWorkerFailStrategy(message.userID)
       ) pipeTo sender
   }
 }

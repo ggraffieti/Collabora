@@ -31,14 +31,14 @@ class DBWorkerAuthenticationActor(connectionManager: ActorRef) extends UsersDBWo
           if (bsonDocument.isDefined) AuthenticationMessage(Some(bsonDocument.get.as[User]))
           else AuthenticationMessage(None)
         },
-        failStrategy = defaultDBWorkerFailStrategy
+        failStrategy = defaultDBWorkerFailStrategy(message.username)
       ) pipeTo sender
 
     case message: SigninMessage =>
       insert(
         document = BSON.write(message.user),
         okMessage = QueryOkMessage(InsertUserMessage(message.user)),
-        failStrategy = defaultDBWorkerFailStrategy
+        failStrategy = defaultDBWorkerFailStrategy(message.user.username)
       ) pipeTo sender
 
     case _ => unhandled(_)

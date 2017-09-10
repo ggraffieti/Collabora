@@ -21,7 +21,7 @@ class DBWorkerCheckMemberExistenceActor(connectionActor: ActorRef) extends Users
       find(
         selector = BSONDocument(USER_ID -> message.username),
         okStrategy = bsonDocumet => QueryOkMessage(IsMemberExistsResponseMessage(message.username, bsonDocumet.isDefined)),
-        failStrategy = defaultDBWorkerFailStrategy
+        failStrategy = defaultDBWorkerFailStrategy(message.username)
       ) pipeTo sender
   }
 }

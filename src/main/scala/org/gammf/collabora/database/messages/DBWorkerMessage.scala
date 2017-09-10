@@ -15,8 +15,9 @@ case class QueryOkMessage(queryGoneWell: QueryMessage) extends DBWorkerMessage
 /**
   * A simple case class representing a message used to tell that a certain operation on the DB failed.
   * @param error the error.
+  * @param username the username of the Collabora member that have caused the error.
   */
-case class QueryFailMessage(error: Exception) extends DBWorkerMessage
+case class QueryFailMessage(error: Exception, username: String) extends DBWorkerMessage
 
 /**
   * Simple class representing a message used to report login info (username and password) of a user. If no user is

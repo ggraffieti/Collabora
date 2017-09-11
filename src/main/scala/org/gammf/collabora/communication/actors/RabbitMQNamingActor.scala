@@ -1,8 +1,11 @@
 package org.gammf.collabora.communication.actors
 
-import akka.actor.Actor
+import akka.actor.ActorRef
 import org.gammf.collabora.communication.Utils.CommunicationType
 import org.gammf.collabora.communication.messages.{ChannelNamesRequestMessage, ChannelNamesResponseMessage}
+import org.gammf.collabora.yellowpages.ActorService.ActorService
+import org.gammf.collabora.yellowpages.actors.BasicActor
+import org.gammf.collabora.yellowpages.util.Topic.ActorTopic
 
 /**
   * @author Manuel Peruzzi
@@ -11,12 +14,12 @@ import org.gammf.collabora.communication.messages.{ChannelNamesRequestMessage, C
 /**
   * This is an actor that handles the rabbitMQ naming issues.
   */
-class RabbitMQNamingActor extends Actor {
+class RabbitMQNamingActor(override val yellowPages: ActorRef, override val name: String,
+                          override val topic: ActorTopic, override val service: ActorService) extends BasicActor {
 
-  override def receive: Receive = {
+  override def receive: Receive = ({
     case ChannelNamesRequestMessage(commType: CommunicationType.Value) => sender ! names2Message(commType)
-    case _ => println("Huh?")
-  }
+  }:Receive) orElse super[BasicActor].receive
 
   private[this] implicit def type2Names(commType: CommunicationType.Value): CommunicationNames =
     commType match {

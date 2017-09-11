@@ -21,19 +21,18 @@ class PrinterActor(override val yellowPages: ActorRef,
                    override val topic: ActorTopic,
                    override val service: ActorService = Printing) extends BasicActor {
   override def receive: Receive = ({
-    case HierarchyPrintMessage(list) => handleHierarchy(list)
-    case msg => println(msg)
+    case HierarchyPrintMessage(list) => handleHierarchy(list.sortWith(_.level < _.level))
+    case msg: String => println(msg)
   }: Receive) orElse super.receive
 
   private[this] def handleHierarchy(list: List[HierarchyNode]): Unit = {
-    println(); println("CURRENT HIERARCHY {")
-    list.sortBy(n => n.level); printLevel(list.head.level)
-    printList(list, list.head.level)
+    println(); println("[" + name + "] CURRENT HIERARCHY {")
+    printLevel(list.head.level); printList(list, list.head.level)
+    def printLevel(n: Int): Unit = { println(); println(" Level #" + n) }
     @tailrec def printList(l: List[HierarchyNode], lvl: Int): Unit = l match {
       case h :: t => val nLvl = math.max(lvl, h.level); if(nLvl > lvl) printLevel(nLvl); printNode(h); printList(t, nLvl)
-      case _ => println(); println("} END CURRENT HIERARCHY ")
+      case _ => println(); println("} END CURRENT HIERARCHY")
     }
-    def printLevel(n: Int): Unit = { println(); println(" Level #" + n) }
     def printNode(n: HierarchyNode): Unit =
       println("   " + n.name + " => INFO[Topic: " + n.topic + ", Service: " + n.service + ", Reference: " + n.reference + "]")
   }
@@ -54,16 +53,13 @@ object PrinterActor {
 object HierarchyTest extends App {
   val system = ActorSystem("Collabora")
   val root = system.actorOf(YellowPagesActor.rootProps())
-  val printer2 = system.actorOf(PrinterActor.printerProps(
-    yellowPages = root, topic = Topic() :+ Communication :+ RabbitMQ :+ Http :+ Database))
-  val topic1 = system.actorOf(YellowPagesActor.topicProps(
-    yellowPages = root, name = "Communication_YP", topic = Topic() :+ Communication))
-  val topic2 = system.actorOf(YellowPagesActor.topicProps(
-    yellowPages = root, topic = Topic() :+ Communication :+ RabbitMQ))
-  val printer = system.actorOf(PrinterActor.printerProps(
-    yellowPages = root, name = "General_Printer", topic = Topic() :+ General))
-  val topic3 = system.actorOf(YellowPagesActor.topicProps(
-    yellowPages = root, name = "Communication/Database_YP", topic = Topic() :+ Communication :+ Http))
+  val printer2 = system.actorOf(PrinterActor.printerProps(yellowPages = root, topic = Topic() :+ Communication :+ RabbitMQ :+ Http :+ Database))
+  val topic1 = system.actorOf(YellowPagesActor.topicProps(yellowPages = root, name = "Communication_YP", topic = Topic() :+ Communication))
+  val topic2 = system.actorOf(YellowPagesActor.topicProps(yellowPages = root, topic = Topic() :+ Communication :+ RabbitMQ, name = "Communication/RabbitMQ_YP"))
+  val printer = system.actorOf(PrinterActor.printerProps(yellowPages = root, name = "General_Printer", topic = Topic() :+ General))
+  val printer3 = system.actorOf(PrinterActor.printerProps(yellowPages = root, name = "General_Printer2", topic = Topic() :+ General))
+  val topic3 = system.actorOf(YellowPagesActor.topicProps(yellowPages = root, name = "Communication/Http_YP", topic = Topic() :+ Communication :+ Http))
+  val topic4 = system.actorOf(YellowPagesActor.topicProps(root, Topic() :+ Communication, name = "Communication_YP2"))
   Thread.sleep(1000)
   root ! HierarchyRequestMessage(0)
 }

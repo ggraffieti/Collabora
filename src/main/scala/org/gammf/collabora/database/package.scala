@@ -1,5 +1,8 @@
 package org.gammf.collabora
 
+/**
+  * A utility class for Database constants.
+  */
 package object database {
 
   /**
@@ -167,6 +170,40 @@ package object database {
     * The name of the field that contains the location longitude
     */
   val LOCATION_LONGITUDE = "longitude"
+
+
+
+
+
+  /**
+    * The name of the field in the users collection, that contains the id
+    */
+  val USER_ID = "_id"
+
+  /**
+    * The name of the field in the user collection, that contains the email
+    */
+  val USER_EMAIL = "email"
+
+  /**
+    * The name of the field in the user collection, that contains the name
+    */
+  val USER_NAME = "name"
+
+  /**
+    * The name of the field in the user collection, that contains the surname
+    */
+  val USER_SURNAME = "surname"
+
+  /**
+    * The name of the field in the user collection, that contains the birthday date
+    */
+  val USER_BIRTHDAY = "birthday"
+
+  /**
+    * The name of the field in the user collection, that contains the hashed user password
+    */
+  val USER_PASSWORD = "password"
 
 
 }

@@ -4,6 +4,8 @@ import akka.testkit.{ImplicitSender, TestKit}
 import com.newmotion.akka.rabbitmq.{ConnectionActor, ConnectionFactory}
 import org.gammf.collabora.TestUtil
 import org.gammf.collabora.communication.actors._
+import org.gammf.collabora.database.actors.master.DBMasterActor
+import org.gammf.collabora.database.actors.worker.DBWorkerModulesActor
 import org.gammf.collabora.database.messages._
 import org.gammf.collabora.util.{Module, Note, NoteState, SimpleModule, SimpleNote}
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
@@ -34,7 +36,10 @@ class DBWorkerModulesActorTest extends TestKit (ActorSystem("CollaboraServer")) 
   val MODULE_DESCRIPTION = "questo è un modulo importante"
   val MODULE_STATE = "doing"
 
-  val module:Module = SimpleModule(Option(MODULE_ID),MODULE_DESCRIPTION,None,MODULE_STATE)
+  //val module:Module = SimpleModule(Option(MODULE_ID),MODULE_DESCRIPTION,None,MODULE_STATE)
+
+  val module:Module = Module(Option(MODULE_ID),MODULE_DESCRIPTION,MODULE_STATE)
+
 
   override def beforeAll(): Unit = {
 

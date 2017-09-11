@@ -7,6 +7,7 @@ import com.rabbitmq.client.{AMQP, BuiltinExchangeType, DefaultConsumer, Envelope
 import org.gammf.collabora.{TestMessageUtil, TestUtil}
 import org.gammf.collabora.communication.actors._
 import org.gammf.collabora.communication.messages.{ClientUpdateMessage, StartMessage}
+import org.gammf.collabora.database.actors.master.DBMasterActor
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
 
 import scala.concurrent.duration._

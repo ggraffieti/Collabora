@@ -31,10 +31,16 @@ class CollaborationMembersActor(connection: ActorRef, naming: ActorRef, channelC
     case ChannelCreatedMessage(channel) =>
       pubChannel = Some(channel)
       unstashAll()
-    case PublishMemberAddedMessage(username, message) =>
+    case PublishCollaborationInCollaborationExchange(username, message) =>
       pubChannel match {
         case Some(channel) =>
           publisher ! PublishMessage(channel, pubExchange.get, Some(username), Json.toJson(message))
+        case _ => stash()
+      }
+    case PublishErrorMessageInCollaborationExchange(username, errorMessage) =>
+      pubChannel match {
+        case Some(channel) =>
+          publisher ! PublishMessage(channel, pubExchange.get, Some(username), Json.toJson(errorMessage))
         case _ => stash()
       }
 

@@ -19,7 +19,7 @@ sealed trait ChannelMessage extends Message
   * @param queue the name of the queue to be declared.
   * @param routingKey the routing key that can be used in the exchange-queue binding.
   */
-case class SubscribingChannelCreationMessage(connection: ActorRef, exchange: String, queue: String,
+case class SubscribingChannelCreationMessage(exchange: String, queue: String,
                                              routingKey: Option[String]) extends ChannelMessage
 
 /**
@@ -27,7 +27,7 @@ case class SubscribingChannelCreationMessage(connection: ActorRef, exchange: Str
   * @param connection the open connection with the rabbitMQ broker.
   * @param exchange the name of the exchange to be declared.
   */
-case class PublishingChannelCreationMessage(connection: ActorRef, exchange: String,
+case class PublishingChannelCreationMessage(exchange: String,
                                             routingKey: Option[String]) extends ChannelMessage
 
 /**

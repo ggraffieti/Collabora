@@ -4,7 +4,7 @@ import akka.actor.ActorRef
 import org.gammf.collabora.yellowpages.ActorService.ActorService
 import org.gammf.collabora.yellowpages.messages._
 import org.gammf.collabora.yellowpages.util.Topic.ActorTopic
-import org.gammf.collabora.yellowpages.util.ActorYellowPagesEntry
+import org.gammf.collabora.yellowpages.util.{ActorInformation, ActorYellowPagesEntry}
 
 import language.reflectiveCalls
 
@@ -42,6 +42,7 @@ package object yellowpages {
     val YellowPagesService,
     Printing,
     // Communication related services
+    ConnectionHandler,
     ChannelCreating,
     Naming,
     Publishing,
@@ -99,4 +100,7 @@ package object yellowpages {
     implicit def entryList2hierarchyNodeList(list: List[(Int, ActorYellowPagesEntry)]): List[HierarchyNode] =
       list.map(yp => HierarchyNode(level = yp._1, reference = yp._2.reference.toString, name = yp._2.name.toString, topic = yp._2.topic.toString, service = yp._2.service.toString))
   }
+
+  implicit def actorOkMessage2ActorInformation(message: ActorResponseOKMessage): ActorInformation =
+    ActorInformation(message.actor, message.topic, message.service)
 }

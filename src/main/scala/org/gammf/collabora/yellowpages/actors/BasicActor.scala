@@ -47,7 +47,8 @@ trait BasicActor extends Actor {
 
   override def receive: Receive = {
     case RegistrationResponseMessage() => println("[" + name + "] Registration OK.")
-    case _ => println("["+ name + "] Huh?")
+    case InsertionErrorMessage() => println("[" + name + "] Insertion Error.")
+    case _ => println("["+ name + "] Huh?"); unhandled(_)
   }
 
   protected[this] def getActorOrElse(topic: ActorTopic, service: ActorService, message: Any): Option[ActorRef] = {

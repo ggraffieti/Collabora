@@ -2,10 +2,10 @@ package org.gammf.collabora.database.actors.worker
 
 import akka.actor.{ActorRef, Stash}
 import akka.pattern.pipe
-import org.gammf.collabora.communication.messages.{PublishFirebaseNotification, PublishMemberAddedMessage, PublishUserLoginMessage}
+import org.gammf.collabora.communication.messages.{PublishFirebaseNotification, PublishCollaborationInCollaborationExchange}
 import org.gammf.collabora.database._
 import org.gammf.collabora.database.messages._
-import org.gammf.collabora.util.{AllCollaborationsMessage, Collaboration, CollaborationMessage}
+import org.gammf.collabora.util.{ Collaboration, CollaborationMessage}
 import reactivemongo.api.Cursor
 import reactivemongo.bson.{BSONDocument, BSONObjectID}
 
@@ -31,7 +31,7 @@ class DBWorkerGetCollaborationActor(connectionActor: ActorRef, collaborationActo
         case Success(collaborations) =>
           val selector = BSONDocument(COLLABORATION_ID -> BSONObjectID.parse(message.collaborationID).get)
           collaborations.find(selector).one onComplete {
-            case Success(s) => collaborationActor ! PublishMemberAddedMessage(message.user.user,CollaborationMessage(message.userID,s.get.as[Collaboration]))
+            case Success(s) => collaborationActor ! PublishCollaborationInCollaborationExchange(message.user.user,CollaborationMessage(message.userID,s.get.as[Collaboration]))
             case Failure(e) => e.printStackTrace() // TODO better error strategy
           }
         case Failure(e) => e.printStackTrace() // TODO better error strategy
@@ -50,12 +50,11 @@ class DBWorkerGetCollaborationActor(connectionActor: ActorRef, collaborationActo
 
     case message: GetAllCollaborationsMessage =>
       getCollaborationsCollection.map(collaborations =>
-        collaborations.find(BSONDocument(COLLABORATION_USERS ->
-          BSONDocument("$elemMatch" -> BSONDocument(COLLABORATION_USER_USERNAME -> message.username)))
-        ).cursor[BSONDocument]().collect[List](-1, Cursor.FailOnError[List[BSONDocument]]())) // -1 is no limit list
+        collaborations.find(BSONDocument(
+          COLLABORATION_USERS + "." + COLLABORATION_USER_USERNAME -> message.username
+        )).cursor[BSONDocument]().collect[List](-1, Cursor.FailOnError[List[BSONDocument]]())) // -1 is no limit list
         .flatten.map(list =>
         AllCollaborationsMessage(list.map(bson => bson.as[Collaboration]))) pipeTo sender
-
   }
 
 }

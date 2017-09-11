@@ -17,20 +17,20 @@ object EntryPoint extends App {
   val naming = system.actorOf(Props[RabbitMQNamingActor], "naming")
   val channelCreator = system.actorOf(Props[ChannelCreatorActor], "channelCreator")
   val publisherActor = system.actorOf(Props[PublisherActor], "publisher")
-  val collaborationActor = system.actorOf(Props(new CollaborationMembersActor(rabbitConnection, naming, channelCreator, publisherActor)))
-  val notificationActor = system.actorOf(Props(new NotificationsSenderActor(rabbitConnection, naming, channelCreator, publisherActor,system)))
-  val dbMasterActor = system.actorOf(Props.create(classOf[DBMasterActor], system, notificationActor,collaborationActor))
-  val subscriber = system.actorOf(Props[SubscriberActor], "subscriber")
-  val updatesReceiver = system.actorOf(Props(
-    new UpdatesReceiverActor(rabbitConnection, naming, channelCreator, subscriber, dbMasterActor)), "updates-receiver")
+  //val collaborationActor = system.actorOf(Props(new CollaborationMembersActor(rabbitConnection, naming, channelCreator, publisherActor)))
+  //val notificationActor = system.actorOf(Props(new NotificationsSenderActor(rabbitConnection, naming, channelCreator, publisherActor,system)))
+  //val dbMasterActor = system.actorOf(Props.create(classOf[DBMasterActor], system, notificationActor,collaborationActor))
+  //val subscriber = system.actorOf(Props[SubscriberActor], "subscriber")
+  //val updatesReceiver = system.actorOf(Props(
+    //new UpdatesReceiverActor(rabbitConnection, naming, channelCreator, subscriber)), "updates-receiver")
 
-  val authenticationActor = system.actorOf(Props.create(classOf[AuthenticationActor], dbMasterActor))
+  //val authenticationActor = system.actorOf(Props.create(classOf[AuthenticationActor], dbMasterActor))
 
-  AuthenticationServer.start(system, authenticationActor)
+  //AuthenticationServer.start(system, authenticationActor)
 
 
-  updatesReceiver ! StartMessage
-  notificationActor ! StartMessage
-  collaborationActor ! StartMessage
+  //updatesReceiver ! StartMessage
+  //notificationActor ! StartMessage
+  //collaborationActor ! StartMessage
 
 }

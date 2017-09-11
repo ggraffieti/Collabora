@@ -15,8 +15,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
   * A [[DBWorker]] used for authentication purpose. It manages [[LoginMessage]] and [[SigninMessage]].
   * @param connectionManager the manager of the connection, needed to mantain a stable connection with the database.
   */
-class DBWorkerAuthenticationActor(connectionManager: ActorRef) extends UsersDBWorker(connectionManager) with Stash {
-
+class DBWorkerAuthenticationActor(connectionManager: ActorRef) extends UsersDBWorker[DBWorkerMessage](connectionManager) with DefaultDBWorker with Stash {
 
   override def receive: Receive = {
     case m: GetConnectionMessage =>
@@ -31,13 +30,15 @@ class DBWorkerAuthenticationActor(connectionManager: ActorRef) extends UsersDBWo
         okStrategy = bsonDocument =>  {
           if (bsonDocument.isDefined) AuthenticationMessage(Some(bsonDocument.get.as[User]))
           else AuthenticationMessage(None)
-        }
+        },
+        failStrategy = defaultDBWorkerFailStrategy(message.username)
       ) pipeTo sender
 
     case message: SigninMessage =>
       insert(
         document = BSON.write(message.user),
         okMessage = QueryOkMessage(InsertUserMessage(message.user)),
+        failStrategy = defaultDBWorkerFailStrategy(message.user.username)
       ) pipeTo sender
 
     case _ => unhandled(_)

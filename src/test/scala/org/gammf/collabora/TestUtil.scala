@@ -4,6 +4,13 @@ import org.joda.time.DateTime
 
 /**
   * Created by Mattia on 04/09/2017.
+  * @version 1.0
+  *
+  * This object is a test util
+  * include also keyword for:
+  * -encoding used for strings
+  * -type of messages
+  * -time for timeout, intervals, tasks, ..
   */
 object TestUtil {
 

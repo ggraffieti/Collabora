@@ -68,7 +68,7 @@ class NotificationsSenderActorTest extends TestKit (ActorSystem("CollaboraServer
   }
 
   override implicit val patienceConfig: PatienceConfig = PatienceConfig(
-    timeout = scaled(60 seconds),
+    timeout = scaled(TestUtil.TIMEOUT_SECOND seconds),
     interval = scaled(TestUtil.INTERVAL_MILLIS millis)
   )
 

@@ -4,8 +4,8 @@ import akka.actor.{ActorRef, ActorSystem, Props}
 import akka.testkit.{DefaultTimeout, ImplicitSender, TestKit}
 import com.newmotion.akka.rabbitmq.{ConnectionActor, ConnectionFactory}
 import com.rabbitmq.client.{ConnectionFactory, _}
-import org.gammf.collabora.{TestMessageUtil, TestUtil}
 import org.gammf.collabora.EntryPoint.{notificationActor, system}
+import org.gammf.collabora.{TestMessageUtil, TestUtil}
 import org.gammf.collabora.communication.Utils.CommunicationType
 import org.gammf.collabora.communication.messages._
 import org.gammf.collabora.database.actors.ConnectionManagerActor
@@ -16,6 +16,10 @@ import scala.concurrent.duration._
 import org.scalatest.concurrent.Eventually
 
 class NotificationsSenderActorTest extends TestKit (ActorSystem("CollaboraServer")) with WordSpecLike with Eventually with DefaultTimeout with Matchers with BeforeAndAfterAll with ImplicitSender {
+
+  private val EXCHANGE_NAME = "notifications"
+  private val ROUTING_KEY = "59806a4af27da3fcfe0ac0ca"
+  private val BROKER_HOST = "localhost"
 
   val CONNECTION_ACTOR_NAME = "rabbitmq"
   val NAMING_ACTOR_NAME = "naming"
@@ -44,12 +48,12 @@ class NotificationsSenderActorTest extends TestKit (ActorSystem("CollaboraServer
 
   override def beforeAll(): Unit ={
     val factory = new ConnectionFactory
-    factory.setHost(TestUtil.BROKER_HOST)
+    factory.setHost(BROKER_HOST)
     val connection = factory.newConnection
     val channel = connection.createChannel
-    channel.exchangeDeclare(TestUtil.TYPE_NOTIFICATIONS, BuiltinExchangeType.DIRECT, true)
+    channel.exchangeDeclare(EXCHANGE_NAME, BuiltinExchangeType.DIRECT, true)
     val queueName = channel.queueDeclare.getQueue
-    channel.queueBind(queueName, TestUtil.TYPE_NOTIFICATIONS, TestUtil.NOTIFICATIONS_ROUTING_KEY)
+    channel.queueBind(queueName, EXCHANGE_NAME, ROUTING_KEY)
     val consumer = new DefaultConsumer(channel) {
       override def handleDelivery(consumerTag: String, envelope: Envelope, properties: AMQP.BasicProperties, body: Array[Byte]): Unit = {
         msg = new String(body, TestUtil.STRING_ENCODING)
@@ -64,12 +68,12 @@ class NotificationsSenderActorTest extends TestKit (ActorSystem("CollaboraServer
   }
 
   override implicit val patienceConfig: PatienceConfig = PatienceConfig(
-    timeout = scaled(TestUtil.TIMEOUT_SECOND seconds),
+    timeout = scaled(60 seconds),
     interval = scaled(TestUtil.INTERVAL_MILLIS millis)
   )
 
   "A NotificationsSender actor" should {
-/*
+
     "communicate with RabbitMQNamingActor" in {
       within(TestUtil.TASK_WAIT_TIME seconds){
         naming ! ChannelNamesRequestMessage(CommunicationType.NOTIFICATIONS)
@@ -94,11 +98,8 @@ class NotificationsSenderActorTest extends TestKit (ActorSystem("CollaboraServer
       }
       val startMsg = TestMessageUtil.startMessageNotificationsSenderActorTest
       val endMsg = TestMessageUtil.endMessageNotificationsSenderActorTest
-
       assert(msg.startsWith(startMsg)&& msg.endsWith(endMsg))
     }
-
-*/
 
   }
 

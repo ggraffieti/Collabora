@@ -16,12 +16,6 @@ class RabbitMQNamingActorTest extends TestKit (ActorSystem("CollaboraServer")) w
   val NAMING_ACTOR_NAME = "naming"
   val CHANNEL_CREATOR_NAME = "channelCreator"
 
-  val TYPE_NOTIFICATIONS = "notifications"
-  val TYPE_UPDATES = "updates"
-  val SERVER_UPDATE = "update.server"
-  val TYPE_COLLABORATIONS = "collaborations"
-  val TASK_WAIT_TIME = 5
-
   val factory = new ConnectionFactory()
   val connection:ActorRef = system.actorOf(ConnectionActor.props(factory), CONNECTION_ACTOR_NAME)
   val naming: ActorRef = system.actorOf(Props[RabbitMQNamingActor], NAMING_ACTOR_NAME)

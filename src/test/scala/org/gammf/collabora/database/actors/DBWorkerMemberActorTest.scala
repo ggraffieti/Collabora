@@ -49,7 +49,7 @@ class DBWorkerMemberActorTest extends TestKit (ActorSystem("CollaboraServer")) w
     "insert new user in a collaboration correctly in the db" in {
 
       within(TestUtil.TASK_WAIT_TIME second) {
-        usersActor ! InsertMemberMessage(user, TestUtil.FAKE_ID, TestUtil.FAKE_USER_ID)
+        usersActor ! InsertMemberMessage(user, TestUtil.FAKE_ID, TestUtil.USER_ID)
         expectMsgType[QueryOkMessage]
       }
     }
@@ -57,12 +57,12 @@ class DBWorkerMemberActorTest extends TestKit (ActorSystem("CollaboraServer")) w
     "update a user right in a collaboration correctly" in {
 
       within(TestUtil.TASK_WAIT_TIME second) {
-        usersActor ! UpdateMemberMessage(user, TestUtil.FAKE_ID, TestUtil.FAKE_USER_ID)
+        usersActor ! UpdateMemberMessage(user, TestUtil.FAKE_ID, TestUtil.USER_ID)
         expectMsgType[QueryOkMessage]
       }
 
       within(TestUtil.TASK_WAIT_TIME second) {
-        usersActor ! DeleteMemberMessage(user, TestUtil.FAKE_ID, TestUtil.FAKE_USER_ID)
+        usersActor ! DeleteMemberMessage(user, TestUtil.FAKE_ID, TestUtil.USER_ID)
         expectMsgType[QueryOkMessage]
       }
     }

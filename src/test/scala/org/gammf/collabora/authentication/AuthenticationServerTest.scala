@@ -77,7 +77,7 @@ class AuthenticationServerTest extends WordSpec with Matchers with ScalatestRout
     }
 
     "not authenticate user if username not exists" in {
-      Get(TestUtil.LOGIN_ACTION) ~> addCredentials(BasicHttpCredentials(TestUtil.WRONG_USERNAME, TestUtil.PASSWORD)) ~>
+      Get(TestUtil.LOGIN_ACTION) ~> addCredentials(BasicHttpCredentials(TestUtil.WRONG_USERNAME, TestUtil.CORRECT_PASSWORD)) ~>
         Route.seal(AuthenticationServer.route) ~> check {
         status shouldEqual StatusCodes.Unauthorized
         responseAs[String] shouldEqual "The supplied authentication is invalid"

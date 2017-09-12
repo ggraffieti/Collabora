@@ -1,15 +1,20 @@
 package org.gammf.collabora.communication.actors
 
-import akka.actor.{Actor, ActorRef, ActorSystem, Props}
+import akka.actor.{ActorRef, ActorSystem, Props}
 import com.newmotion.akka.rabbitmq.{ConnectionActor, ConnectionFactory}
-import org.gammf.collabora.communication.messages.{PublishFirebaseNotification, PublishNotificationMessage}
+import org.gammf.collabora.communication.messages.PublishNotificationMessage
 import org.gammf.collabora.database.actors.ConnectionManagerActor
-import org.gammf.collabora.database.actors.worker.DBWorkerGetCollaborationActor
-import org.gammf.collabora.database.messages.GetCollaboration
-import org.gammf.collabora.util.{Firebase, UpdateMessage, UpdateMessageTarget, UpdateMessageType}
+import org.gammf.collabora.database.messages.GetCollaborationMessage
+import org.gammf.collabora.util.{Collaboration, Firebase, UpdateMessage, UpdateMessageTarget, UpdateMessageType}
 import org.gammf.collabora.yellowpages.ActorService.ActorService
 import org.gammf.collabora.yellowpages.actors.BasicActor
+import akka.pattern.ask
 import org.gammf.collabora.yellowpages.util.Topic.ActorTopic
+import org.gammf.collabora.yellowpages.util.Topic
+import org.gammf.collabora.yellowpages.TopicElement._
+import org.gammf.collabora.yellowpages.ActorService._
+
+import scala.concurrent.ExecutionContext.Implicits.global
 
 /**
   * This is an actor that sends Firebase notification about Note,Module,Member operation
@@ -22,19 +27,25 @@ class FirebaseActor(override val yellowPages: ActorRef, override val name: Strin
   private[this] val firebase: Firebase = new Firebase
 
   override def receive:Receive = ({
-    case PublishNotificationMessage(collaborationID, message) => message.target match {
+    case publishMessage: PublishNotificationMessage => publishMessage.message.target match {
             case UpdateMessageTarget.NOTE |
                  UpdateMessageTarget.MODULE |
-                 UpdateMessageTarget.MEMBER if message.messageType.equals(UpdateMessageType.CREATION) => sendFirebaseNotification(collaborationID, message)
+                 UpdateMessageTarget.MEMBER if publishMessage.message.messageType.equals(UpdateMessageType.CREATION) =>
+              getActorOrElse(Topic() :+ Database, Master, publishMessage).
+                foreach(dbMaster =>
+                  (dbMaster ? GetCollaborationMessage(publishMessage.collaborationID)).mapTo[Option[Collaboration]].map {
+                    case Some(collaboration) => sendFirebaseNotification(collaboration, publishMessage.message)
+                    case _ => println("Something went wrong")
+                  })
             case _=>
     }
   }: Receive) orElse super[BasicActor].receive
 
-  private[this] def sendFirebaseNotification(collaborationID: String, message: UpdateMessage) {
+  private[this] def sendFirebaseNotification(collaboration: Collaboration, message: UpdateMessage) {
     firebase.setKey(AUTHORIZATION)
-    firebase.setTtile(collaborationID)
+    firebase.setTitle(collaboration.name)
     firebase.setBody(setUserAndOperation(message) + setTextTarget(message))
-    firebase.to(collaborationID)
+    firebase.to(collaboration.id.get)
     firebase.send()
   }
 

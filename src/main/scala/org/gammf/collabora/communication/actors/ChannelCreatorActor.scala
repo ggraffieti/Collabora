@@ -11,8 +11,6 @@ import org.gammf.collabora.yellowpages.util.Topic
 import org.gammf.collabora.yellowpages.TopicElement._
 import org.gammf.collabora.yellowpages.ActorService._
 
-import scala.concurrent.ExecutionContext.Implicits.global
-
 /**
   * @author Manuel Peruzzi
   * This is an actor that builds and returns to the sender a specific RabbitMQ channel created on the provided connection.
@@ -28,8 +26,6 @@ class ChannelCreatorActor(override val yellowPages: ActorRef, override val name:
       createChannel(message.exchange, None, message.routingKey, sender, message)
 
     case ChannelCreated(_) => println("[Channel Creator Actor] Channel created!")
-
-    case _ => println("[Channel Creator Actor] Huh?")
   }: Receive) orElse super[BasicActor].receive
 
   private[this] def createChannel(exchange: String, queue: Option[String],

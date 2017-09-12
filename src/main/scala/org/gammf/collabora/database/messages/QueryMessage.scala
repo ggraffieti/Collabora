@@ -75,7 +75,7 @@ trait QueryRetriveCollaboration extends QueryMessage {
   def collaborationID: String
 }
 
-case class GetCollaboration(collaborationID: String) extends  QueryRetriveCollaboration
+case class GetCollaborationMessage(collaborationID: String) extends  QueryRetriveCollaboration
 
 /**
   * Represents a query used to retreive all collaborations of a given user.

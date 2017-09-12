@@ -7,9 +7,10 @@ import org.gammf.collabora.yellowpages.ActorService.ActorService
 import org.gammf.collabora.yellowpages.messages._
 import org.gammf.collabora.yellowpages.util.{ActorInformation, CachableSet, Topic}
 import org.gammf.collabora.yellowpages.util.Topic.ActorTopic
+import org.gammf.collabora.yellowpages.entriesImplicitConversions._
+
 
 import scala.concurrent.duration._
-import scala.util.{Success, Try}
 import scala.concurrent.ExecutionContext.Implicits.global
 
 /**
@@ -17,10 +18,10 @@ import scala.concurrent.ExecutionContext.Implicits.global
   * In order to communicate with other actors, this actor needs a reference to a [[YellowPagesActor]].
   */
 trait BasicActor extends Actor {
-  implicit private[this] val askTimeout: Timeout = Timeout(5 seconds)
+  implicit protected[this] val askTimeout: Timeout = Timeout(5 seconds)
 
   protected val cachableRefs: CachableSet[ActorInformation] = CachableSet[ActorInformation]()
-  private[this] val forwardTimeout: Timeout = Timeout(500 millis)
+  private[this] val forwardTimeout: Timeout = Timeout(50 millis)
 
   /**
     * Returns a reference to the yellow pages root actor.
@@ -64,14 +65,10 @@ trait BasicActor extends Actor {
   }
 
   private[this] def askYellowPagesForActor(topic: ActorTopic, service: ActorService): Unit = {
+    println("[" + name + "] asking yellow pages..")
     (yellowPages ? ActorRequestMessage(topic, service)).mapTo[ActorResponseMessage].map {
       case response: ActorResponseOKMessage => response :: cachableRefs
       case _ =>
     }
-  }
-
-  protected[this] def sendMessageOrElse(reference: Try[ActorRef], message: Any, otherMessage: Any): Unit = reference match {
-    case Success(actorRef) => actorRef ! message
-    case _ => context.system.scheduler.scheduleOnce(forwardTimeout.duration)(self forward otherMessage)
   }
 }

@@ -5,20 +5,32 @@ import akka.pattern.pipe
 import org.gammf.collabora.database._
 import org.gammf.collabora.database.messages._
 import org.gammf.collabora.util.Note
+import org.gammf.collabora.yellowpages.ActorService.ActorService
+import org.gammf.collabora.yellowpages.messages.RegistrationResponseMessage
 import reactivemongo.bson.{BSON, BSONDocument, BSONObjectID}
 
 import scala.concurrent.ExecutionContext.Implicits.global
+
+import org.gammf.collabora.yellowpages.util.Topic
+import org.gammf.collabora.yellowpages.TopicElement._
+import org.gammf.collabora.yellowpages.ActorService._
+import org.gammf.collabora.yellowpages.util.Topic.ActorTopic
 
 /**
   * A worker that performs query on notes.
   * @param connectionActor the actor that mantains the connection with the DB.
   */
-class DBWorkerNotesActor(connectionActor: ActorRef) extends CollaborationsDBWorker[DBWorkerMessage](connectionActor) with Stash with DefaultDBWorker {
+class DBWorkerNotesActor(override val yellowPages: ActorRef, override val name: String,
+                         override val topic: ActorTopic, override val service: ActorService)
+  extends CollaborationsDBWorker[DBWorkerMessage] with Stash with DefaultDBWorker {
 
-  override def receive: Receive = {
+  override def receive: Receive = ({
+    //TODO consider: these three methods in super class?
+    case message: RegistrationResponseMessage => getActorOrElse(Topic() :+ Database, ConnectionHandler, message)
+      .foreach(_ ! AskConnectionMessage())
 
-    case m: GetConnectionMessage =>
-      connection = Some(m.connection)
+    case message: GetConnectionMessage =>
+      connection = Some(message.connection)
       unstashAll()
 
     case _ if connection.isEmpty => stash()
@@ -51,6 +63,5 @@ class DBWorkerNotesActor(connectionActor: ActorRef) extends CollaborationsDBWork
         okMessage = QueryOkMessage(message),
         failStrategy = defaultDBWorkerFailStrategy(message.userID)
       ) pipeTo sender
-
-  }
+  }: Receive) orElse super[CollaborationsDBWorker].receive
 }

@@ -5,21 +5,32 @@ import akka.pattern.pipe
 import org.gammf.collabora.database._
 import org.gammf.collabora.database.messages._
 import org.gammf.collabora.util.Module
+import org.gammf.collabora.yellowpages.ActorService.{ActorService, ConnectionHandler}
+import org.gammf.collabora.yellowpages.messages.RegistrationResponseMessage
 import reactivemongo.bson.{BSON, BSONDocument, BSONObjectID}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
+import org.gammf.collabora.yellowpages.util.Topic
+import org.gammf.collabora.yellowpages.TopicElement._
+import org.gammf.collabora.yellowpages.util.Topic.ActorTopic
+
 /**
   * A worker that performs query on modules.
   * @param connectionActor the actor that mantains the connection with the DB.
   */
-class DBWorkerModulesActor(connectionActor: ActorRef) extends CollaborationsDBWorker[DBWorkerMessage](connectionActor) with DefaultDBWorker with Stash {
+class DBWorkerModulesActor(override val yellowPages: ActorRef, override val name: String,
+                           override val topic: ActorTopic, override val service: ActorService)
+  extends CollaborationsDBWorker[DBWorkerMessage] with DefaultDBWorker with Stash {
 
-  override def receive: Receive = {
+  override def receive: Receive = ({
+    //TODO consider: these three methods in super class?
+    case message: RegistrationResponseMessage => getActorOrElse(Topic() :+ Database, ConnectionHandler, message)
+      .foreach(_ ! AskConnectionMessage())
 
-    case m: GetConnectionMessage =>
-      connection = Some(m.connection)
+    case message: GetConnectionMessage =>
+      connection = Some(message.connection)
       unstashAll()
 
     case _ if connection.isEmpty => stash()
@@ -55,7 +66,8 @@ class DBWorkerModulesActor(connectionActor: ActorRef) extends CollaborationsDBWo
         case queryOk: QueryOkMessage => deleteAllModuleNotes(message.collaborationID, message.module.id.get, queryOk, message.userID)
         case queryFail: QueryFailMessage => Future.successful(queryFail)
       }.flatten pipeTo sender
-  }
+
+  }: Receive) orElse super[CollaborationsDBWorker].receive
 
 
   private[this] def deleteAllModuleNotes(collaborationId: String, moduleId: String,

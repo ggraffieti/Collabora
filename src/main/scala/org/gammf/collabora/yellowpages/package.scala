@@ -22,13 +22,15 @@ package object yellowpages {
     RabbitMQ,
     Firebase,
     Authentication,
+    Collaborations,
+    Notifications,
+    Updates,
     // Database related topics
     Database,
     Note,
     Module,
     Member,
     Collaboration
-    //TODO list all the database related topics
     = Value
   }
 
@@ -43,18 +45,20 @@ package object yellowpages {
     Printing,
     // Communication related services
     ConnectionHandler,
+    ChannelHandler,
     ChannelCreating,
     Naming,
     Publishing,
     Subscribing,
-    NotificationSending,
-    CollaborationSending,
-    UpdatesReceiving,
-    // TODO update the list with http related services
     // Database related services
+    Authenticator,
     Master,
-    Worker
-    // TODO list all the database related services
+    DefaultWorker,
+    ExistenceChecking,
+    StateChanger,
+    Getter,
+    // Autentication related services
+    Bridging
     = Value
   }
 
@@ -99,8 +103,11 @@ package object yellowpages {
       */
     implicit def entryList2hierarchyNodeList(list: List[(Int, ActorYellowPagesEntry)]): List[HierarchyNode] =
       list.map(yp => HierarchyNode(level = yp._1, reference = yp._2.reference.toString, name = yp._2.name.toString, topic = yp._2.topic.toString, service = yp._2.service.toString))
-  }
 
-  implicit def actorOkMessage2ActorInformation(message: ActorResponseOKMessage): ActorInformation =
-    ActorInformation(message.actor, message.topic, message.service)
+    /**
+      * Implicit conversione from a [[ActorResponseOKMessage]] to [[ActorInformation]]
+      */
+    implicit def actorOkMessage2ActorInformation(message: ActorResponseOKMessage): ActorInformation =
+      ActorInformation(message.actor, message.topic, message.service)
+  }
 }

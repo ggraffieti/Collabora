@@ -12,8 +12,9 @@ import scala.concurrent.Future
 /**
   * A DB worker, it ask for a connection at start time and perform queries.
   * @param connectionActor the actor that mantains the connection with the DB.
+  * @tparam T the type returned by query methods, in case of query gone good or bad.
   */
-abstract class AbstractDBWorker(val connectionActor: ActorRef) extends DBWorker {
+abstract class AbstractDBWorker[T](val connectionActor: ActorRef) extends DBWorker[T] {
 
   protected var connection: Option[MongoConnection] = None
 

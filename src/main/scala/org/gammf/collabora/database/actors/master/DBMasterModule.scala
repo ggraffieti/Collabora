@@ -1,10 +1,10 @@
 package org.gammf.collabora.database.actors.master
 
 import akka.actor.{ActorRef, ActorSystem, Props}
-import org.gammf.collabora.communication.messages.PublishNotificationMessage
+import org.gammf.collabora.communication.messages.{PublishErrorMessageInCollaborationExchange, PublishNotificationMessage}
 import org.gammf.collabora.database.actors.worker.DBWorkerModulesActor
 import org.gammf.collabora.database.messages._
-import org.gammf.collabora.util.{UpdateMessage, UpdateMessageTarget, UpdateMessageType}
+import org.gammf.collabora.util.{ServerErrorCode, ServerErrorMessage, UpdateMessage, UpdateMessageTarget, UpdateMessageType}
 
 /**
   * The master actor that manages all the query about modules.
@@ -12,8 +12,9 @@ import org.gammf.collabora.util.{UpdateMessage, UpdateMessageTarget, UpdateMessa
   * @param connectionManagerActor The system-unique [[org.gammf.collabora.database.actors.ConnectionManagerActor]], used for mantain a
   *                               connection with the database
   * @param notificationActor The actor used for notify the client that a query is went good.
+  * @param publishCollaborationExchangeActor the actor used for send notifications in the collaboration exchange
   */
-class DBMasterModule(system: ActorSystem, connectionManagerActor: ActorRef, notificationActor: ActorRef) extends AbstractDBMaster {
+class DBMasterModule(system: ActorSystem, connectionManagerActor: ActorRef, notificationActor: ActorRef, publishCollaborationExchangeActor: ActorRef) extends AbstractDBMaster {
 
   private[this] var moduleWorker: ActorRef = _
 
@@ -41,7 +42,10 @@ class DBMasterModule(system: ActorSystem, connectionManagerActor: ActorRef, noti
       case _ => unhandled(_)
     }
 
-    case fail: QueryFailMessage => fail.error.printStackTrace() // TODO error handling
+    case fail: QueryFailMessage => publishCollaborationExchangeActor ! PublishErrorMessageInCollaborationExchange(
+      username = fail.username,
+      message = ServerErrorMessage(user = fail.username, errorCode = ServerErrorCode.SERVER_ERROR)
+    )
 
     case _ => unhandled(_)
   }

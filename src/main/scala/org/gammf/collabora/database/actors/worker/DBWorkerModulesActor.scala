@@ -8,12 +8,13 @@ import org.gammf.collabora.util.Module
 import reactivemongo.bson.{BSON, BSONDocument, BSONObjectID}
 
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 /**
   * A worker that performs query on modules.
   * @param connectionActor the actor that mantains the connection with the DB.
   */
-class DBWorkerModulesActor(connectionActor: ActorRef) extends CollaborationsDBWorker(connectionActor) with Stash {
+class DBWorkerModulesActor(connectionActor: ActorRef) extends CollaborationsDBWorker[DBWorkerMessage](connectionActor) with DefaultDBWorker with Stash {
 
   override def receive: Receive = {
 
@@ -28,7 +29,8 @@ class DBWorkerModulesActor(connectionActor: ActorRef) extends CollaborationsDBWo
       update(
         selector = BSONDocument(COLLABORATION_ID -> BSONObjectID.parse(message.collaborationID).get),
         query = BSONDocument("$push" -> BSONDocument(COLLABORATION_MODULES -> bsonModule)),
-        okMessage = QueryOkMessage(InsertModuleMessage(bsonModule.as[Module], message.collaborationID, message.userID))
+        okMessage = QueryOkMessage(InsertModuleMessage(bsonModule.as[Module], message.collaborationID, message.userID)),
+        failStrategy = defaultDBWorkerFailStrategy(message.userID)
       ) pipeTo sender
 
     case message: UpdateModuleMessage =>
@@ -38,7 +40,8 @@ class DBWorkerModulesActor(connectionActor: ActorRef) extends CollaborationsDBWo
           COLLABORATION_MODULES + "." + MODULE_ID -> BSONObjectID.parse(message.module.id.get).get
         ),
         query = BSONDocument("$set" -> BSONDocument(COLLABORATION_MODULES + ".$" -> message.module)),
-        okMessage = QueryOkMessage(message)
+        okMessage = QueryOkMessage(message),
+        failStrategy = defaultDBWorkerFailStrategy(message.userID)
       ) pipeTo sender
 
     case message: DeleteModuleMessage =>
@@ -46,8 +49,24 @@ class DBWorkerModulesActor(connectionActor: ActorRef) extends CollaborationsDBWo
         selector = BSONDocument(COLLABORATION_ID -> BSONObjectID.parse(message.collaborationID).get),
         query = BSONDocument("$pull" -> BSONDocument(COLLABORATION_MODULES ->
           BSONDocument(MODULE_ID -> BSONObjectID.parse(message.module.id.get).get))),
-        okMessage = QueryOkMessage(message)
-      ) pipeTo sender
+        okMessage = QueryOkMessage(message),
+        failStrategy = defaultDBWorkerFailStrategy(message.userID)
+      ).map {
+        case queryOk: QueryOkMessage => deleteAllModuleNotes(message.collaborationID, message.module.id.get, queryOk, message.userID)
+        case queryFail: QueryFailMessage => Future.successful(queryFail)
+      }.flatten pipeTo sender
+  }
 
+
+  private[this] def deleteAllModuleNotes(collaborationId: String, moduleId: String,
+                                         messageOk: DBWorkerMessage, username: String): Future[DBWorkerMessage] = {
+    update(
+      selector = BSONDocument(COLLABORATION_ID -> BSONObjectID.parse(collaborationId).get),
+      query = BSONDocument("$pull" -> BSONDocument(COLLABORATION_NOTES ->
+        BSONDocument(NOTE_MODULE -> BSONObjectID.parse(moduleId).get)
+      )),
+      okMessage = messageOk,
+      failStrategy = defaultDBWorkerFailStrategy(username)
+    )
   }
 }

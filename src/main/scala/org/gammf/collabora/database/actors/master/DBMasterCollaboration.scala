@@ -1,10 +1,10 @@
 package org.gammf.collabora.database.actors.master
 
 import akka.actor.{ActorRef, ActorSystem, Props}
-import org.gammf.collabora.communication.messages.{PublishMemberAddedMessage, PublishNotificationMessage}
+import org.gammf.collabora.communication.messages.{PublishCollaborationInCollaborationExchange, PublishErrorMessageInCollaborationExchange, PublishNotificationMessage}
 import org.gammf.collabora.database.actors.worker.DBWorkerCollaborationsActor
 import org.gammf.collabora.database.messages._
-import org.gammf.collabora.util.{CollaborationMessage, CollaborationType, UpdateMessage, UpdateMessageTarget, UpdateMessageType}
+import org.gammf.collabora.util.{CollaborationMessage, CollaborationType, ServerErrorCode, ServerErrorMessage, UpdateMessage, UpdateMessageTarget, UpdateMessageType}
 
 /**
   * The master actor that manages all the query about collaborations.
@@ -12,9 +12,9 @@ import org.gammf.collabora.util.{CollaborationMessage, CollaborationType, Update
   * @param connectionManagerActor The system-unique [[org.gammf.collabora.database.actors.ConnectionManagerActor]], used for mantain a
   *                               connection with the database
   * @param notificationActor The actor used for notify the client that a query is went good.
-  * @param collaborationMemberActor The actor used for sent to the Collaboration Exchange data about collaborations, when they are created.
+  * @param publishCollaborationExchangeActor the actor used for send notifications in the collaboration exchange.
   */
-class DBMasterCollaboration(system: ActorSystem, connectionManagerActor: ActorRef, notificationActor: ActorRef, collaborationMemberActor: ActorRef) extends AbstractDBMaster {
+class DBMasterCollaboration(system: ActorSystem, connectionManagerActor: ActorRef, notificationActor: ActorRef, publishCollaborationExchangeActor: ActorRef) extends AbstractDBMaster {
 
   private[this] var collaborationWorker: ActorRef = _
 
@@ -38,7 +38,7 @@ class DBMasterCollaboration(system: ActorSystem, connectionManagerActor: ActorRe
 
     case QueryOkMessage(queryGoneWell) => queryGoneWell match {
       case query: QueryCollaborationMessage => query match {
-        case _: InsertCollaborationMessage => collaborationMemberActor ! PublishMemberAddedMessage(query.userID, CollaborationMessage(user=query.userID,collaboration = query.collaboration))
+        case _: InsertCollaborationMessage => publishCollaborationExchangeActor ! PublishCollaborationInCollaborationExchange(query.userID, CollaborationMessage(user=query.userID,collaboration = query.collaboration))
         case _ => notificationActor ! PublishNotificationMessage(query.collaboration.id.get, UpdateMessage(
           target = UpdateMessageTarget.COLLABORATION,
           messageType = getUpdateTypeFromQueryMessage(query),
@@ -49,7 +49,10 @@ class DBMasterCollaboration(system: ActorSystem, connectionManagerActor: ActorRe
       case _ => unhandled(_)
     }
 
-    case fail: QueryFailMessage => fail.error.printStackTrace() // TODO error handling
+    case fail: QueryFailMessage => publishCollaborationExchangeActor ! PublishErrorMessageInCollaborationExchange(
+      username = fail.username,
+      message = ServerErrorMessage(user = fail.username, errorCode = ServerErrorCode.SERVER_ERROR)
+    )
 
     case _ => unhandled(_)
 

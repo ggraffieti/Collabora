@@ -12,8 +12,8 @@ import org.gammf.collabora.yellowpages.ActorService._
 /**
   * This actor is responsible for forwarding certain messages to all the notification-related actors that exist in the server.
   */
-class NotificationDispatcherActor(override val yellowPages: ActorRef, override val name: String,
-                                  override val topic: ActorTopic, override val service: ActorService) extends BasicActor {
+class NotificationsDispatcherActor(override val yellowPages: ActorRef, override val name: String,
+                                   override val topic: ActorTopic, override val service: ActorService) extends BasicActor {
   override def receive: Receive = ({
     case updateMessage: PublishNotificationMessage =>
       self forward ForwardMessageToRabbitMQNotificationActor(updateMessage)

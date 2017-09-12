@@ -111,11 +111,15 @@ case class ActorYellowPagesEntryImpl(override val reference: ActorRef, override 
     case _ => false
   }
   override def ===(that: EntryParam): Boolean = topic == that.topic && service == that.service
-  override def >(that: EntryParam): Boolean = (that.service == YellowPagesService && topic > that.topic) ||
-    (that.service != YellowPagesService && topic >= that.topic)
+  override def >(that: EntryParam): Boolean = service match {
+    case YellowPagesService if that.service != YellowPagesService => topic >= that.topic
+    case _ => topic > that.topic
+  }
   override def >=(that: EntryParam): Boolean = this > that || this === that
-  override def <(that: EntryParam): Boolean = (that.service == YellowPagesService && topic < that.topic) ||
-    (that.service != YellowPagesService && topic <= that.topic)
+  override def <(that: EntryParam): Boolean = that.service match {
+    case YellowPagesService if service != YellowPagesService => topic <= that.topic
+    case _ => topic < that.topic
+  }
   override def <=(that: EntryParam): Boolean = this < that || this === that
 }
 

@@ -13,8 +13,6 @@ import org.gammf.collabora.yellowpages.TopicElement._
 import org.gammf.collabora.yellowpages.ActorService._
 import org.gammf.collabora.yellowpages.messages.RegistrationResponseMessage
 
-import scala.concurrent.ExecutionContext.Implicits.global
-
 /**
   * @author Manuel Peruzzi
   */
@@ -32,12 +30,6 @@ class NotificationsSenderActor(override val yellowPages: ActorRef, override val 
 
   private[this] var pubChannel: Option[Channel] = None
   private[this] var pubExchange: Option[String] = None
-  //private var firebaseActor: ActorRef = _
-
-  override def preStart(): Unit = {
-    context.system.actorOf(Props.create(classOf[FirebaseActor]))
-  }
-
 
   override def receive: Receive = ({
     case message: RegistrationResponseMessage => getActorOrElse(Topic() :+ Communication :+ RabbitMQ, Naming, message).foreach(_ ! ChannelNamesRequestMessage(CommunicationType.NOTIFICATIONS))
@@ -47,10 +39,10 @@ class NotificationsSenderActor(override val yellowPages: ActorRef, override val 
     case ChannelCreatedMessage(channel) =>
       pubChannel = Some(channel)
       unstashAll()
-    case message: PublishNotificationMessage =>
+    case updateMessage: PublishNotificationMessage =>
       pubChannel match {
         case Some(channel) =>
-          getActorOrElse(Topic() :+ Communication :+ RabbitMQ, Publishing, message).foreach(_ ! PublishMessage(channel, pubExchange.get, Some(message.collaborationID), Json.toJson(message)))
+          getActorOrElse(Topic() :+ Communication :+ RabbitMQ, Publishing, updateMessage).foreach(_ ! PublishMessage(channel, pubExchange.get, Some(updateMessage.collaborationID), Json.toJson(updateMessage.message)))
         case _ => stash()
       }
   }: Receive) orElse super[BasicActor].receive
@@ -61,7 +53,7 @@ class NotificationsSenderActor(override val yellowPages: ActorRef, override val 
   */
 object UseNotificationsSenderActor extends App {
   //TODO refactor
-  implicit val system = ActorSystem()
+  implicit val system: ActorSystem = ActorSystem()
   val factory = new ConnectionFactory()
   val connection = system.actorOf(ConnectionActor.props(factory), "rabbitmq")
 

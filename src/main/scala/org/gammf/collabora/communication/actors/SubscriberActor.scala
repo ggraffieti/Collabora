@@ -29,7 +29,6 @@ class SubscriberActor(override val yellowPages: ActorRef, override val name: Str
       }
       channel.basicConsume(queue, false, consumer)
       println("[Subscriber Actor] Subscribtion started!")
-    case _ => println("[Subscriber Actor] Huh?")
   }: Receive) orElse super[BasicActor].receive
 
 }

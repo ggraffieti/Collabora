@@ -44,20 +44,3 @@ class UpdatesReceiverActor(override val yellowPages: ActorRef, override val name
       }
   }: Receive) orElse super[BasicActor].receive
 }
-
-object Test extends App {
-  val topic = Topic() :+ Communication :+ RabbitMQ
-  val service = Naming
-
-  val system = ActorSystem("CollaboraServer")
-  val root = system.actorOf(YellowPagesActor.rootProps())
-
-  val updatesReceiver = system.actorOf(Props(
-    new UpdatesReceiverActor(root,"Update Receiver", topic, UpdatesReceiving)), "updates-receiver")
-
-  Thread.sleep(5000)
-
-  val naming = system.actorOf(Props(new RabbitMQNamingActor(root, "Naming Actor", topic, service)), "naming")
-
-  //system.terminate()
-}

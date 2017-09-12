@@ -15,7 +15,6 @@ import org.gammf.collabora.yellowpages.util.Topic.ActorTopic
 
 /**
   * A worker that performs query on members.
-  * @param connectionActor the actor that mantains the connection with the DB.
   */
 class DBWorkerMemberActor(override val yellowPages: ActorRef, override val name: String,
                           override val topic: ActorTopic, override val service: ActorService)

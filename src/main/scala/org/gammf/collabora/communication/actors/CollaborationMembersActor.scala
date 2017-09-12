@@ -15,10 +15,6 @@ import org.gammf.collabora.yellowpages.messages.RegistrationResponseMessage
 
 /**
   * This is an actor that sends all the information needed by a user that has just been added to a collaboration.
-  * @param connection the open connection with the rabbitMQ broker.
-  * @param naming the reference to a rabbitMQ naming actor.
-  * @param channelCreator the reference to a channel creator actor.
-  * @param publisher the reference to a publisher actor.
   */
 class CollaborationMembersActor(override val yellowPages: ActorRef, override val name: String,
                                 override val topic: ActorTopic, override val service: ActorService) extends BasicActor with Stash {

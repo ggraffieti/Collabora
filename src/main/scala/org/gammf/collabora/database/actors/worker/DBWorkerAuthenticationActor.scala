@@ -17,7 +17,6 @@ import org.gammf.collabora.yellowpages.util.Topic.ActorTopic
 
 /**
   * A [[DBWorker]] used for authentication purpose. It manages [[LoginMessage]] and [[SigninMessage]].
-  * @param connectionManager the manager of the connection, needed to mantain a stable connection with the database.
   */
 class DBWorkerAuthenticationActor(override val yellowPages: ActorRef, override val name: String,
                                   override val topic: ActorTopic, override val service: ActorService)

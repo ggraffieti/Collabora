@@ -4,10 +4,6 @@ import com.newmotion.akka.rabbitmq.Channel
 import play.api.libs.json.JsValue
 
 /**
-  * @author Manuel Peruzzi
-  */
-
-/**
   * Simple trait that represents a message about the publish/subscribe communication.
   */
 sealed trait ActionMessage extends Message

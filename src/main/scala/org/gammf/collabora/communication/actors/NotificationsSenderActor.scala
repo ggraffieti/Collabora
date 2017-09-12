@@ -1,7 +1,7 @@
 package org.gammf.collabora.communication.actors
 
-import akka.actor.{ActorRef, ActorSystem, Props, Stash}
-import com.newmotion.akka.rabbitmq.{Channel, ConnectionActor, ConnectionFactory}
+import akka.actor.{ActorRef, Stash}
+import com.newmotion.akka.rabbitmq.Channel
 import org.gammf.collabora.communication.Utils.CommunicationType
 import org.gammf.collabora.communication.messages._
 import org.gammf.collabora.yellowpages.ActorService.ActorService
@@ -14,16 +14,7 @@ import org.gammf.collabora.yellowpages.ActorService._
 import org.gammf.collabora.yellowpages.messages.RegistrationResponseMessage
 
 /**
-  * @author Manuel Peruzzi
-  */
-
-/**
   * This is an actor that manages sending notifications to clients.
-  * @param connection the open connection with the rabbitMQ broker.
-  * @param naming the reference to a rabbitMQ naming actor.
-  * @param channelCreator the reference to a channel creator actor.
-  * @param publisher the reference to a publisher actor.
-  * @param system the actor system.
   */
 class NotificationsSenderActor(override val yellowPages: ActorRef, override val name: String,
                                override val topic: ActorTopic, override val service: ActorService) extends BasicActor with Stash {
@@ -46,24 +37,4 @@ class NotificationsSenderActor(override val yellowPages: ActorRef, override val 
         case _ => stash()
       }
   }: Receive) orElse super[BasicActor].receive
-}
-
-/**
-  * This is a simple application that uses the Updates Receiver Actor.
-  */
-object UseNotificationsSenderActor extends App {
-  //TODO refactor
-  implicit val system: ActorSystem = ActorSystem()
-  val factory = new ConnectionFactory()
-  val connection = system.actorOf(ConnectionActor.props(factory), "rabbitmq")
-
-  val naming = system.actorOf(Props[RabbitMQNamingActor], "naming")
-  val channelCreator = system.actorOf(Props[ChannelCreatorActor], "channelCreator")
-  //val publisher = system.actorOf(Props[PublisherActor], "publisher")
-  //val collaborationActor = system.actorOf(Props(new CollaborationMembersActor(connection, naming, channelCreator, publisher)))
-  //val notificationsSender = system.actorOf(Props(
-  //  new NotificationsSenderActor(connection, naming, channelCreator, publisher,system)), "notifications-sender")
-
-  Thread.sleep(1000)
-  //notificationsSender ! StartMessage
 }

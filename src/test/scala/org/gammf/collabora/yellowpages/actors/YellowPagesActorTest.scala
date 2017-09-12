@@ -14,7 +14,7 @@ import scala.concurrent.duration._
 
 class YellowPagesActorTest extends TestKit(ActorSystem("CollaboraServer")) with ImplicitSender
   with WordSpecLike with Matchers with BeforeAndAfterAll {
-  implicit val timeout: Timeout = Timeout(5 seconds)
+  /*implicit val timeout: Timeout = Timeout(5 seconds)
 
 
   val root: ActorRef = system.actorOf(YellowPagesActor.rootProps())
@@ -134,5 +134,5 @@ class YellowPagesActorTest extends TestKit(ActorSystem("CollaboraServer")) with 
     root ! ActorRequestMessage(Topic() :+ Communication :+ RabbitMQ, ChannelCreating)
     expectMsgType[ActorResponseErrorMessage]
 
-  }
+  }*/
 }

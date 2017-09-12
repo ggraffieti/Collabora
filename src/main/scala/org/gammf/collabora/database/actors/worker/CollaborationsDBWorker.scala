@@ -8,7 +8,6 @@ import scala.concurrent.Future
 
 /**
   * A DBWorker that performs query on the collaboration collection.
-  * @param connectionActor the actor that mantains the connection with the DB.
   * @tparam T the type returned by query methods, in case of query gone good or bad.
   */
 abstract class CollaborationsDBWorker[T] extends AbstractDBWorker[T] {

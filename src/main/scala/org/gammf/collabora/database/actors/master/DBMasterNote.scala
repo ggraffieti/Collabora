@@ -11,12 +11,6 @@ import org.gammf.collabora.yellowpages.util.Topic.ActorTopic
 
 /**
   * The master actor that manages all the query about notes.
-  * @param system the actor system, used for create the needed workers.
-  * @param connectionManagerActor The system-unique [[org.gammf.collabora.database.actors.ConnectionManagerActor]], used for mantain a
-  *                               connection with the database
-  * @param notificationActor The actor used for notify the client that a query is went good.
-  * @param changeModuleStateActor the actor used for automatically change the module state on note insertion/deletion/updating
-  * @param publishCollaborationExchangeActor the actor used for send notifications in the collaboration exchange
   */
 class DBMasterNote(override val yellowPages: ActorRef, override val name: String,
                    override val topic: ActorTopic, override val service: ActorService) extends AbstractDBMaster {

@@ -16,15 +16,7 @@ import org.gammf.collabora.yellowpages.ActorService._
 import scala.concurrent.ExecutionContext.Implicits.global
 
 /**
-  * @author Manuel Peruzzi
-  */
-
-/**
   * This is an actor that manages the reception of client updates.
-  * @param connection the open connection with the rabbitMQ broker.
-  * @param naming the reference to a rabbitMQ naming actor.
-  * @param channelCreator the reference to a channel creator actor.
-  * @param subscriber the reference to a subscriber actor.
   */
 class UpdatesReceiverActor(override val yellowPages: ActorRef, override val name: String,
                            override val topic: ActorTopic, override val service: ActorService) extends BasicActor {

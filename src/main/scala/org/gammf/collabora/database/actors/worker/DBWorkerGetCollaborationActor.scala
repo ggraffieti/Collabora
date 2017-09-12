@@ -17,8 +17,6 @@ import org.gammf.collabora.yellowpages.util.Topic.ActorTopic
 
 /***
   * A worker that perform a get on collaboration collection and communicate with CollaborationMembersActor
-  * @param connectionActor the actor that mantains the connection with the DB.
-  * @param collaborationActor the actor that manage the exchange "collaborations"
   */
 class DBWorkerGetCollaborationActor(override val yellowPages: ActorRef, override val name: String,
                                     override val topic: ActorTopic, override val service: ActorService)

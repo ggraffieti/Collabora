@@ -22,8 +22,6 @@ import org.gammf.collabora.yellowpages.ActorService._
 /**
   * A Worker that performs module state changement. The changement is based on previous module state and
   * the state of the notes
-  * @param connectionActor the actor that mantains the connection with the DB.
-  * @param dbActor the DBMaster actor, used for sending the edited module.
   */
 class DBWorkerChangeModuleStateActor(override val yellowPages: ActorRef, override val name: String,
                                      override val topic: ActorTopic, override val service: ActorService)

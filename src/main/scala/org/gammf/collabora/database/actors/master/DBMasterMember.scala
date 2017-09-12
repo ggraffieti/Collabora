@@ -16,12 +16,6 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 /**
   * The master actor that manages all the query about members.
-  * @param system the actor system, used for create the needed workers.
-  * @param connectionManagerActor The system-unique [[org.gammf.collabora.database.actors.ConnectionManagerActor]], used for mantain a
-  *                               connection with the database
-  * @param notificationActor The actor used for notify the client that a query is went good.
-  * @param getCollaborationActor The actor used for notify the member that it's just been added to a collaboration, and send him the collaboration
-  * @param publishCollaborationExchangeActor the actor used for send notifications in the collaboration exchange
   */
 class DBMasterMember(override val yellowPages: ActorRef, override val name: String,
                      override val topic: ActorTopic, override val service: ActorService) extends AbstractDBMaster {

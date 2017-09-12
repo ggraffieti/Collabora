@@ -8,7 +8,6 @@ import org.gammf.collabora.yellowpages.util.Topic.ActorTopic
 import play.api.libs.json.Json
 
 /**
-  * @author Manuel Peruzzi
   * This is an actor that publish a message in a certain exchange through a rabbitMQ channel.
   */
 class PublisherActor(override val yellowPages: ActorRef, override val name: String,

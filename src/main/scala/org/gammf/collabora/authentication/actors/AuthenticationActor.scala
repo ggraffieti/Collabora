@@ -20,7 +20,6 @@ import scala.concurrent.ExecutionContext.Implicits.global
 /**
   * The authentication actor is bridge between the [[org.gammf.collabora.authentication.AuthenticationServer]] and the actor system.
   * Is the only actor that the server seen.
-  * @param dbActor a reference to the [[org.gammf.collabora.database.actors.master.DBMasterActor]] of the system.
   */
 class AuthenticationActor(override val yellowPages: ActorRef, override val name: String,
                           override val topic: ActorTopic, override val service: ActorService) extends BasicActor {

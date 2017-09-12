@@ -8,10 +8,6 @@ import org.gammf.collabora.yellowpages.actors.BasicActor
 import org.gammf.collabora.yellowpages.util.Topic.ActorTopic
 
 /**
-  * @author Manuel Peruzzi
-  */
-
-/**
   * This is an actor that handles the rabbitMQ naming issues.
   */
 class RabbitMQNamingActor(override val yellowPages: ActorRef, override val name: String,

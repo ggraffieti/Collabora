@@ -1,6 +1,6 @@
 package org.gammf.collabora.database.actors
 
-import akka.actor.{Actor, ActorRef, Stash}
+import akka.actor.{ActorRef, Stash}
 import org.gammf.collabora.database.messages.{AskConnectionMessage, GetConnectionMessage}
 import org.gammf.collabora.database._
 import org.gammf.collabora.yellowpages.actors.BasicActor

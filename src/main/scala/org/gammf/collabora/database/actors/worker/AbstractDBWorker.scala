@@ -9,7 +9,6 @@ import scala.concurrent.Future
 
 /**
   * A DB worker, it ask for a connection at start time and perform queries.
-  * @param connectionActor the actor that mantains the connection with the DB.
   * @tparam T the type returned by query methods, in case of query gone good or bad.
   */
 abstract class AbstractDBWorker[T] extends DBWorker[T] {
@@ -25,5 +24,4 @@ abstract class AbstractDBWorker[T] extends DBWorker[T] {
   protected def getUsersCollection: Future[BSONCollection] =
     connection.get.database(DB_NAME, FailoverStrategy())
       .map(_.collection(USER_COLLECTION_NAME, FailoverStrategy()))
-
 }

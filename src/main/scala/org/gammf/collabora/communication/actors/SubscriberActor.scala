@@ -9,7 +9,6 @@ import org.gammf.collabora.yellowpages.actors.BasicActor
 import org.gammf.collabora.yellowpages.util.Topic.ActorTopic
 
 /**
-  * @author Manuel Peruzzi
   * This is an actor that subscribes on a certain queue in a rabbitMQ channel, capturing all the messages.
   */
 class SubscriberActor(override val yellowPages: ActorRef, override val name: String,
@@ -30,6 +29,5 @@ class SubscriberActor(override val yellowPages: ActorRef, override val name: Str
       channel.basicConsume(queue, false, consumer)
       println("[Subscriber Actor] Subscribtion started!")
   }: Receive) orElse super[BasicActor].receive
-
 }
 

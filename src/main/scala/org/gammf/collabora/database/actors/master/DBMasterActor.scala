@@ -19,9 +19,6 @@ import org.gammf.collabora.yellowpages.ActorService._
 
 /**
   * The actor that coordinate, create and act like a gateway for every request from and to the DB. It also create all the needed actors.
-  * @param system the actor system.
-  * @param notificationActor the actor used for sending notification in the notification exchange
-  * @param publishCollaborationExchangeActor the actor used for send notifications in the collaboration exchange
   */
 class DBMasterActor(override val yellowPages: ActorRef, override val name: String,
                     override val topic: ActorTopic, override val service: ActorService) extends AbstractDBMaster {

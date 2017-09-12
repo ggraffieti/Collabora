@@ -74,20 +74,3 @@ class FirebaseActor(override val yellowPages: ActorRef, override val name: Strin
   }
 
 }
-
-object UseFirebaseActor extends App{
-  //TODO refactoring
-  implicit val system: ActorSystem = ActorSystem()
-  val factory = new ConnectionFactory()
-  var connectionManagerActor: ActorRef = system.actorOf(Props[ConnectionManagerActor])
-  val connection:ActorRef = system.actorOf(ConnectionActor.props(factory), "rabbitmq")
-  val naming: ActorRef = system.actorOf(Props[RabbitMQNamingActor], "naming")
-  val channelCreator: ActorRef = system.actorOf(Props[ChannelCreatorActor], "channelCreator")
-  val publisher: ActorRef = system.actorOf(Props[PublisherActor], "publisher")
-  //val collaborationMember: ActorRef = system.actorOf(Props(
-  //  new CollaborationMembersActor(connection, naming, channelCreator, publisher)), "collaboration-members")
-  //var getCollaborarionsActor:ActorRef = system.actorOf(Props.create(classOf[DBWorkerGetCollaborationActor], connectionManagerActor, collaborationMember))
-  //var firebaseActor: ActorRef = system.actorOf(Props.create(classOf[FirebaseActor], getCollaborarionsActor))
-
-  //firebaseActor ! PublishNotificationMessage("123456788698540008900400",UpdateMessage(UpdateMessageTarget.NOTE,UpdateMessageType.UPDATING,"maffone"))
-}

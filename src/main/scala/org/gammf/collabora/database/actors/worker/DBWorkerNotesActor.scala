@@ -18,7 +18,6 @@ import org.gammf.collabora.yellowpages.util.Topic.ActorTopic
 
 /**
   * A worker that performs query on notes.
-  * @param connectionActor the actor that mantains the connection with the DB.
   */
 class DBWorkerNotesActor(override val yellowPages: ActorRef, override val name: String,
                          override val topic: ActorTopic, override val service: ActorService)
@@ -63,5 +62,6 @@ class DBWorkerNotesActor(override val yellowPages: ActorRef, override val name: 
         okMessage = QueryOkMessage(message),
         failStrategy = defaultDBWorkerFailStrategy(message.userID)
       ) pipeTo sender
+
   }: Receive) orElse super[CollaborationsDBWorker].receive
 }

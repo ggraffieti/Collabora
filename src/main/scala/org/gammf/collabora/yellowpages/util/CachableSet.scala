@@ -1,16 +1,33 @@
 package org.gammf.collabora.yellowpages.util
 
-import akka.actor.{ActorSystem, Props}
-import org.gammf.collabora.communication.actors.RabbitMQNamingActor
-import org.gammf.collabora.yellowpages.TopicElement._
-import org.gammf.collabora.yellowpages.ActorService._
-
-
+/**
+  * This trait represent a data structure whose elements are cachable, that is, valid only for a certain period of time.
+  * At a certain time, an element can be considered as brand-new, still-valid or outdated, depending on its insertion time.
+  * @tparam A the type of the data structure elements
+  */
 trait CachableSet[A] {
+  /**
+    * Adds a new element to the data structure
+    * @param element the element to be added
+    */
   def ::(element: A): Unit
+
+  /**
+    * Returns the first element of the data structure which matches with the given predicate
+    * @param predicate the predicate to be applied over the data structure elements
+    * @return an option of tuple, which can be <ul>
+    * <li> (element, true) if the element is considered ad brand-new
+    * <li> (element, false) if the elements isn't brand-new, but still valid
+    * <li> None if the element is outdated or not present
+    * </ul>
+    */
   def get(predicate: A => Boolean) : Option[(A, Boolean)]
 }
 
+/**
+  * Basilar implementation of [[CachableSet]]
+  * @tparam A the type of the data structure elements
+  */
 trait CachableSetImpl[A] extends CachableSet[A] {
   private[this] val shortTimeout = 5 * 60 * 1000
   private[this] val longTimeout = 3 * 60 * 60 * 1000
@@ -36,19 +53,4 @@ case class BasicCachableSet[A]() extends CachableSetImpl[A]
 
 object CachableSet {
   def apply[A](): CachableSet[A] = BasicCachableSet[A]()
-}
-
-object Test extends App {
-  val system = ActorSystem("CollaboraServer")
-  val naming = system.actorOf(Props[RabbitMQNamingActor], "naming")
-
-  val set = CachableSet[ActorInformation]()
-  ActorInformation(naming, Topic() :+ General, Naming) :: set
-  val entry = set get (yp => yp.service == Naming && yp.topic == Topic() :+ General)
-  val entry2 = set get (yp => yp.service == Naming && yp.topic == Topic() :+ RabbitMQ)
-  println(entry)
-  println(entry2.isEmpty)
-  Thread.sleep(10000)
-  val entry3 = set get (yp => yp.service == Naming && yp.topic == Topic() :+ General)
-  println(entry3.isEmpty)
 }

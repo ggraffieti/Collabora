@@ -52,6 +52,22 @@ trait BasicActor extends Actor {
     case _ => println("["+ name + "] Huh?"); unhandled(_)
   }
 
+  /**
+    * Universal method used by a [[BasicActor]] in order to get the [[ActorRef]] of an [[Actor]] which
+    * is subscribed to a certain [[ActorTopic]] and which offers a certain [[ActorService]]. The research is first performed
+    * on the local [[CachableSet]]. If it fails, the [[ActorRef]] of interest is asynchronously
+    * asked to the yellow pages system.
+    *
+    * Since that this request could fail with a [[ActorResponseErrorMessage]], this method is designed to forward-to-self
+    * (after a certain period of time) the message that triggered it, preserving the original sender.
+    * With this approach, the actor will repeatedly ask for the [[Actor]]'s reference of interest and will perform its
+    * operation once it gets it.
+    * @param topic the topic to which the [[Actor]] of interest is subscribed to.
+    * @param service the service offered by the [[Actor]] of interest.
+    * @param message the message to forward-to-self in case the [[ActorRef]] is not available among the
+    *                references in the cachable set.
+    * @return [[Some(ActorRef)]] if the [[ActorRef]] is found, [[None]] otherwise.
+    */
   protected[this] def getActorOrElse(topic: ActorTopic, service: ActorService, message: Any): Option[ActorRef] = {
     cachableRefs get (info => info.topic == topic && info.service == service) match {
       case Some((actorInformation, true)) => Some(actorInformation.reference)
@@ -64,6 +80,13 @@ trait BasicActor extends Actor {
     }
   }
 
+  /**
+    * Method used to ask asynchronously the yellow pages system for an [[Actor]], which is subscribed to a
+    * certain [[ActorTopic]] and which offers a certain [[ActorService]], and to store its [[ActorRef]] in
+    * the local cachable set.
+    * @param topic the topic to which the [[Actor]] must be subscribed to.
+    * @param service the service which the [[Actor]] must offer.
+    */
   private[this] def askYellowPagesForActor(topic: ActorTopic, service: ActorService): Unit = {
     println("[" + name + "] asking yellow pages..")
     (yellowPages ? ActorRequestMessage(topic, service)).mapTo[ActorResponseMessage].map {

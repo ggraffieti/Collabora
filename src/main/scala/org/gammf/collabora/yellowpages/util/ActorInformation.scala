@@ -4,9 +4,23 @@ import akka.actor.ActorRef
 import org.gammf.collabora.yellowpages.ActorService.ActorService
 import org.gammf.collabora.yellowpages.util.Topic.ActorTopic
 
+/**
+  * This trait gives an abstract representation of an actor inside the yellow pages system.
+  */
 trait ActorInformation {
+  /**
+    * The actor unique reference
+    */
   def reference: ActorRef
+
+  /**
+    * The topic to which the actor is subscribed to
+    */
   def topic: ActorTopic
+
+  /**
+    * The service offered by the actor
+    */
   def service: ActorService
 }
 

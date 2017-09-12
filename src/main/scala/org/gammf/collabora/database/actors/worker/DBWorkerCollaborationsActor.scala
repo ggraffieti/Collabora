@@ -57,6 +57,7 @@ class DBWorkerCollaborationsActor(override val yellowPages: ActorRef, override v
         failStrategy = defaultDBWorkerFailStrategy(message.userID)
       ) pipeTo sender
 
+      //TODO is this necessary here?
     case message: GetAllCollaborationsMessage =>
       getCollaborationsCollection.map(collaborations =>
         collaborations.find(BSONDocument(

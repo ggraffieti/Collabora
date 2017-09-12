@@ -5,20 +5,31 @@ import akka.pattern.pipe
 import org.gammf.collabora.database._
 import org.gammf.collabora.database.messages._
 import org.gammf.collabora.util.Module
+import org.gammf.collabora.yellowpages.ActorService.{ActorService, ConnectionHandler}
+import org.gammf.collabora.yellowpages.messages.RegistrationResponseMessage
 import reactivemongo.bson.{BSON, BSONDocument, BSONObjectID}
 
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
+
+import org.gammf.collabora.yellowpages.util.Topic
+import org.gammf.collabora.yellowpages.TopicElement._
+import org.gammf.collabora.yellowpages.util.Topic.ActorTopic
 
 /**
   * A worker that performs query on modules.
-  * @param connectionActor the actor that mantains the connection with the DB.
   */
-class DBWorkerModulesActor(connectionActor: ActorRef) extends CollaborationsDBWorker(connectionActor) with Stash {
+class DBWorkerModulesActor(override val yellowPages: ActorRef, override val name: String,
+                           override val topic: ActorTopic, override val service: ActorService)
+  extends CollaborationsDBWorker[DBWorkerMessage] with DefaultDBWorker with Stash {
 
-  override def receive: Receive = {
+  override def receive: Receive = ({
+    //TODO consider: these three methods in super class?
+    case message: RegistrationResponseMessage => getActorOrElse(Topic() :+ Database, ConnectionHandler, message)
+      .foreach(_ ! AskConnectionMessage())
 
-    case m: GetConnectionMessage =>
-      connection = Some(m.connection)
+    case message: GetConnectionMessage =>
+      connection = Some(message.connection)
       unstashAll()
 
     case _ if connection.isEmpty => stash()
@@ -28,7 +39,8 @@ class DBWorkerModulesActor(connectionActor: ActorRef) extends CollaborationsDBWo
       update(
         selector = BSONDocument(COLLABORATION_ID -> BSONObjectID.parse(message.collaborationID).get),
         query = BSONDocument("$push" -> BSONDocument(COLLABORATION_MODULES -> bsonModule)),
-        okMessage = QueryOkMessage(InsertModuleMessage(bsonModule.as[Module], message.collaborationID, message.userID))
+        okMessage = QueryOkMessage(InsertModuleMessage(bsonModule.as[Module], message.collaborationID, message.userID)),
+        failStrategy = defaultDBWorkerFailStrategy(message.userID)
       ) pipeTo sender
 
     case message: UpdateModuleMessage =>
@@ -38,7 +50,8 @@ class DBWorkerModulesActor(connectionActor: ActorRef) extends CollaborationsDBWo
           COLLABORATION_MODULES + "." + MODULE_ID -> BSONObjectID.parse(message.module.id.get).get
         ),
         query = BSONDocument("$set" -> BSONDocument(COLLABORATION_MODULES + ".$" -> message.module)),
-        okMessage = QueryOkMessage(message)
+        okMessage = QueryOkMessage(message),
+        failStrategy = defaultDBWorkerFailStrategy(message.userID)
       ) pipeTo sender
 
     case message: DeleteModuleMessage =>
@@ -46,8 +59,25 @@ class DBWorkerModulesActor(connectionActor: ActorRef) extends CollaborationsDBWo
         selector = BSONDocument(COLLABORATION_ID -> BSONObjectID.parse(message.collaborationID).get),
         query = BSONDocument("$pull" -> BSONDocument(COLLABORATION_MODULES ->
           BSONDocument(MODULE_ID -> BSONObjectID.parse(message.module.id.get).get))),
-        okMessage = QueryOkMessage(message)
-      ) pipeTo sender
+        okMessage = QueryOkMessage(message),
+        failStrategy = defaultDBWorkerFailStrategy(message.userID)
+      ).map {
+        case queryOk: QueryOkMessage => deleteAllModuleNotes(message.collaborationID, message.module.id.get, queryOk, message.userID)
+        case queryFail: QueryFailMessage => Future.successful(queryFail)
+      }.flatten pipeTo sender
 
+  }: Receive) orElse super[CollaborationsDBWorker].receive
+
+
+  private[this] def deleteAllModuleNotes(collaborationId: String, moduleId: String,
+                                         messageOk: DBWorkerMessage, username: String): Future[DBWorkerMessage] = {
+    update(
+      selector = BSONDocument(COLLABORATION_ID -> BSONObjectID.parse(collaborationId).get),
+      query = BSONDocument("$pull" -> BSONDocument(COLLABORATION_NOTES ->
+        BSONDocument(NOTE_MODULE -> BSONObjectID.parse(moduleId).get)
+      )),
+      okMessage = messageOk,
+      failStrategy = defaultDBWorkerFailStrategy(username)
+    )
   }
 }

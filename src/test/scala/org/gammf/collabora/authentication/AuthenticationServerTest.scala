@@ -16,7 +16,7 @@ import scala.concurrent.duration._
 
 class AuthenticationServerTest extends WordSpec with Matchers with ScalatestRouteTest {
 
-  val dbConnectionActor: ActorRef = system.actorOf(Props[ConnectionManagerActor])
+  /*val dbConnectionActor: ActorRef = system.actorOf(Props[ConnectionManagerActor])
   val factory = new ConnectionFactory()
   val connection:ActorRef = system.actorOf(ConnectionActor.props(factory), "rabbitmq")
   val naming: ActorRef = system.actorOf(Props[RabbitMQNamingActor], "naming")
@@ -96,5 +96,5 @@ class AuthenticationServerTest extends WordSpec with Matchers with ScalatestRout
         responseAs[String] shouldEqual "Data passed cannot be unmarshalled to User"
       }
     }
-  }
+  }*/
 }

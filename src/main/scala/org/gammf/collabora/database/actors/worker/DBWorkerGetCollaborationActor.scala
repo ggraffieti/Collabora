@@ -2,60 +2,49 @@ package org.gammf.collabora.database.actors.worker
 
 import akka.actor.{ActorRef, Stash}
 import akka.pattern.pipe
-import org.gammf.collabora.communication.messages.{PublishFirebaseNotification, PublishMemberAddedMessage, PublishUserLoginMessage}
 import org.gammf.collabora.database._
 import org.gammf.collabora.database.messages._
-import org.gammf.collabora.util.{AllCollaborationsMessage, Collaboration, CollaborationMessage}
-import reactivemongo.api.Cursor
-import reactivemongo.bson.{BSONDocument, BSONObjectID}
+import org.gammf.collabora.util.Collaboration
+import org.gammf.collabora.yellowpages.ActorService.{ActorService, ConnectionHandler}
+import org.gammf.collabora.yellowpages.messages.RegistrationResponseMessage
+import reactivemongo.bson.BSONDocument
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.util.{Failure, Success}
+
+import org.gammf.collabora.yellowpages.util.Topic
+import org.gammf.collabora.yellowpages.TopicElement._
+import org.gammf.collabora.yellowpages.util.Topic.ActorTopic
 
 /***
   * A worker that perform a get on collaboration collection and communicate with CollaborationMembersActor
-  * @param connectionActor the actor that mantains the connection with the DB.
-  * @param collaborationActor the actor that manage the exchange "collaborations"
   */
-class DBWorkerGetCollaborationActor(connectionActor: ActorRef, collaborationActor: ActorRef) extends CollaborationsDBWorker(connectionActor) with Stash {
-  override def receive: Receive = {
+class DBWorkerGetCollaborationActor(override val yellowPages: ActorRef, override val name: String,
+                                    override val topic: ActorTopic, override val service: ActorService)
+  extends CollaborationsDBWorker[Option[List[Collaboration]]] with Stash {
 
-    case m: GetConnectionMessage =>
-      connection = Some(m.connection)
+  override def receive: Receive = {
+    //TODO consider: these three methods in super class?
+    case message: RegistrationResponseMessage => getActorOrElse(Topic() :+ Database, ConnectionHandler, message)
+      .foreach(_ ! AskConnectionMessage())
+
+    case message: GetConnectionMessage =>
+      connection = Some(message.connection)
       unstashAll()
 
     case _ if connection.isEmpty => stash()
 
-    case message: InsertMemberMessage =>
-      getCollaborationsCollection onComplete {
-        case Success(collaborations) =>
-          val selector = BSONDocument(COLLABORATION_ID -> BSONObjectID.parse(message.collaborationID).get)
-          collaborations.find(selector).one onComplete {
-            case Success(s) => collaborationActor ! PublishMemberAddedMessage(message.user.user,CollaborationMessage(message.userID,s.get.as[Collaboration]))
-            case Failure(e) => e.printStackTrace() // TODO better error strategy
-          }
-        case Failure(e) => e.printStackTrace() // TODO better error strategy
-      }
-    case message: GetCollaboration =>
-      val s = sender
-      getCollaborationsCollection onComplete {
-        case Success(collaborations) =>
-          val selector = BSONDocument(COLLABORATION_ID -> BSONObjectID.parse(message.collaborationID).get)
-          collaborations.find(selector).one onComplete {
-            case Success(c) => s ! PublishFirebaseNotification(message.collaborationID,c.get.as[Collaboration])
-            case Failure(e) => e.printStackTrace() // TODO better error strategy
-          }
-        case Failure(e) => e.printStackTrace() // TODO better error strategy
-      }
+    case message: GetCollaborationMessage =>
+      find(
+        selector = BSONDocument(COLLABORATION_ID -> message.collaborationID),
+        okStrategy = optionBson => optionBson.map(bsonDocument => List(bsonDocument.as[Collaboration])),
+        failStrategy = { case _: Exception => None}
+      ) pipeTo sender
 
     case message: GetAllCollaborationsMessage =>
-      getCollaborationsCollection.map(collaborations =>
-        collaborations.find(BSONDocument(COLLABORATION_USERS ->
-          BSONDocument("$elemMatch" -> BSONDocument(COLLABORATION_USER_USERNAME -> message.username)))
-        ).cursor[BSONDocument]().collect[List](-1, Cursor.FailOnError[List[BSONDocument]]())) // -1 is no limit list
-        .flatten.map(list =>
-        AllCollaborationsMessage(list.map(bson => bson.as[Collaboration]))) pipeTo sender
-
+      findAll(
+        selector = BSONDocument(COLLABORATION_USERS + "." + COLLABORATION_USER_USERNAME -> message.username),
+        okStrategy = bsonList => Some(bsonList.map(_.as[Collaboration])),
+        failStrategy = { case _: Exception => None}
+      ) pipeTo sender
   }
-
 }

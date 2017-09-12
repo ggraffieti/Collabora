@@ -28,8 +28,7 @@ class AuthenticationActor(override val yellowPages: ActorRef, override val name:
   implicit val timeout: Timeout = Timeout(5 seconds)
 
   override def receive: Receive = {
-
-    case message: LoginMessage | SigninMessage => getActorOrElse(Topic() :+ Database, Master, message).foreach(_ forward message)
+    case message @ (_: LoginMessage | _: SigninMessage) => getActorOrElse(Topic() :+ Database, Master, message).foreach(_ forward message)
     case message: SendAllCollaborationsMessage => getActorOrElse(Topic() :+ Database, Master, message).foreach(_ forward GetAllCollaborationsMessage(message.username))
     case message: CreatePrivateCollaborationMessage =>
       getActorOrElse(Topic() :+ Database, Master, message).foreach(dbActor =>

@@ -52,21 +52,21 @@ class DBWorkerNotesActorTest extends TestKit (ActorSystem("CollaboraServer")) wi
     "insert new notes correctly in the db" in {
 
       within(TestUtil.TASK_WAIT_TIME second) {
-        notesActor ! InsertNoteMessage(notetmp, TestUtil.FAKE_ID, TestUtil.FAKE_USER_ID)
+        notesActor ! InsertNoteMessage(notetmp, TestUtil.FAKE_ID, TestUtil.USER_ID)
         expectMsgType[QueryOkMessage]
       }
     }
 
     "update notes correctly" in {
       within(TestUtil.TASK_WAIT_TIME second) {
-        notesActor ! UpdateNoteMessage(notetmp, TestUtil.FAKE_ID, TestUtil.FAKE_USER_ID)
+        notesActor ! UpdateNoteMessage(notetmp, TestUtil.FAKE_ID, TestUtil.USER_ID)
         expectMsgType[QueryOkMessage]
       }
     }
 
     "delete notes correctly" in {
       within(TestUtil.TASK_WAIT_TIME second) {
-        notesActor ! DeleteNoteMessage(notetmp, TestUtil.FAKE_ID, TestUtil.FAKE_USER_ID)
+        notesActor ! DeleteNoteMessage(notetmp, TestUtil.FAKE_ID, TestUtil.USER_ID)
         expectMsgType[QueryOkMessage]
       }
     }

@@ -63,7 +63,7 @@ class DBMasterActorTest extends TestKit (ActorSystem("CollaboraServer")) with Wo
   }
 
   override implicit val patienceConfig: PatienceConfig = PatienceConfig(
-    timeout = scaled(60 seconds),
+    timeout = scaled(TestUtil.TASK_WAIT_TIME seconds),
     interval = scaled(TestUtil.INTERVAL_MILLIS millis)
   )
 

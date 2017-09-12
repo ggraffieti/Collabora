@@ -23,17 +23,30 @@ object TestUtil {
   val TIMEOUT_SECOND = 4
   val INTERVAL_MILLIS = 100;
   val TASK_WAIT_TIME = 5
+
+  val CHARSET = "charset"
   val STRING_ENCODING = "UTF-8"
 
+  val START_FOR_INDEX = 1
+  val FINAL_FOR_INDEX = 5
 
   val FAKE_ID = "59806a4af27da3fcfe0ac0ca"
-  val FAKE_USER_ID = "maffone"
-  val FAKE_USER_MAIL = "maffone@collabora.com"
-  val FAKE_NAME = "alf"
-  val FAKE_SURNAME = "redo"
-  val FAKE_DATE_BIRTHDAY = DateTime.parse("2000-07-10T18:24:18Z")
-  val FAKE_HASHED_PWD = "f4KeH4sHèDP4sSw0rD!!"
+  val USER_ID = "maffone"
+  val USER_MAIL = "maffone@collabora.com"
+  val NAME = "alf"
+  val SURNAME = "redo"
+  val DATE_BIRTHDAY = DateTime.parse("2000-07-10T18:24:18Z")
+  val HASHED_PWD = "f4KeH4sHèDP4sSw0rD!!"
 
   val MESSAGE_LENGTH = 5
+
+  val SIGNIN_ACTION = "/signin"
+  val LOGIN_ACTION = "/login"
+  val HTTP_LOGIN = "login"
+  val HTTP_BASIC_CHALLENGE = "Basic"
+  val CORRECT_PASSWORD = "admin"
+  val WRONG_PASSWORD = "not_maffone_password"
+  val WRONG_USERNAME = "wrong_username"
+  val PASSWORD = "password"
 
 }

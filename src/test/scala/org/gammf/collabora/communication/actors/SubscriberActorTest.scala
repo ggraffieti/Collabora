@@ -11,9 +11,6 @@ import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
 
 class SubscriberActorTest extends TestKit (ActorSystem("CollaboraServer")) with WordSpecLike with DefaultTimeout with Matchers with BeforeAndAfterAll with ImplicitSender {
 
-  val START_FOR_INDEX = 1
-  val FINAL_FOR_INDEX = 5
-
   val CONNECTION_ACTOR_NAME = "rabbitmq"
   val CHANNEL_CREATOR_NAME = "channelCreator"
   val SUBSCRIBER_ACTOR_NAME = "subscriber"
@@ -44,7 +41,7 @@ class SubscriberActorTest extends TestKit (ActorSystem("CollaboraServer")) with 
     }
 
     "capturing all the messages send to setted queue " in {
-      for(_ <- START_FOR_INDEX to FINAL_FOR_INDEX){
+      for(_ <- TestUtil.START_FOR_INDEX to TestUtil.FINAL_FOR_INDEX){
         val message = TestMessageUtil.messageSubscriberActorTest
         channel.basicPublish(TestUtil.TYPE_UPDATES, TestUtil.ROUTING_KEY_EMPTY, null, message.getBytes(TestUtil.STRING_ENCODING))
       }

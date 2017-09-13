@@ -10,7 +10,7 @@ import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.directives.Credentials
 import akka.util.Timeout
 import org.gammf.collabora.authentication.messages._
-import org.gammf.collabora.database.messages.{AllCollaborationsMessage, AuthenticationMessage}
+import org.gammf.collabora.database.messages.AuthenticationMessage
 import org.gammf.collabora.util.{Collaboration, User}
 import play.api.libs.json.{JsError, JsSuccess, Json}
 

@@ -51,18 +51,10 @@ object EntryPoint extends App {
   val dbMasterMemberActor = system.actorOf(DBMasterMember.printerProps(rootYellowPages, Topic() :+ Database :+ Member, "DBMasterMembers"))
 
   //DEFAULT WORKERS
-  val dBWorkerNotesActor = system.actorOf(Props(
-    new DBWorkerNotesActor(rootYellowPages, "DBWorkerNotes", Topic() :+ Database :+ Note, DefaultWorker)
-  ))
-  val dBWorkerModulesActor = system.actorOf(Props(
-    new DBWorkerModulesActor(rootYellowPages, "DBWorkerModules", Topic() :+ Database :+ Module, DefaultWorker)
-  ))
-  val dBWorkerCollaborationsActor = system.actorOf(Props(
-    new DBWorkerCollaborationsActor(rootYellowPages, "DBWorkerCollaborations", Topic() :+ Database :+ Collaboration, DefaultWorker)
-  ))
-  val dbWorkerMembersActor = system.actorOf(Props(
-    new DBWorkerMemberActor(rootYellowPages, "DBWorkerMembers", Topic() :+ Database :+ Member, DefaultWorker)
-  ))
+  val dBWorkerNotesActor = system.actorOf(DBWorkerNotesActor.printerProps(rootYellowPages, Topic() :+ Database :+ Note, "DBWorkerNotes"))
+  val dBWorkerModulesActor = system.actorOf(DBWorkerModulesActor.printerProps(rootYellowPages, Topic() :+ Database :+ Module, "DBWorkerModules"))
+  val dBWorkerCollaborationsActor = system.actorOf(DBWorkerCollaborationsActor.printerProps(rootYellowPages, Topic() :+ Database :+ Collaboration, "DBWorkerCollaborations"))
+  val dbWorkerMembersActor = system.actorOf(DBWorkerMemberActor.printerProps(rootYellowPages, Topic() :+ Database :+ Member, "DBWorkerMembers"))
 
   //EXTRA WORKERS
   val dBWorkerAuthenticationActor = system.actorOf(Props(

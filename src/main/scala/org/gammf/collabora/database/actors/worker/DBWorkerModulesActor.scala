@@ -1,17 +1,16 @@
 package org.gammf.collabora.database.actors.worker
 
-import akka.actor.{ActorRef, Stash}
+import akka.actor.{ActorRef, Props, Stash}
 import akka.pattern.pipe
 import org.gammf.collabora.database._
 import org.gammf.collabora.database.messages._
 import org.gammf.collabora.util.Module
-import org.gammf.collabora.yellowpages.ActorService.{ActorService, ConnectionHandler}
+import org.gammf.collabora.yellowpages.ActorService.{ActorService, ConnectionHandler, DefaultWorker}
 import org.gammf.collabora.yellowpages.messages.RegistrationResponseMessage
 import reactivemongo.bson.{BSON, BSONDocument, BSONObjectID}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-
 import org.gammf.collabora.yellowpages.util.Topic
 import org.gammf.collabora.yellowpages.TopicElement._
 import org.gammf.collabora.yellowpages.util.Topic.ActorTopic
@@ -19,8 +18,10 @@ import org.gammf.collabora.yellowpages.util.Topic.ActorTopic
 /**
   * A worker that performs query on modules.
   */
-class DBWorkerModulesActor(override val yellowPages: ActorRef, override val name: String,
-                           override val topic: ActorTopic, override val service: ActorService)
+class DBWorkerModulesActor(override val yellowPages: ActorRef,
+                           override val name: String,
+                           override val topic: ActorTopic,
+                           override val service: ActorService = DefaultWorker)
   extends CollaborationsDBWorker[DBWorkerMessage] with DefaultDBWorker with Stash {
 
   override def receive: Receive = ({
@@ -80,4 +81,16 @@ class DBWorkerModulesActor(override val yellowPages: ActorRef, override val name
       failStrategy = defaultDBWorkerFailStrategy(username)
     )
   }
+}
+
+object DBWorkerModulesActor {
+  /**
+    * Factory methods that return a [[Props]] to create a database worker modules registered actor
+    * @param yellowPages the reference to the yellow pages root actor.
+    * @param topic the topic to which this actor is going to be registered.
+    * @return the [[Props]] to use to create a database worker modules actor.
+    */
+
+  def printerProps(yellowPages: ActorRef, topic: ActorTopic, name: String = "DBWorkerModules") : Props =
+    Props(new DBWorkerModulesActor(yellowPages = yellowPages, name = name, topic = topic))
 }

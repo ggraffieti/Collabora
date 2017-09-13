@@ -1,9 +1,7 @@
 package org.gammf.collabora.communication.actors
 
-import akka.actor.{ActorRef, ActorSystem, Props}
-import com.newmotion.akka.rabbitmq.{ConnectionActor, ConnectionFactory}
+import akka.actor.ActorRef
 import org.gammf.collabora.communication.messages.PublishNotificationMessage
-import org.gammf.collabora.database.actors.ConnectionManagerActor
 import org.gammf.collabora.database.messages.GetCollaborationMessage
 import org.gammf.collabora.util.{Collaboration, Firebase, UpdateMessage, UpdateMessageTarget, UpdateMessageType}
 import org.gammf.collabora.yellowpages.ActorService.ActorService
@@ -33,8 +31,8 @@ class FirebaseActor(override val yellowPages: ActorRef, override val name: Strin
                  UpdateMessageTarget.MEMBER if publishMessage.message.messageType.equals(UpdateMessageType.CREATION) =>
               getActorOrElse(Topic() :+ Database, Master, publishMessage).
                 foreach(dbMaster =>
-                  (dbMaster ? GetCollaborationMessage(publishMessage.collaborationID)).mapTo[Option[Collaboration]].map {
-                    case Some(collaboration) => sendFirebaseNotification(collaboration, publishMessage.message)
+                  (dbMaster ? GetCollaborationMessage(publishMessage.collaborationID)).mapTo[Option[List[Collaboration]]].map {
+                    case Some(head :: _) => sendFirebaseNotification(head, publishMessage.message)
                     case _ => println("Something went wrong")
                   })
             case _=>
@@ -72,5 +70,4 @@ class FirebaseActor(override val yellowPages: ActorRef, override val name: Strin
       case UpdateMessageTarget.MEMBER=> " a member"
     }
   }
-
 }

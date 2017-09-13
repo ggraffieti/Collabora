@@ -12,7 +12,7 @@ import scala.concurrent.Future
   */
 abstract class CollaborationsDBWorker[T] extends AbstractDBWorker[T] {
 
-  override def receive: Receive = super[AbstractDBWorker].receive
+  //override def receive: Receive = super[AbstractDBWorker].receive
 
   /**
     * Check if in the collection is present at least one document that match the selector, and returns a message of generic type T

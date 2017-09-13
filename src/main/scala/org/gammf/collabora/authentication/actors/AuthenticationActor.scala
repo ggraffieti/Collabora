@@ -1,6 +1,6 @@
 package org.gammf.collabora.authentication.actors
 
-import akka.actor.ActorRef
+import akka.actor.{ActorRef, Props}
 import akka.pattern.{ask, pipe}
 import akka.util.Timeout
 import org.gammf.collabora.authentication.messages._
@@ -21,8 +21,10 @@ import scala.concurrent.ExecutionContext.Implicits.global
   * The authentication actor is bridge between the [[org.gammf.collabora.authentication.AuthenticationServer]] and the actor system.
   * Is the only actor that the server seen.
   */
-class AuthenticationActor(override val yellowPages: ActorRef, override val name: String,
-                          override val topic: ActorTopic, override val service: ActorService) extends BasicActor {
+class AuthenticationActor(override val yellowPages: ActorRef,
+                          override val name: String,
+                          override val topic: ActorTopic,
+                          override val service: ActorService = Bridging) extends BasicActor {
 
   implicit val timeout: Timeout = Timeout(5 seconds)
 
@@ -58,4 +60,16 @@ class AuthenticationActor(override val yellowPages: ActorRef, override val name:
       collaboration = Some(collaboration)
     )
 
+}
+
+object AuthenticationActor {
+
+  /**
+    * Factory methods that return a [[Props]] to create a authentication registered actor
+    * @param yellowPages the reference to the yellow pages root actor.
+    * @param topic the topic to which this actor is going to be registered.
+    * @return the [[Props]] to use to create a authentication actor.
+    */
+  def printerProps(yellowPages: ActorRef, topic: ActorTopic, name: String = "AuthenticationActor") : Props =
+    Props(new AuthenticationActor(yellowPages = yellowPages, name = name, topic = topic))
 }

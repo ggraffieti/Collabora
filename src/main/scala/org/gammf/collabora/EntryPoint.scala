@@ -57,24 +57,14 @@ object EntryPoint extends App {
   val dbWorkerMembersActor = system.actorOf(DBWorkerMemberActor.printerProps(rootYellowPages, Topic() :+ Database :+ Member, "DBWorkerMembers"))
 
   //EXTRA WORKERS
-  val dBWorkerAuthenticationActor = system.actorOf(Props(
-    new DBWorkerAuthenticationActor(rootYellowPages, "DBWorkerAuthentication", Topic() :+ Database, Authenticator)
-  ))
-  val dBWorkerChangeModuleStateActor = system.actorOf(Props(
-    new DBWorkerChangeModuleStateActor(rootYellowPages, "DBWorkerChangeModuleState", Topic() :+ Database :+ Module, StateChanger)
-  ))
-  val dBWorkerCheckMemberExistenceActor = system.actorOf(Props(
-    new DBWorkerCheckMemberExistenceActor(rootYellowPages, "DBWorkerCheckMember", Topic() :+ Database :+ Member, ExistenceChecking)
-  ))
-  val dBWorkerGetCollaborationActor = system.actorOf(Props(
-    new DBWorkerGetCollaborationActor(rootYellowPages, "DBWorkerGetCollaboration", Topic() :+ Database :+ Collaboration, Getter)
-  ))
+  val dBWorkerAuthenticationActor = system.actorOf(DBWorkerAuthenticationActor.printerProps(rootYellowPages, Topic() :+ Database, "DBWorkerAuthentication"))
+  val dBWorkerChangeModuleStateActor = system.actorOf(DBWorkerChangeModuleStateActor.printerProps(rootYellowPages, Topic() :+ Database :+ Module, "DBWorkerChangeModuleState"))
+  val dBWorkerCheckMemberExistenceActor = system.actorOf(DBWorkerCheckMemberExistenceActor.printerProps(rootYellowPages, Topic() :+ Database :+ Member, "DBWorkerCheckMember"))
+  val dBWorkerGetCollaborationActor = system.actorOf(DBWorkerGetCollaborationActor.printerProps(rootYellowPages, Topic() :+ Database :+ Collaboration, "DBWorkerGetCollaboration"))
 
 
   //AUTHENTICATION
-  val authenticationActor = system.actorOf(Props(
-    new AuthenticationActor(rootYellowPages, "authenticationActor", Topic() :+ Authentication, Bridging)
-  ))
+  val authenticationActor = system.actorOf(AuthenticationActor.printerProps(rootYellowPages, Topic() :+ Authentication, "AuthenticationActor"))
 
 
   AuthenticationServer.start(system, authenticationActor)

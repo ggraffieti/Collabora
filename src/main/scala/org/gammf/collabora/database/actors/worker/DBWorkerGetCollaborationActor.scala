@@ -1,16 +1,15 @@
 package org.gammf.collabora.database.actors.worker
 
-import akka.actor.{ActorRef, Stash}
+import akka.actor.{ActorRef, Props, Stash}
 import akka.pattern.pipe
 import org.gammf.collabora.database._
 import org.gammf.collabora.database.messages._
 import org.gammf.collabora.util.Collaboration
-import org.gammf.collabora.yellowpages.ActorService.{ActorService, ConnectionHandler}
+import org.gammf.collabora.yellowpages.ActorService.{ActorService, ConnectionHandler, Getter}
 import org.gammf.collabora.yellowpages.messages.RegistrationResponseMessage
 import reactivemongo.bson.BSONDocument
 
 import scala.concurrent.ExecutionContext.Implicits.global
-
 import org.gammf.collabora.yellowpages.util.Topic
 import org.gammf.collabora.yellowpages.TopicElement._
 import org.gammf.collabora.yellowpages.util.Topic.ActorTopic
@@ -18,8 +17,10 @@ import org.gammf.collabora.yellowpages.util.Topic.ActorTopic
 /***
   * A worker that perform a get on collaboration collection and communicate with CollaborationMembersActor
   */
-class DBWorkerGetCollaborationActor(override val yellowPages: ActorRef, override val name: String,
-                                    override val topic: ActorTopic, override val service: ActorService)
+class DBWorkerGetCollaborationActor(override val yellowPages: ActorRef,
+                                    override val name: String,
+                                    override val topic: ActorTopic,
+                                    override val service: ActorService = Getter)
   extends CollaborationsDBWorker[Option[List[Collaboration]]] with Stash {
 
   override def receive: Receive = {
@@ -47,4 +48,16 @@ class DBWorkerGetCollaborationActor(override val yellowPages: ActorRef, override
         failStrategy = { case _: Exception => None}
       ) pipeTo sender
   }
+}
+
+object DBWorkerGetCollaborationActor {
+
+  /**
+    * Factory methods that return a [[Props]] to create a database worker get collaboration registered actor
+    * @param yellowPages the reference to the yellow pages root actor.
+    * @param topic the topic to which this actor is going to be registered.
+    * @return the [[Props]] to use to create a database worker get collaboration actor.
+    */
+  def printerProps(yellowPages: ActorRef, topic: ActorTopic, name: String = "DBWorkerGetCollaboration") : Props =
+    Props(new DBWorkerGetCollaborationActor(yellowPages = yellowPages, name = name, topic = topic))
 }

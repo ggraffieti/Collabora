@@ -77,13 +77,13 @@ object EntryPoint extends App {
 
   //DEFAULT WORKERS
   val dBWorkerNotesActor = system.actorOf(Props(
-    new DBWorkerNotesActor(rootYellowPages, "DBWorkerNotes", Topic() :+ Database :+ Note, DefaultWorker)
+    new DBWorkerNoteActor(rootYellowPages, "DBWorkerNotes", Topic() :+ Database :+ Note, DefaultWorker)
   ))
   val dBWorkerModulesActor = system.actorOf(Props(
-    new DBWorkerModulesActor(rootYellowPages, "DBWorkerModules", Topic() :+ Database :+ Module, DefaultWorker)
+    new DBWorkerModuleActor(rootYellowPages, "DBWorkerModules", Topic() :+ Database :+ Module, DefaultWorker)
   ))
   val dBWorkerCollaborationsActor = system.actorOf(Props(
-    new DBWorkerCollaborationsActor(rootYellowPages, "DBWorkerCollaborations", Topic() :+ Database :+ Collaboration, DefaultWorker)
+    new DBWorkerCollaborationActor(rootYellowPages, "DBWorkerCollaborations", Topic() :+ Database :+ Collaboration, DefaultWorker)
   ))
   val dbWorkerMembersActor = system.actorOf(Props(
     new DBWorkerMemberActor(rootYellowPages, "DBWorkerMembers", Topic() :+ Database :+ Member, DefaultWorker)

@@ -7,12 +7,23 @@ import reactivemongo.bson.BSONDocument
 import org.gammf.collabora.database._
 
 import scala.concurrent.ExecutionContext.Implicits.global
+import org.gammf.collabora.yellowpages.util.Topic
+import org.gammf.collabora.yellowpages.TopicElement._
+import org.gammf.collabora.yellowpages.ActorService._
+import org.gammf.collabora.yellowpages.messages.RegistrationResponseMessage
+import org.gammf.collabora.yellowpages.util.Topic.ActorTopic
 
-class DBWorkerCheckMemberExistenceActor(connectionActor: ActorRef) extends UsersDBWorker[DBWorkerMessage](connectionActor) with DefaultDBWorker with Stash {
+class DBWorkerCheckMemberExistenceActor(override val yellowPages: ActorRef, override val name: String,
+                                        override val topic: ActorTopic, override val service: ActorService)
+  extends UsersDBWorker[DBWorkerMessage] with DefaultDBWorker with Stash {
 
-  override def receive: Receive = {
-    case m: GetConnectionMessage =>
-      connection = Some(m.connection)
+  override def receive: Receive = ({
+    //TODO consider: these three methods in super class?
+    case message: RegistrationResponseMessage => getActorOrElse(Topic() :+ Database, ConnectionHandler, message)
+      .foreach(_ ! AskConnectionMessage())
+
+    case message: GetConnectionMessage =>
+      connection = Some(message.connection)
       unstashAll()
 
     case _ if connection.isEmpty => stash()
@@ -23,5 +34,5 @@ class DBWorkerCheckMemberExistenceActor(connectionActor: ActorRef) extends Users
         okStrategy = bsonDocumet => QueryOkMessage(IsMemberExistsResponseMessage(message.username, bsonDocumet.isDefined)),
         failStrategy = defaultDBWorkerFailStrategy(message.username)
       ) pipeTo sender
-  }
+  }: Receive) orElse super[UsersDBWorker].receive
 }

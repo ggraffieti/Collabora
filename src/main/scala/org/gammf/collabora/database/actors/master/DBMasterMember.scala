@@ -1,82 +1,78 @@
 package org.gammf.collabora.database.actors.master
 
-import akka.actor.{ActorRef, ActorSystem, Props}
+import akka.actor.ActorRef
 import akka.pattern.ask
-import akka.util.Timeout
-import org.gammf.collabora.communication.messages.{ PublishErrorMessageInCollaborationExchange, PublishNotificationMessage}
-import org.gammf.collabora.database.actors.worker.{DBWorkerCheckMemberExistenceActor, DBWorkerMemberActor}
+import org.gammf.collabora.communication.messages.{PublishErrorMessageInCollaborationExchange, PublishNotificationMessage}
 import org.gammf.collabora.database.messages._
 import org.gammf.collabora.util.{ServerErrorCode, ServerErrorMessage, UpdateMessage, UpdateMessageTarget, UpdateMessageType}
+import org.gammf.collabora.yellowpages.ActorService.ActorService
+import org.gammf.collabora.yellowpages.util.Topic.ActorTopic
 
-import scala.concurrent.duration._
+import org.gammf.collabora.yellowpages.util.Topic
+import org.gammf.collabora.yellowpages.TopicElement._
+import org.gammf.collabora.yellowpages.ActorService._
+
 import scala.concurrent.ExecutionContext.Implicits.global
 
 /**
   * The master actor that manages all the query about members.
-  * @param system the actor system, used for create the needed workers.
-  * @param connectionManagerActor The system-unique [[org.gammf.collabora.database.actors.ConnectionManagerActor]], used for mantain a
-  *                               connection with the database
-  * @param notificationActor The actor used for notify the client that a query is went good.
-  * @param getCollaborationActor The actor used for notify the member that it's just been added to a collaboration, and send him the collaboration
-  * @param publishCollaborationExchangeActor the actor used for send notifications in the collaboration exchange
   */
-class DBMasterMember(system: ActorSystem, connectionManagerActor: ActorRef, notificationActor: ActorRef, getCollaborationActor: ActorRef, publishCollaborationExchangeActor: ActorRef) extends AbstractDBMaster {
+class DBMasterMember(override val yellowPages: ActorRef, override val name: String,
+                     override val topic: ActorTopic, override val service: ActorService) extends AbstractDBMaster {
 
-  private[this] var memberWorker: ActorRef = _
-  private[this] var checkMemberWorker: ActorRef = _
-
-  implicit val timeout: Timeout = Timeout(5 seconds)
-
-  override def preStart(): Unit = {
-    memberWorker = system.actorOf(Props.create(classOf[DBWorkerMemberActor], connectionManagerActor))
-    checkMemberWorker = system.actorOf(Props.create(classOf[DBWorkerCheckMemberExistenceActor], connectionManagerActor))
-  }
-
-  override def receive: Receive = {
+  override def receive: Receive = ({
 
     case message: UpdateMessage => message.target match {
       case UpdateMessageTarget.MEMBER => message.messageType match {
         case UpdateMessageType.CREATION =>
+          getActorOrElse(Topic() :+ Database :+ Member, ExistenceChecking, message).
+            foreach(checkMemberWorker =>
           (checkMemberWorker ? IsMemberExistsMessage(message.member.get.user)).mapTo[QueryOkMessage].map(query => query.queryGoneWell match {
             case member: IsMemberExistsResponseMessage =>
-              if (member.isRegistered) memberWorker ! InsertMemberMessage(message.member.get, message.collaborationId.get, message.user)
-              else publishCollaborationExchangeActor ! PublishErrorMessageInCollaborationExchange(
-                username = message.user,
-                message = ServerErrorMessage(message.user, ServerErrorCode.MEMBER_NOT_FOUND)
-              )
+              if (member.isRegistered)
+                getActorOrElse(Topic() :+ Database :+ Member, DefaultWorker, message).foreach(_ ! InsertMemberMessage(message.member.get, message.collaborationId.get, message.user))
+              else
+                getActorOrElse(Topic() :+ Communication :+ Collaborations :+ RabbitMQ, Master, message).
+                  foreach(_ ! PublishErrorMessageInCollaborationExchange(
+                    username = message.user,
+                    message = ServerErrorMessage(message.user, ServerErrorCode.MEMBER_NOT_FOUND)
+                  ))
             case _ => unhandled(_)
-          })
-        case UpdateMessageType.UPDATING => memberWorker ! UpdateMemberMessage(message.member.get, message.collaborationId.get, message.user)
-        case UpdateMessageType.DELETION => memberWorker ! DeleteMemberMessage(message.member.get, message.collaborationId.get, message.user)
-      }
+          }))
+        case UpdateMessageType.UPDATING => getActorOrElse(Topic() :+ Database :+ Member, DefaultWorker, message)
+          .foreach(_ ! UpdateMemberMessage(message.member.get, message.collaborationId.get, message.user))
+        case UpdateMessageType.DELETION => getActorOrElse(Topic() :+ Database :+ Member, DefaultWorker, message)
+          .foreach(_ ! DeleteMemberMessage(message.member.get, message.collaborationId.get, message.user))}
     }
 
-    case QueryOkMessage(queryGoneWell) => queryGoneWell match {
+    case message: QueryOkMessage => message.queryGoneWell match {
       case query: QueryMemberMessage => query match {
-        case _: InsertMemberMessage => getCollaborationActor ! InsertMemberMessage(query.user, query.collaborationID, query.userID)
-          notificationActor ! PublishNotificationMessage(query.collaborationID, UpdateMessage(
+        case _: InsertMemberMessage => //TODO; getCollaborationActor ! InsertMemberMessage(query.user, query.collaborationID, query.userID)
+          getActorOrElse(Topic() :+ Communication :+ Notifications, Bridging, message)
+            .foreach(_ ! PublishNotificationMessage(query.collaborationID, UpdateMessage(
+              target = UpdateMessageTarget.MEMBER,
+              messageType = getUpdateTypeFromQueryMessage(query),
+              user = query.userID,
+              member = Some(query.user),
+              collaborationId = Some(query.collaborationID))))
+
+        case _ => getActorOrElse(Topic() :+ Communication :+ Notifications, Bridging, message)
+          .foreach(_ ! PublishNotificationMessage(query.collaborationID, UpdateMessage(
             target = UpdateMessageTarget.MEMBER,
             messageType = getUpdateTypeFromQueryMessage(query),
             user = query.userID,
             member = Some(query.user),
-            collaborationId = Some(query.collaborationID)))
-
-        case _ => notificationActor ! PublishNotificationMessage(query.collaborationID, UpdateMessage(
-          target = UpdateMessageTarget.MEMBER,
-          messageType = getUpdateTypeFromQueryMessage(query),
-          user = query.userID,
-          member = Some(query.user),
-          collaborationId = Some(query.collaborationID)))
+            collaborationId = Some(query.collaborationID))))
       }
 
       case _ => unhandled(_)
     }
 
-    case fail: QueryFailMessage => publishCollaborationExchangeActor ! PublishErrorMessageInCollaborationExchange(
-      username = fail.username,
-      message = ServerErrorMessage(user = fail.username, errorCode = ServerErrorCode.SERVER_ERROR)
-    )
+    case fail: QueryFailMessage => getActorOrElse(Topic() :+ Communication  :+ Collaborations :+ RabbitMQ, Master, fail)
+      .foreach(_ ! PublishErrorMessageInCollaborationExchange(
+        username = fail.username,
+        message = ServerErrorMessage(user = fail.username, errorCode = ServerErrorCode.SERVER_ERROR)
+      ))
 
-    case _ => unhandled(_)
-  }
+  }: Receive) orElse super[AbstractDBMaster].receive
 }

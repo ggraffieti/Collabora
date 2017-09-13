@@ -12,6 +12,8 @@ import org.gammf.collabora.yellowpages.util.Topic.ActorTopic
 
 import scala.annotation.tailrec
 
+import scala.concurrent.duration._
+
 /**
   * @author Manuel Peruzzi
   * This is an actor that deals with the yellow pages service.
@@ -67,10 +69,13 @@ sealed trait YellowPagesActor extends Actor {
     }
   }
 
-  private[this] def handleActorDeletion(msg: ActorYellowPagesEntry): Unit = yellowPages = yellowPages.filterNot(yp => yp == msg)
+  private[this] def handleActorDeletion(msg: ActorYellowPagesEntry): Unit = yellowPages.filter(yp => yp == msg) match {
+    case h :: _ => yellowPages = yellowPages.filterNot(yp => yp == h)
+    case _ => yellowPages.filter(yp => yp > msg && yp.service == YellowPagesService).foreach(yp => yp.reference forward (msg : DeletionRequestMessage))
+  }
 
   private[this] def handleHierarchy(lvl: Int): Unit = {
-    implicit val timeout: Timeout = Timeout(Duration(1, "seconds"))
+    implicit val timeout: Timeout = Timeout(5 seconds)
     this match {
       case _: RootYellowPagesActor => printHierarchy(getActors(lvl + 1))
       case _ => sender ! HierarchyResponseMessage(getActors(lvl + 1))

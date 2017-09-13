@@ -10,7 +10,7 @@ import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
 
 class SubscriberActorTest extends TestKit (ActorSystem("CollaboraServer")) with WordSpecLike with DefaultTimeout with Matchers with BeforeAndAfterAll with ImplicitSender {
 
-  private val EXCHANGE_NAME = "updates"
+  /*private val EXCHANGE_NAME = "updates"
   private val ROUTING_KEY = ""
 
   val factory = new ConnectionFactory()
@@ -50,5 +50,5 @@ class SubscriberActorTest extends TestKit (ActorSystem("CollaboraServer")) with 
       messages.length should be(5)
     }
 
-  }
+  }*/
 }

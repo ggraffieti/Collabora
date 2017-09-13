@@ -1,6 +1,6 @@
 package org.gammf.collabora.database.actors.worker
 
-import akka.actor.ActorRef
+import reactivemongo.api.Cursor
 import reactivemongo.bson.BSONDocument
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -8,11 +8,11 @@ import scala.concurrent.Future
 
 /**
   * A DBWorker that performs query on the collaboration collection.
-  * @param connectionActor the actor that mantains the connection with the DB.
   * @tparam T the type returned by query methods, in case of query gone good or bad.
   */
-abstract class CollaborationsDBWorker[T](connectionActor: ActorRef) extends AbstractDBWorker[T](connectionActor) {
+abstract class CollaborationsDBWorker[T] extends AbstractDBWorker[T] {
 
+  override def receive: Receive = super[AbstractDBWorker].receive
 
   /**
     * Check if in the collection is present at least one document that match the selector, and returns a message of generic type T
@@ -55,6 +55,22 @@ abstract class CollaborationsDBWorker[T](connectionActor: ActorRef) extends Abst
     ).flatten.map(_ => okMessage).recover(failStrategy)
   }
 
+  /**
+    * Check if in the collaboration collection exists at least one collaboration that match the selector.
+    * If any it returns all of them.
+    * @param selector the selector used to find documents.
+    * @param okStrategy the strategy that have to be used to map documents found to the generic type T. The
+    *                   strategy maps from [[ List[BSONDocument] ]] to T.
+    * @param failStrategy the fail strategy that have to be used if somethings went wrong.
+    * @return a future representation of a message of generic type type T, representing the success or the failure of the query
+    */
+  override protected def findAll(selector: BSONDocument, okStrategy: (List[BSONDocument]) => T,
+                                 failStrategy: PartialFunction[Throwable, T]): Future[T] = {
+    getCollaborationsCollection.map(collaborations =>
+      collaborations.find(selector).cursor[BSONDocument]().collect[List](-1,  Cursor.FailOnError[List[BSONDocument]]()))
+      .flatten.map(list => okStrategy(list))
+      .recover(failStrategy)
+  }
 
   /**
     * Insert the document in the collection

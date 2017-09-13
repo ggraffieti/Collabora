@@ -32,6 +32,9 @@ dependencies {
 
 }
 
+compileScala {
+    scalaCompileOptions.additionalParameters = ["-feature"]
+}
 
 task restoreDBTask(type: Exec) {
     if (System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows')) {

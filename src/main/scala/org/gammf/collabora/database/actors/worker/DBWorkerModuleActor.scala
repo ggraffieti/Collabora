@@ -19,8 +19,8 @@ import org.gammf.collabora.yellowpages.util.Topic.ActorTopic
 /**
   * A worker that performs query on modules.
   */
-class DBWorkerModulesActor(override val yellowPages: ActorRef, override val name: String,
-                           override val topic: ActorTopic, override val service: ActorService)
+class DBWorkerModuleActor(override val yellowPages: ActorRef, override val name: String,
+                          override val topic: ActorTopic, override val service: ActorService)
   extends CollaborationsDBWorker[DBWorkerMessage] with DefaultDBWorker with Stash {
 
   override def receive: Receive = super.receive orElse ({

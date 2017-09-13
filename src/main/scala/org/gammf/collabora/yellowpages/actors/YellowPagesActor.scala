@@ -12,6 +12,8 @@ import org.gammf.collabora.yellowpages.util.Topic.ActorTopic
 
 import scala.annotation.tailrec
 
+import scala.concurrent.duration._
+
 /**
   * @author Manuel Peruzzi
   * This is an actor that deals with the yellow pages service.
@@ -67,27 +69,25 @@ sealed trait YellowPagesActor extends Actor {
     }
   }
 
-  private[this] def handleActorDeletion(msg: ActorYellowPagesEntry): Unit = yellowPages = yellowPages.filterNot(yp => yp == msg)
+  private[this] def handleActorDeletion(msg: ActorYellowPagesEntry): Unit = yellowPages.filter(yp => yp == msg) match {
+    case h :: _ => yellowPages = yellowPages.filterNot(yp => yp == h)
+    case _ => yellowPages.filter(yp => yp > msg && yp.service == YellowPagesService).foreach(yp => yp.reference forward (msg : DeletionRequestMessage))
+  }
 
   private[this] def handleHierarchy(lvl: Int): Unit = {
-    implicit val timeout: Timeout = Timeout(Duration(1, "seconds"))
+    implicit val timeout: Timeout = Timeout(5 seconds)
     this match {
       case _: RootYellowPagesActor => printHierarchy(getActors(lvl + 1))
       case _ => sender ! HierarchyResponseMessage(getActors(lvl + 1))
     }
     def getActors(level: Int): List[(Int, ActorYellowPagesEntry)] = {
-      def getInternalActors: List[(Int, ActorYellowPagesEntry)] = yellowPages.map((level, _))
-      def getExternalActors: List[(Int, ActorYellowPagesEntry)] = {
-        def getActorFromYPActors(list: List[(Int, ActorYellowPagesEntry)]): List[(Int, ActorYellowPagesEntry)] = {
-          list match {
-            case h :: t => getActorsFromSingleYPActor(h._2.reference) ++ getActorFromYPActors(t)
-            case _ => Nil
-          }
-        }
-        def getActorsFromSingleYPActor(yp: ActorRef): List[(Int, ActorYellowPagesEntry)] = Await.result(yp ? HierarchyRequestMessage(level), timeout.duration).asInstanceOf[HierarchyResponseMessage].actors
-        getActorFromYPActors(yellowPages.filter(_.service == YellowPagesService).map((level, _)))
+      def searchActors(actors: List[(Int, ActorYellowPagesEntry)]): List[(Int, ActorYellowPagesEntry)] = actors match {
+        case h :: t if h._2.service != YellowPagesService => h :: searchActors(t)
+        case h :: t if h._2.service == YellowPagesService => h :: getActorsFromYP(h._2.reference) ++ searchActors(t)
+        case _ => Nil
       }
-      getInternalActors ++ getExternalActors
+      def getActorsFromYP(yp: ActorRef): List[(Int, ActorYellowPagesEntry)] = Await.result(yp ? HierarchyRequestMessage(level), timeout.duration).asInstanceOf[HierarchyResponseMessage].actors
+      searchActors(yellowPages.map((level, _)))
     }
     def printHierarchy(list: List[(Int, ActorYellowPagesEntry)]): Unit = {
       def getRoot: HierarchyNode = HierarchyNode(level = lvl, reference = self.toString(), name = name, topic = "/", service = "YellowPagesService")

@@ -16,7 +16,7 @@ import org.gammf.collabora.database.actors.master.DBMasterActor
 import scala.concurrent.duration._
 
 class AuthenticationServerTest extends WordSpec with Matchers with ScalatestRouteTest {
-
+/*
   val CONNECTION_ACTOR_NAME = "rabbitmq"
   val NAMING_ACTOR_NAME = "naming"
   val CHANNEL_CREATOR_NAME = "channelCreator"
@@ -25,6 +25,7 @@ class AuthenticationServerTest extends WordSpec with Matchers with ScalatestRout
   val UPDATES_RECEIVER_ACTOR_NAME = "updates-receiver"
 
   val dbConnectionActor: ActorRef = system.actorOf(Props[ConnectionManagerActor])
+
   val factory = new ConnectionFactory()
   val connection:ActorRef = system.actorOf(ConnectionActor.props(factory), CONNECTION_ACTOR_NAME)
   val naming: ActorRef = system.actorOf(Props[RabbitMQNamingActor], NAMING_ACTOR_NAME)
@@ -104,5 +105,5 @@ class AuthenticationServerTest extends WordSpec with Matchers with ScalatestRout
         responseAs[String] shouldEqual "Data passed cannot be unmarshalled to User"
       }
     }
-  }
+  }*/
 }

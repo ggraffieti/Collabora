@@ -16,12 +16,18 @@ import org.scalatest.concurrent.Eventually
 
 class DBMasterActorTest extends TestKit (ActorSystem("CollaboraServer")) with WordSpecLike with Eventually with Matchers with BeforeAndAfterAll with ImplicitSender {
 
+/*
   val CONNECTION_ACTOR_NAME = "rabbitmq"
   val NAMING_ACTOR_NAME = "naming"
   val CHANNEL_CREATOR_NAME = "channelCreator"
   val PUBLISHER_ACTOR_NAME = "publisher"
   val UPDATES_RECEIVER_ACTOR_NAME = "updates-receiver"
   val SUBSCRIBER_ACTOR_NAME = "subscriber"
+
+  private val EXCHANGE_NAME = "notifications"
+  private val ROUTING_KEY = "59806a4af27da3fcfe0ac0ca"
+  private val BROKER_HOST = "localhost"
+>>>>>>> e1352d43aebaf97ca96e951fc473704c444d2b97
 
   val dbConnectionActor: ActorRef = system.actorOf(Props[ConnectionManagerActor])
   val factory = new ConnectionFactory()
@@ -79,5 +85,5 @@ class DBMasterActorTest extends TestKit (ActorSystem("CollaboraServer")) with Wo
       assert(msg.contains(contain))
     }
   }
-
+*/
 }

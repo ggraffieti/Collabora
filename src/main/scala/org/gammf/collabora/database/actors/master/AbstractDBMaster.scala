@@ -1,14 +1,14 @@
 package org.gammf.collabora.database.actors.master
 
-import akka.actor.Actor
 import org.gammf.collabora.database.messages._
 import org.gammf.collabora.util.UpdateMessageType
 import org.gammf.collabora.util.UpdateMessageType.UpdateMessageType
+import org.gammf.collabora.yellowpages.actors.BasicActor
 
 /**
   * An abstract implementation of a DBMaster actor. It contains utility methods, used in every DBMaster.
   */
-abstract class AbstractDBMaster extends Actor {
+abstract class AbstractDBMaster extends BasicActor {
 
   protected def getUpdateTypeFromQueryMessage(query: QueryMessage): UpdateMessageType = query match {
     case _: InsertNoteMessage | _: InsertCollaborationMessage | _: InsertModuleMessage | _: InsertMemberMessage => UpdateMessageType.CREATION

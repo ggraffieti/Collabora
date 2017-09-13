@@ -17,7 +17,7 @@ import org.scalatest.concurrent.Eventually
 
 class NotificationsSenderActorTest extends TestKit (ActorSystem("CollaboraServer")) with WordSpecLike with Eventually with DefaultTimeout with Matchers with BeforeAndAfterAll with ImplicitSender {
 
-  private val EXCHANGE_NAME = "notifications"
+  /*private val EXCHANGE_NAME = "notifications"
   private val ROUTING_KEY = "59806a4af27da3fcfe0ac0ca"
   private val BROKER_HOST = "localhost"
 
@@ -104,6 +104,6 @@ class NotificationsSenderActorTest extends TestKit (ActorSystem("CollaboraServer
   }
 
 
-
+*/
 
 }

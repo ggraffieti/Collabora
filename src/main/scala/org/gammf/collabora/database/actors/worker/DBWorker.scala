@@ -1,6 +1,6 @@
 package org.gammf.collabora.database.actors.worker
 
-import akka.actor.Actor
+import org.gammf.collabora.yellowpages.actors.BasicActor
 import reactivemongo.api.MongoConnection
 import reactivemongo.api.collections.bson.BSONCollection
 import reactivemongo.bson.BSONDocument
@@ -12,7 +12,9 @@ import scala.concurrent.Future
   * message of generic type T.
   * @tparam T the type returned by query methods, in case of query gone good or bad.
   */
-trait DBWorker[T] extends Actor {
+trait DBWorker[T] extends BasicActor {
+
+  override def receive: Receive = super[BasicActor].receive
 
   /**
     * @return the database connection
@@ -30,7 +32,7 @@ trait DBWorker[T] extends Actor {
 
   /**
     * Check if in the collection is present at least one document that match the selector,
-    * @param selector the selector used to find the document to update
+    * @param selector the selector used to find the document
     * @param okStrategy the strategy that have to be used to map the document found to the generic type T. The
     *                   strategy maps from [[ Option[BSONDocument] ]] because the selector shoud not match any document.
     * @param failStrategy the fail strategy that have to be used if somethings went wrong.
@@ -40,6 +42,18 @@ trait DBWorker[T] extends Actor {
   protected def find(selector: BSONDocument,
                        okStrategy: Option[BSONDocument] => T,
                        failStrategy: PartialFunction[Throwable, T]): Future[T]
+
+  /**
+    * Check if in the collection exists at least one document that match the selector. If any it returns all of them.
+    * @param selector the selector used to find documents.
+    * @param okStrategy the strategy that have to be used to map documents found to the generic type T. The
+    *                   strategy maps from [[ List[BSONDocument] ]] to T.
+    * @param failStrategy the fail strategy that have to be used if somethings went wrong.
+    * @return a future representation of a message of generic type type T, representing the success or the failure of the query
+    */
+  protected def findAll(selector: BSONDocument,
+                        okStrategy: List[BSONDocument] => T,
+                        failStrategy: PartialFunction[Throwable, T]): Future[T]
 
   /**
     * Perform an update query. An update query is a query that select a document in the collection, and edit it.

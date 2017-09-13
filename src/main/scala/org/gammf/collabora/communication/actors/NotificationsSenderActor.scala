@@ -1,81 +1,40 @@
 package org.gammf.collabora.communication.actors
 
-import akka.actor.{Actor, ActorRef, ActorSystem, Props, Stash}
-import com.newmotion.akka.rabbitmq.{Channel, ConnectionActor, ConnectionFactory}
-import org.gammf.collabora.EntryPoint._
+import akka.actor.{ActorRef, Stash}
+import com.newmotion.akka.rabbitmq.Channel
 import org.gammf.collabora.communication.Utils.CommunicationType
 import org.gammf.collabora.communication.messages._
-import org.gammf.collabora.database.actors._
-import org.gammf.collabora.util.{UpdateMessageTarget, UpdateMessageType}
+import org.gammf.collabora.yellowpages.ActorService.ActorService
+import org.gammf.collabora.yellowpages.actors.BasicActor
+import org.gammf.collabora.yellowpages.util.Topic.ActorTopic
 import play.api.libs.json.Json
-
-/**
-  * @author Manuel Peruzzi
-  */
+import org.gammf.collabora.yellowpages.util.Topic
+import org.gammf.collabora.yellowpages.TopicElement._
+import org.gammf.collabora.yellowpages.ActorService._
+import org.gammf.collabora.yellowpages.messages.RegistrationResponseMessage
 
 /**
   * This is an actor that manages sending notifications to clients.
-  * @param connection the open connection with the rabbitMQ broker.
-  * @param naming the reference to a rabbitMQ naming actor.
-  * @param channelCreator the reference to a channel creator actor.
-  * @param publisher the reference to a publisher actor.
-  * @param system the actor system.
   */
-class NotificationsSenderActor(connection: ActorRef, naming: ActorRef, channelCreator: ActorRef,
-                              publisher: ActorRef,system: ActorSystem) extends Actor with Stash {
+class NotificationsSenderActor(override val yellowPages: ActorRef, override val name: String,
+                               override val topic: ActorTopic, override val service: ActorService) extends BasicActor with Stash {
 
   private[this] var pubChannel: Option[Channel] = None
   private[this] var pubExchange: Option[String] = None
-  private var firebaseActor: ActorRef = _
 
-  override def preStart(): Unit = {
-   firebaseActor = system.actorOf(Props.create(classOf[FirebaseActor]))
-  }
-
-
-  override def receive: Receive = {
-    case StartMessage => naming ! ChannelNamesRequestMessage(CommunicationType.NOTIFICATIONS)
-    case ChannelNamesResponseMessage(exchange, _) =>
-      pubExchange = Some(exchange)
-      channelCreator ! PublishingChannelCreationMessage(connection, exchange, None)
+  override def receive: Receive = ({
+    case message: RegistrationResponseMessage => getActorOrElse(Topic() :+ Communication :+ RabbitMQ, Naming, message).foreach(_ ! ChannelNamesRequestMessage(CommunicationType.NOTIFICATIONS))
+    case message: ChannelNamesResponseMessage =>
+      pubExchange = Some(message.exchange)
+      getActorOrElse(Topic() :+ Communication :+ RabbitMQ, ChannelCreating, message).foreach(_ ! PublishingChannelCreationMessage(message.exchange, None))
     case ChannelCreatedMessage(channel) =>
       pubChannel = Some(channel)
       unstashAll()
-    case PublishNotificationMessage(collaborationID, message) =>
+    case updateMessage: PublishNotificationMessage =>
       pubChannel match {
         case Some(channel) =>
-          publisher ! PublishMessage(channel, pubExchange.get, Some(collaborationID), Json.toJson(message))
-          message.target match {
-            case UpdateMessageTarget.COLLABORATION => //do nothing
-            case UpdateMessageTarget.MEMBER =>
-              message.messageType match {
-                case UpdateMessageType.CREATION => firebaseActor ! PublishNotificationMessage(collaborationID,message)
-                case _=> //do nothing
-              }
-            case _=> firebaseActor ! PublishNotificationMessage(collaborationID,message)
-          }
-        case _ =>
-          stash()
+          getActorOrElse(Topic() :+ Communication :+ RabbitMQ, Publishing, updateMessage).foreach(_ ! PublishMessage(channel, pubExchange.get, Some(updateMessage.collaborationID), Json.toJson(updateMessage.message)))
+        case _ => stash()
       }
-    case _ => println("[NotificationsSenderActor] Huh?")
-  }
-}
-
-/**
-  * This is a simple application that uses the Updates Receiver Actor.
-  */
-object UseNotificationsSenderActor extends App {
-  implicit val system = ActorSystem()
-  val factory = new ConnectionFactory()
-  val connection = system.actorOf(ConnectionActor.props(factory), "rabbitmq")
-
-  val naming = system.actorOf(Props[RabbitMQNamingActor], "naming")
-  val channelCreator = system.actorOf(Props[ChannelCreatorActor], "channelCreator")
-  val publisher = system.actorOf(Props[PublisherActor], "publisher")
-  val collaborationActor = system.actorOf(Props(new CollaborationMembersActor(connection, naming, channelCreator, publisher)))
-  val notificationsSender = system.actorOf(Props(
-    new NotificationsSenderActor(connection, naming, channelCreator, publisher,system)), "notifications-sender")
-
-  Thread.sleep(1000)
-  notificationsSender ! StartMessage
+  }: Receive) orElse super[BasicActor].receive
 }

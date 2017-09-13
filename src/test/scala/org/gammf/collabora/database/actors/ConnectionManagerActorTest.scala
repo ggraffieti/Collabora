@@ -8,9 +8,9 @@ import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
 
 import scala.concurrent.duration._
 
-  class ConnectionManagerActorTest extends TestKit (ActorSystem("CollaboraServer")) with WordSpecLike  with Matchers with BeforeAndAfterAll with ImplicitSender {
+class ConnectionManagerActorTest extends TestKit (ActorSystem("CollaboraServer")) with WordSpecLike  with Matchers with BeforeAndAfterAll with ImplicitSender {
 
-    val dbConnectionActor:ActorRef = system.actorOf(Props[ConnectionManagerActor])
+    /*val dbConnectionActor:ActorRef = system.actorOf(Props[ConnectionManagerActor])
 
     override def afterAll(): Unit = {
       TestKit.shutdownActorSystem(system)
@@ -25,5 +25,5 @@ import scala.concurrent.duration._
         }
       }
     }
-
+*/
 }

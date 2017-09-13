@@ -79,7 +79,8 @@ class DBWorkerMemberActorTest extends TestKit (ActorSystem("CollaboraServer")) w
 
 
 
-  }*/
+  }
 >>>>>>> e1352d43aebaf97ca96e951fc473704c444d2b97
+*/
 }
 

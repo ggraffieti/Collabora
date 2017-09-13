@@ -41,9 +41,7 @@ object EntryPoint extends App {
   //DB------------------------------------------
 
   //MONGO CONNECTION MANAGER
-  val mongoConnectionActor = system.actorOf(Props(
-    new ConnectionManagerActor(rootYellowPages, "MongoConnectionManager", Topic() :+ Database, ConnectionHandler)
-  ))
+  val mongoConnectionActor = system.actorOf(ConnectionManagerActor.printerProps(rootYellowPages, Topic() :+ Database, "MongoConnectionManager"))
 
   //MASTERS
   val dbMasterActor = system.actorOf(Props(

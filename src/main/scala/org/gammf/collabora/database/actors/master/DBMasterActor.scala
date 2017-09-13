@@ -49,5 +49,7 @@ class DBMasterActor(override val yellowPages: ActorRef, override val name: Strin
         username = fail.username,
         message = ServerErrorMessage(user = fail.username, errorCode = ServerErrorCode.SERVER_ERROR)
       ))
+
+    case _: NoActionMessage => unhandled(_)
   }: Receive) orElse super[AbstractDBMaster].receive
 }

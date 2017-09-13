@@ -21,16 +21,7 @@ class DBWorkerGetCollaborationActor(override val yellowPages: ActorRef, override
                                     override val topic: ActorTopic, override val service: ActorService)
   extends CollaborationsDBWorker[Option[List[Collaboration]]] with Stash {
 
-  override def receive: Receive = {
-    //TODO consider: these three methods in super class?
-    case message: RegistrationResponseMessage => getActorOrElse(Topic() :+ Database, ConnectionHandler, message)
-      .foreach(_ ! AskConnectionMessage())
-
-    case message: GetConnectionMessage =>
-      connection = Some(message.connection)
-      unstashAll()
-
-    case _ if connection.isEmpty => stash()
+  override def receive: Receive = super.receive orElse ({
 
     case message: GetCollaborationMessage =>
       find(
@@ -45,5 +36,5 @@ class DBWorkerGetCollaborationActor(override val yellowPages: ActorRef, override
         okStrategy = bsonList => Some(bsonList.map(_.as[Collaboration])),
         failStrategy = { case _: Exception => None}
       ) pipeTo sender
-  }
+  }: Receive )
 }

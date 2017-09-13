@@ -27,20 +27,11 @@ class DBWorkerChangeModuleStateActor(override val yellowPages: ActorRef, overrid
                                      override val topic: ActorTopic, override val service: ActorService)
   extends CollaborationsDBWorker[Option[BSONDocument]] with Stash {
 
-  override def receive: Receive = ({
-    //TODO consider: these three methods in super class?
-    case message: RegistrationResponseMessage => getActorOrElse(Topic() :+ Database, ConnectionHandler, message)
-      .foreach(_ ! AskConnectionMessage())
-
-    case message: GetConnectionMessage =>
-      connection = Some(message.connection)
-      unstashAll()
-
-    case _ if connection.isEmpty => stash()
+  override def receive: Receive = super.receive orElse ({
 
     case ChangeModuleState(collaborationId, moduleId) => handleModuleChangeState(collaborationId, moduleId)
 
-  }: Receive) orElse super[CollaborationsDBWorker].receive
+  }: Receive)
 
   private[this] def handleModuleChangeState(collaborationId: String, moduleId: String): Unit = {
     getModule(moduleId) map {

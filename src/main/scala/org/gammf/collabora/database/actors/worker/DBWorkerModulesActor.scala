@@ -23,16 +23,7 @@ class DBWorkerModulesActor(override val yellowPages: ActorRef, override val name
                            override val topic: ActorTopic, override val service: ActorService)
   extends CollaborationsDBWorker[DBWorkerMessage] with DefaultDBWorker with Stash {
 
-  override def receive: Receive = ({
-    //TODO consider: these three methods in super class?
-    case message: RegistrationResponseMessage => getActorOrElse(Topic() :+ Database, ConnectionHandler, message)
-      .foreach(_ ! AskConnectionMessage())
-
-    case message: GetConnectionMessage =>
-      connection = Some(message.connection)
-      unstashAll()
-
-    case _ if connection.isEmpty => stash()
+  override def receive: Receive = super.receive orElse ({
 
     case message: InsertModuleMessage =>
       val bsonModule: BSONDocument = BSON.write(message.module) // necessary conversion, sets the moduleID
@@ -66,7 +57,7 @@ class DBWorkerModulesActor(override val yellowPages: ActorRef, override val name
         case queryFail: QueryFailMessage => Future.successful(queryFail)
       }.flatten pipeTo sender
 
-  }: Receive) orElse super[CollaborationsDBWorker].receive
+  }: Receive)
 
 
   private[this] def deleteAllModuleNotes(collaborationId: String, moduleId: String,

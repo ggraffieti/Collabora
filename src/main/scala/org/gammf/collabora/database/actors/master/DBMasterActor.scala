@@ -11,6 +11,7 @@ import org.gammf.collabora.yellowpages.ActorService.ActorService
 import org.gammf.collabora.yellowpages.util.Topic.ActorTopic
 
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.language.postfixOps
 import scala.concurrent.duration._
 
 import org.gammf.collabora.yellowpages.util.Topic

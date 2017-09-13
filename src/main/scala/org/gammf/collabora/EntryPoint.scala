@@ -44,21 +44,11 @@ object EntryPoint extends App {
   val mongoConnectionActor = system.actorOf(ConnectionManagerActor.printerProps(rootYellowPages, Topic() :+ Database, "MongoConnectionManager"))
 
   //MASTERS
-  val dbMasterActor = system.actorOf(Props(
-    new DBMasterActor(rootYellowPages, "DBMaster", Topic() :+ Database, Master)
-  ))
-  val dbMasterNoteActor = system.actorOf(Props(
-    new DBMasterNote(rootYellowPages, "DBMasterNotes", Topic() :+ Database :+ Note, Master)
-  ))
-  val dbMasterModuleActor = system.actorOf(Props(
-    new DBMasterModule(rootYellowPages, "DBMasterModules", Topic() :+ Database :+ Module, Master)
-  ))
-  val dbMasterCollaborationActor = system.actorOf(Props(
-    new DBMasterCollaboration(rootYellowPages, "DBMasterCollaborations", Topic() :+ Database :+ Collaboration, Master)
-  ))
-  val dbMasterMemberActor = system.actorOf(Props(
-    new DBMasterMember(rootYellowPages, "DBMasterMembers", Topic() :+ Database :+ Member, Master)
-  ))
+  val dbMasterActor = system.actorOf(DBMasterActor.printerProps(rootYellowPages, Topic() :+ Database, "DBMaster"))
+  val dbMasterNoteActor = system.actorOf(DBMasterNote.printerProps(rootYellowPages, Topic() :+ Database :+ Note, "DBMasterNotes"))
+  val dbMasterModuleActor = system.actorOf(DBMasterModule.printerProps(rootYellowPages, Topic() :+ Database :+ Module, "DBMasterModules"))
+  val dbMasterCollaborationActor = system.actorOf(DBMasterCollaboration.printerProps(rootYellowPages, Topic() :+ Database :+ Collaboration, "DBMasterCollaborations"))
+  val dbMasterMemberActor = system.actorOf(DBMasterMember.printerProps(rootYellowPages, Topic() :+ Database :+ Member, "DBMasterMembers"))
 
   //DEFAULT WORKERS
   val dBWorkerNotesActor = system.actorOf(Props(

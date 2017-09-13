@@ -18,8 +18,10 @@ import scala.concurrent.ExecutionContext.Implicits.global
 /**
   * This is an actor that manages the reception of client updates.
   */
-class UpdatesReceiverActor(override val yellowPages: ActorRef, override val name: String,
-                           override val topic: ActorTopic, override val service: ActorService) extends BasicActor {
+class UpdatesReceiverActor(override val yellowPages: ActorRef,
+                           override val name: String,
+                           override val topic: ActorTopic,
+                           override val service: ActorService = Master) extends BasicActor {
 
   private[this] var subQueue: Option[String] = None
 
@@ -35,4 +37,16 @@ class UpdatesReceiverActor(override val yellowPages: ActorRef, override val name
         case error: JsError => println(error)
       }
   }: Receive) orElse super[BasicActor].receive
+}
+
+object UpdatesReceiverActor {
+  /**
+    * Factory methods that return a [[Props]] to create a updates receiver registered actor
+    * @param yellowPages the reference to the yellow pages root actor.
+    * @param topic the topic to which this actor is going to be registered.
+    * @return the [[Props]] to use to create a updates receiver actor.
+    */
+
+  def printerProps(yellowPages: ActorRef, topic: ActorTopic, name: String = "UpdatesReceiver") : Props =
+    Props(new UpdatesReceiverActor(yellowPages = yellowPages, name = name, topic = topic))
 }

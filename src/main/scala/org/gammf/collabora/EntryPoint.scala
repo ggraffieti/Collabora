@@ -24,31 +24,18 @@ object EntryPoint extends App {
   val rabbitConnection = system.actorOf(ConnectionActor.props(factory), "rabbitmq")
   rootYellowPages ! RegistrationRequestMessage(rabbitConnection, "RabbitConnection", Topic() :+ Communication :+ RabbitMQ, ConnectionHandler)
 
-  val channelCreator = system.actorOf(ChannelCreatorActor.printerProps(rootYellowPages, Topic() :+ Communication :+ RabbitMQ))
+  val channelCreator = system.actorOf(ChannelCreatorActor.printerProps(rootYellowPages, Topic() :+ Communication :+ RabbitMQ, "RabbitChannelCreator"))
+  val namingActor = system.actorOf(RabbitMQNamingActor.printerProps(rootYellowPages, Topic() :+ Communication :+ RabbitMQ, "NamingActor"))
+  val publisherActor = system.actorOf(PublisherActor.printerProps(rootYellowPages, Topic() :+ Communication :+ RabbitMQ, "PublisherActor"))
+  val subscriber = system.actorOf(SubscriberActor.printerProps(rootYellowPages, Topic() :+ Communication :+ RabbitMQ, "SubscriberActor"))
 
-  val namingActor = system.actorOf(Props(
-    new RabbitMQNamingActor(rootYellowPages, "NamingActor", Topic() :+ Communication :+ RabbitMQ, Naming)), "naming")
-  val publisherActor = system.actorOf(Props(
-    new PublisherActor(rootYellowPages, "PublisherActor", Topic() :+ Communication :+ RabbitMQ, Publishing)), "publisher")
-  val subscriber = system.actorOf(Props(
-    new SubscriberActor(rootYellowPages, "SubscriberActor", Topic() :+ Communication :+ RabbitMQ, Subscribing)), "subscriber")
+  val updatesReceiver = system.actorOf(UpdatesReceiverActor.printerProps(rootYellowPages, Topic() :+ Communication :+ Updates :+ RabbitMQ , "UpdatesReceiver"))
+  val notificationActor = system.actorOf(NotificationsSenderActor.printerProps(rootYellowPages, Topic() :+ Communication :+ Notifications :+ RabbitMQ, "NotificationActor"))
+  val collaborationActor = system.actorOf(CollaborationMembersActor.printerProps(rootYellowPages, Topic() :+ Communication :+ Collaborations  :+ RabbitMQ, "CollaborationActor"))
 
-  val updatesReceiver = system.actorOf(Props
-  (new UpdatesReceiverActor(rootYellowPages, "UpdatesReceiver", Topic() :+ Communication :+ Updates :+ RabbitMQ , Master)), "updates-receiver")
-  val notificationActor = system.actorOf(Props(
-    new NotificationsSenderActor(rootYellowPages, "NotificationActor", Topic() :+ Communication :+ Notifications :+ RabbitMQ, Master)), "notifications-actor")
-  val collaborationActor = system.actorOf(Props(
-    new CollaborationMembersActor(rootYellowPages, "CollaborationActor", Topic() :+ Communication :+ Collaborations  :+ RabbitMQ, Master)), "collaborations-acotr")
+  val notificationDispatcherActor = system.actorOf(NotificationsDispatcherActor.printerProps(rootYellowPages, Topic() :+ Communication :+ Notifications, "NotificationDispatcher"))
 
-  val notificationDispatcherActor = system.actorOf(Props(
-    new NotificationsDispatcherActor(rootYellowPages, "NotificationDispatcher", Topic() :+ Communication :+ Notifications, Bridging)
-  ))
-
-  val firebaseActor = system.actorOf(Props(
-    new FirebaseActor(rootYellowPages, "FirebaseActor", Topic() :+ Communication :+ Notifications :+ Firebase, Master)
-  ))
-
-
+  val firebaseActor = system.actorOf(FirebaseActor.printerProps(rootYellowPages, Topic() :+ Communication :+ Notifications :+ Firebase, "FirebaseActor"))
 
 
   //DB------------------------------------------

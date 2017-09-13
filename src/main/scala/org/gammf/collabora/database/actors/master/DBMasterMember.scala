@@ -2,12 +2,11 @@ package org.gammf.collabora.database.actors.master
 
 import akka.actor.ActorRef
 import akka.pattern.ask
-import org.gammf.collabora.communication.messages.{PublishErrorMessageInCollaborationExchange, PublishNotificationMessage}
+import org.gammf.collabora.communication.messages.{CommunicationMessage, PublishCollaborationInCollaborationExchange, PublishErrorMessageInCollaborationExchange, PublishNotificationMessage}
 import org.gammf.collabora.database.messages._
-import org.gammf.collabora.util.{ServerErrorCode, ServerErrorMessage, UpdateMessage, UpdateMessageTarget, UpdateMessageType}
+import org.gammf.collabora.util.{CollaborationMessage, ServerErrorCode, ServerErrorMessage, UpdateMessage, UpdateMessageTarget, UpdateMessageType}
 import org.gammf.collabora.yellowpages.ActorService.ActorService
 import org.gammf.collabora.yellowpages.util.Topic.ActorTopic
-
 import org.gammf.collabora.yellowpages.util.Topic
 import org.gammf.collabora.yellowpages.TopicElement._
 import org.gammf.collabora.yellowpages.ActorService._
@@ -47,26 +46,30 @@ class DBMasterMember(override val yellowPages: ActorRef, override val name: Stri
 
     case message: QueryOkMessage => message.queryGoneWell match {
       case query: QueryMemberMessage => query match {
-        case _: InsertMemberMessage => //TODO; getCollaborationActor ! InsertMemberMessage(query.user, query.collaborationID, query.userID)
-          getActorOrElse(Topic() :+ Communication :+ Notifications, Bridging, message)
-            .foreach(_ ! PublishNotificationMessage(query.collaborationID, UpdateMessage(
-              target = UpdateMessageTarget.MEMBER,
-              messageType = getUpdateTypeFromQueryMessage(query),
-              user = query.userID,
-              member = Some(query.user),
-              collaborationId = Some(query.collaborationID))))
+        case insertMessage: InsertMemberMessage =>
+          self ! SendInsertMemberNotificationMessage(insertMessage)
+          self ! SendInsertMemberCollaborationMessage(insertMessage)
 
         case _ => getActorOrElse(Topic() :+ Communication :+ Notifications, Bridging, message)
-          .foreach(_ ! PublishNotificationMessage(query.collaborationID, UpdateMessage(
-            target = UpdateMessageTarget.MEMBER,
-            messageType = getUpdateTypeFromQueryMessage(query),
-            user = query.userID,
-            member = Some(query.user),
-            collaborationId = Some(query.collaborationID))))
+          .foreach(_ ! buildNotificationMessage(query))
       }
 
       case _ => unhandled(_)
     }
+
+    case message: SendInsertMemberNotificationMessage =>
+      getActorOrElse(Topic() :+ Communication :+ Notifications, Bridging, message)
+      .foreach(_ ! buildNotificationMessage(message.insertMessage))
+
+    case message: SendInsertMemberCollaborationMessage =>
+      getActorOrElse(Topic() :+ Database :+ Collaboration, Getter, message)
+        .foreach(collaborationGetter =>
+          (collaborationGetter ? GetCollaborationMessage(message.insertMessage.collaborationID))
+            .mapTo[Option[List[org.gammf.collabora.util.Collaboration]]].map {
+            case Some(head :: _) => getActorOrElse(Topic() :+ Communication :+ Collaborations :+ RabbitMQ , Master, message)
+              .foreach(_ ! PublishCollaborationInCollaborationExchange(message.insertMessage.userID, CollaborationMessage(user=message.insertMessage.userID,collaboration = head)))
+            case _ =>
+          })
 
     case fail: QueryFailMessage => getActorOrElse(Topic() :+ Communication  :+ Collaborations :+ RabbitMQ, Master, fail)
       .foreach(_ ! PublishErrorMessageInCollaborationExchange(
@@ -75,4 +78,16 @@ class DBMasterMember(override val yellowPages: ActorRef, override val name: Stri
       ))
 
   }: Receive) orElse super[AbstractDBMaster].receive
+
+  private def buildNotificationMessage(query: QueryMemberMessage): CommunicationMessage = {
+    PublishNotificationMessage(query.collaborationID, UpdateMessage(
+      target = UpdateMessageTarget.MEMBER,
+      messageType = getUpdateTypeFromQueryMessage(query),
+      user = query.userID,
+      member = Some(query.user),
+      collaborationId = Some(query.collaborationID)))
+  }
 }
+
+private case class SendInsertMemberNotificationMessage(insertMessage: InsertMemberMessage)
+private case class SendInsertMemberCollaborationMessage(insertMessage: InsertMemberMessage)

@@ -6,14 +6,10 @@ import org.gammf.collabora.database._
 import org.gammf.collabora.database.messages._
 import org.gammf.collabora.util.Note
 import org.gammf.collabora.yellowpages.ActorService.ActorService
-import org.gammf.collabora.yellowpages.messages.RegistrationResponseMessage
 import reactivemongo.bson.{BSON, BSONDocument, BSONObjectID}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-import org.gammf.collabora.yellowpages.util.Topic
-import org.gammf.collabora.yellowpages.TopicElement._
-import org.gammf.collabora.yellowpages.ActorService._
 import org.gammf.collabora.yellowpages.util.Topic.ActorTopic
 
 /**

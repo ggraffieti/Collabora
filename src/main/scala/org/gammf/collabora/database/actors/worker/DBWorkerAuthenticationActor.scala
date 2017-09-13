@@ -9,10 +9,7 @@ import reactivemongo.bson.{BSON, BSONDocument}
 import org.gammf.collabora.database._
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import org.gammf.collabora.yellowpages.util.Topic
-import org.gammf.collabora.yellowpages.TopicElement._
 import org.gammf.collabora.yellowpages.ActorService._
-import org.gammf.collabora.yellowpages.messages.RegistrationResponseMessage
 import org.gammf.collabora.yellowpages.util.Topic.ActorTopic
 
 /**

@@ -4,17 +4,12 @@ import akka.actor.{ActorRef, Stash}
 import org.gammf.collabora.util.{Collaboration, Module, Note, UpdateMessage, UpdateMessageTarget, UpdateMessageType}
 import reactivemongo.bson.{BSONDocument, BSONObjectID}
 import org.gammf.collabora.database._
-import org.gammf.collabora.database.messages.{AskConnectionMessage, ChangeModuleState, GetConnectionMessage}
+import org.gammf.collabora.database.messages.ChangeModuleState
 
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
-import org.gammf.collabora.yellowpages.util.Topic
-import org.gammf.collabora.yellowpages.TopicElement._
-import org.gammf.collabora.yellowpages.ActorService._
-import org.gammf.collabora.yellowpages.messages.RegistrationResponseMessage
 import org.gammf.collabora.yellowpages.util.Topic.ActorTopic
 
-import org.gammf.collabora.yellowpages.util.Topic._
 import org.gammf.collabora.yellowpages.util.Topic
 import org.gammf.collabora.yellowpages.TopicElement._
 import org.gammf.collabora.yellowpages.ActorService._

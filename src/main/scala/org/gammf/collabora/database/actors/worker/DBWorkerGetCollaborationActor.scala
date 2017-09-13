@@ -5,13 +5,10 @@ import akka.pattern.pipe
 import org.gammf.collabora.database._
 import org.gammf.collabora.database.messages._
 import org.gammf.collabora.util.Collaboration
-import org.gammf.collabora.yellowpages.ActorService.{ActorService, ConnectionHandler}
-import org.gammf.collabora.yellowpages.messages.RegistrationResponseMessage
+import org.gammf.collabora.yellowpages.ActorService.ActorService
 import reactivemongo.bson.{BSONDocument, BSONObjectID}
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import org.gammf.collabora.yellowpages.util.Topic
-import org.gammf.collabora.yellowpages.TopicElement._
 import org.gammf.collabora.yellowpages.util.Topic.ActorTopic
 
 /***

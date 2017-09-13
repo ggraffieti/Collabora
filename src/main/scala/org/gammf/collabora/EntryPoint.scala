@@ -24,8 +24,8 @@ object EntryPoint extends App {
   val rabbitConnection = system.actorOf(ConnectionActor.props(factory), "rabbitmq")
   rootYellowPages ! RegistrationRequestMessage(rabbitConnection, "RabbitConnection", Topic() :+ Communication :+ RabbitMQ, ConnectionHandler)
 
-  val channelCreator = system.actorOf(Props(
-    new ChannelCreatorActor(rootYellowPages, "RabbitChannelCreator", Topic() :+ Communication :+ RabbitMQ, ChannelCreating)), "channelCreator")
+  val channelCreator = system.actorOf(ChannelCreatorActor.printerProps(rootYellowPages, Topic() :+ Communication :+ RabbitMQ))
+
   val namingActor = system.actorOf(Props(
     new RabbitMQNamingActor(rootYellowPages, "NamingActor", Topic() :+ Communication :+ RabbitMQ, Naming)), "naming")
   val publisherActor = system.actorOf(Props(

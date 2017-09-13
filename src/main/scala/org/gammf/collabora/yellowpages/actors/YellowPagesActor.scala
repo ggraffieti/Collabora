@@ -76,18 +76,13 @@ sealed trait YellowPagesActor extends Actor {
       case _ => sender ! HierarchyResponseMessage(getActors(lvl + 1))
     }
     def getActors(level: Int): List[(Int, ActorYellowPagesEntry)] = {
-      def getInternalActors: List[(Int, ActorYellowPagesEntry)] = yellowPages.map((level, _))
-      def getExternalActors: List[(Int, ActorYellowPagesEntry)] = {
-        def getActorFromYPActors(list: List[(Int, ActorYellowPagesEntry)]): List[(Int, ActorYellowPagesEntry)] = {
-          list match {
-            case h :: t => getActorsFromSingleYPActor(h._2.reference) ++ getActorFromYPActors(t)
-            case _ => Nil
-          }
-        }
-        def getActorsFromSingleYPActor(yp: ActorRef): List[(Int, ActorYellowPagesEntry)] = Await.result(yp ? HierarchyRequestMessage(level), timeout.duration).asInstanceOf[HierarchyResponseMessage].actors
-        getActorFromYPActors(yellowPages.filter(_.service == YellowPagesService).map((level, _)))
+      def searchActors(actors: List[(Int, ActorYellowPagesEntry)]): List[(Int, ActorYellowPagesEntry)] = actors match {
+        case h :: t if h._2.service != YellowPagesService => h :: searchActors(t)
+        case h :: t if h._2.service == YellowPagesService => h :: getActorsFromYP(h._2.reference) ++ searchActors(t)
+        case _ => Nil
       }
-      getInternalActors ++ getExternalActors
+      def getActorsFromYP(yp: ActorRef): List[(Int, ActorYellowPagesEntry)] = Await.result(yp ? HierarchyRequestMessage(level), timeout.duration).asInstanceOf[HierarchyResponseMessage].actors
+      searchActors(yellowPages.map((level, _)))
     }
     def printHierarchy(list: List[(Int, ActorYellowPagesEntry)]): Unit = {
       def getRoot: HierarchyNode = HierarchyNode(level = lvl, reference = self.toString(), name = name, topic = "/", service = "YellowPagesService")

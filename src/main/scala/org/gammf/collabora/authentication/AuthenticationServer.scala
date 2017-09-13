@@ -17,6 +17,9 @@ import play.api.libs.json.{JsError, JsSuccess, Json}
 import scala.concurrent.{Await, ExecutionContextExecutor, Future}
 import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.language.postfixOps
+
+
 
 /**
   * A HTTP Server, that manage login and registration of users in the system.
@@ -39,6 +42,10 @@ object AuthenticationServer {
     */
   val route: server.Route = {
     path("login") {
+      // IntelliJ marks the code below as errored. This is an IDE bug: the code correcty compiles and works,
+      // both locally and remotely (Travis CI builds complete with success). Searching online we found many
+      // others IntelliJ false positive error marks, we tried to resolve this bug in many ways, but we couldn't
+      // find a solution.
       authenticateBasicAsync(realm = "login", myUserPassAuthenticator) { user =>
         get {
           complete {

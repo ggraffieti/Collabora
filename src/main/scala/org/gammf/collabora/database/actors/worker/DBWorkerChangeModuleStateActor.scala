@@ -4,57 +4,72 @@ import akka.actor.{ActorRef, Stash}
 import org.gammf.collabora.util.{Collaboration, Module, Note, UpdateMessage, UpdateMessageTarget, UpdateMessageType}
 import reactivemongo.bson.{BSONDocument, BSONObjectID}
 import org.gammf.collabora.database._
-import org.gammf.collabora.database.messages.{ChangeModuleState, GetConnectionMessage}
+import org.gammf.collabora.database.messages.{AskConnectionMessage, ChangeModuleState, GetConnectionMessage}
 
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
+import org.gammf.collabora.yellowpages.util.Topic
+import org.gammf.collabora.yellowpages.TopicElement._
+import org.gammf.collabora.yellowpages.ActorService._
+import org.gammf.collabora.yellowpages.messages.RegistrationResponseMessage
+import org.gammf.collabora.yellowpages.util.Topic.ActorTopic
+
+import org.gammf.collabora.yellowpages.util.Topic._
+import org.gammf.collabora.yellowpages.util.Topic
+import org.gammf.collabora.yellowpages.TopicElement._
+import org.gammf.collabora.yellowpages.ActorService._
 
 /**
   * A Worker that performs module state changement. The changement is based on previous module state and
   * the state of the notes
-  * @param connectionActor the actor that mantains the connection with the DB.
-  * @param dbActor the DBMaster actor, used for sending the edited module.
   */
-class DBWorkerChangeModuleStateActor(connectionActor: ActorRef, dbActor: ActorRef) extends CollaborationsDBWorker[Option[BSONDocument]](connectionActor) with Stash {
-  override def receive: Receive = {
+class DBWorkerChangeModuleStateActor(override val yellowPages: ActorRef, override val name: String,
+                                     override val topic: ActorTopic, override val service: ActorService)
+  extends CollaborationsDBWorker[Option[BSONDocument]] with Stash {
 
-    case m: GetConnectionMessage =>
-      connection = Some(m.connection)
+  override def receive: Receive = ({
+    //TODO consider: these three methods in super class?
+    case message: RegistrationResponseMessage => getActorOrElse(Topic() :+ Database, ConnectionHandler, message)
+      .foreach(_ ! AskConnectionMessage())
+
+    case message: GetConnectionMessage =>
+      connection = Some(message.connection)
       unstashAll()
 
     case _ if connection.isEmpty => stash()
 
-    case ChangeModuleState(collaborationId, moduleId) =>
-      handleModuleChangeState(collaborationId, moduleId)
-  }
+    case ChangeModuleState(collaborationId, moduleId) => handleModuleChangeState(collaborationId, moduleId)
+
+  }: Receive) orElse super[CollaborationsDBWorker].receive
 
   private[this] def handleModuleChangeState(collaborationId: String, moduleId: String): Unit = {
     getModule(moduleId) map {
       case Some(module) => getModulesNotes(collaborationId, moduleId).map(list =>
         if (list.nonEmpty) {
           val noteListSize: Int = list.size
-          noteListSize match {
-            case _ if list.count(note => note.state.definition == State.TODO) == noteListSize &&
-              module.state != State.TODO =>
-              dbActor ! buildUpdateMessage(
-                collaborationId = collaborationId,
-                updatedModule = Module(id = module.id, description = module.description, state = State.TODO)
-              )
-            case _ if list.count(note => note.state.definition == State.DONE) == noteListSize &&
-              module.state != State.DONE =>
-              dbActor ! buildUpdateMessage(
-                collaborationId = collaborationId,
-                updatedModule = Module(id = module.id, description = module.description, state = State.DONE)
-              )
-            case _ if list.count(note => note.state.definition == State.TODO) != noteListSize &&
-              list.count(note => note.state.definition == State.DONE) != noteListSize &&
-              module.state != State.DOING =>
-              dbActor ! buildUpdateMessage(
-              collaborationId = collaborationId,
-              updatedModule = Module(id = module.id, description = module.description, state = State.DOING)
-            )
-            case _ => // do nothing
-          }
+          getActorOrElse(Topic() :+ Database, Master, ChangeModuleState(collaborationId, moduleId))
+            .foreach(_ ! (noteListSize match {
+              case _ if list.count(note => note.state.definition == State.TODO) == noteListSize &&
+                module.state != State.TODO =>
+                buildUpdateMessage(
+                  collaborationId = collaborationId,
+                  updatedModule = Module(id = module.id, description = module.description, state = State.TODO)
+                )
+              case _ if list.count(note => note.state.definition == State.DONE) == noteListSize &&
+                module.state != State.DONE =>
+                buildUpdateMessage(
+                  collaborationId = collaborationId,
+                  updatedModule = Module(id = module.id, description = module.description, state = State.DONE)
+                )
+              case _ if list.count(note => note.state.definition == State.TODO) != noteListSize &&
+                list.count(note => note.state.definition == State.DONE) != noteListSize &&
+                module.state != State.DOING =>
+                buildUpdateMessage(
+                  collaborationId = collaborationId,
+                  updatedModule = Module(id = module.id, description = module.description, state = State.DOING)
+                )
+              case _ => None
+            }))
         }
       )
       case None => // do nothing

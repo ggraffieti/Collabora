@@ -1,6 +1,9 @@
 package org.gammf.collabora.communication.messages
 
 import org.gammf.collabora.util.{Collaboration, CollaborationMessage, ServerErrorMessage, UpdateMessage}
+import org.gammf.collabora.communication.actors.NotificationsDispatcherActor
+import org.gammf.collabora.communication.actors.NotificationsSenderActor
+import org.gammf.collabora.communication.actors.FirebaseActor
 
 /**
   * Simple trait that represent a message about the communication.
@@ -38,5 +41,19 @@ case class PublishErrorMessageInCollaborationExchange(username: String, message:
   extends CommunicationMessage
 
 
-case class PublishFirebaseNotification(collaborationID: String, collaboration:Collaboration)
+case class PublishFirebaseNotification(collaborationID: String, collaboration: Collaboration)
   extends CommunicationMessage
+
+/**
+  * Message used internally by a [[NotificationsDispatcherActor]] in order to manage message-forwarding to a [[NotificationsSenderActor]]
+ *
+  * @param message the message to be forwarded
+  */
+case class ForwardMessageToRabbitMQNotificationActor(message: PublishNotificationMessage) extends CommunicationMessage
+
+/**
+  * Message used internally by a [[NotificationsDispatcherActor]] in order to manage message-forwarding to a [[FirebaseActor]]
+ *
+  * @param message the message to be forwarded
+  */
+case class ForwardMessageToFirebaseNotificationActor(message: PublishNotificationMessage) extends CommunicationMessage

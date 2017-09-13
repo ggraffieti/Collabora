@@ -4,7 +4,7 @@ import akka.actor.ActorRef
 import org.gammf.collabora.yellowpages.ActorService.ActorService
 import org.gammf.collabora.yellowpages.messages._
 import org.gammf.collabora.yellowpages.util.Topic.ActorTopic
-import org.gammf.collabora.yellowpages.util.ActorYellowPagesEntry
+import org.gammf.collabora.yellowpages.util.{ActorInformation, ActorYellowPagesEntry}
 
 import language.reflectiveCalls
 
@@ -21,10 +21,16 @@ package object yellowpages {
     Communication,
     RabbitMQ,
     Firebase,
-    Http,
+    Authentication,
+    Collaborations,
+    Notifications,
+    Updates,
     // Database related topics
-    Database
-    //TODO list all the database related topics
+    Database,
+    Note,
+    Module,
+    Member,
+    Collaboration
     = Value
   }
 
@@ -38,16 +44,21 @@ package object yellowpages {
     val YellowPagesService,
     Printing,
     // Communication related services
+    ConnectionHandler,
+    ChannelHandler,
     ChannelCreating,
     Naming,
     Publishing,
     Subscribing,
-    NotificationSending,
-    CollaborationSending,
-    UpdatesReceiving
-    // TODO update the list with http related services
     // Database related services
-    // TODO list all the database related services
+    Authenticator,
+    Master,
+    DefaultWorker,
+    ExistenceChecking,
+    StateChanger,
+    Getter,
+    // Autentication related services
+    Bridging
     = Value
   }
 
@@ -82,9 +93,21 @@ package object yellowpages {
       RedirectionRequestMessage(reference = entry.reference, name = entry.name, topic = entry.topic, service = entry.service)
 
     /**
+      * Implicit conversion from a [[ActorYellowPagesEntry]] to [[DeletionRequestMessage]]
+      */
+    implicit def yellowPagesEntry2DeleteRequest(entry: ActorYellowPagesEntry): DeletionRequestMessage =
+      DeletionRequestMessage(reference = entry.reference, name = entry.name, topic = entry.topic, service = entry.service)
+
+    /**
       * Implicit conversion from a [[List]] of tuples compound by [[ActorYellowPagesEntry]] with a depth level to a [[List]] of [[HierarchyNode]].
       */
     implicit def entryList2hierarchyNodeList(list: List[(Int, ActorYellowPagesEntry)]): List[HierarchyNode] =
       list.map(yp => HierarchyNode(level = yp._1, reference = yp._2.reference.toString, name = yp._2.name.toString, topic = yp._2.topic.toString, service = yp._2.service.toString))
+
+    /**
+      * Implicit conversione from a [[ActorResponseOKMessage]] to [[ActorInformation]]
+      */
+    implicit def actorOkMessage2ActorInformation(message: ActorResponseOKMessage): ActorInformation =
+      ActorInformation(message.actor, message.topic, message.service)
   }
 }

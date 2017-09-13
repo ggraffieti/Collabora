@@ -15,7 +15,7 @@ import org.scalatest.concurrent.Eventually
 
 class CollaborationMembersActorTest extends TestKit (ActorSystem("CollaboraServer")) with WordSpecLike with Eventually with DefaultTimeout with Matchers with BeforeAndAfterAll with ImplicitSender {
 
-  val factory = new ConnectionFactory()
+  /*val factory = new ConnectionFactory()
   val connection:ActorRef = system.actorOf(ConnectionActor.props(factory), "rabbitmq")
   val naming: ActorRef = system.actorOf(Props[RabbitMQNamingActor], "naming")
   val channelCreator: ActorRef = system.actorOf(Props[ChannelCreatorActor], "channelCreator")
@@ -100,5 +100,5 @@ class CollaborationMembersActorTest extends TestKit (ActorSystem("CollaboraServe
 
 
 
-
+*/
 }

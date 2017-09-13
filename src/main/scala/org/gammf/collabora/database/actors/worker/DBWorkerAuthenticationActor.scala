@@ -6,18 +6,27 @@ import org.gammf.collabora.authentication.messages.{LoginMessage, SigninMessage}
 import org.gammf.collabora.database.messages._
 import org.gammf.collabora.util.User
 import reactivemongo.bson.{BSON, BSONDocument}
-
 import org.gammf.collabora.database._
 
 import scala.concurrent.ExecutionContext.Implicits.global
+import org.gammf.collabora.yellowpages.util.Topic
+import org.gammf.collabora.yellowpages.TopicElement._
+import org.gammf.collabora.yellowpages.ActorService._
+import org.gammf.collabora.yellowpages.messages.RegistrationResponseMessage
+import org.gammf.collabora.yellowpages.util.Topic.ActorTopic
 
 /**
   * A [[DBWorker]] used for authentication purpose. It manages [[LoginMessage]] and [[SigninMessage]].
-  * @param connectionManager the manager of the connection, needed to mantain a stable connection with the database.
   */
-class DBWorkerAuthenticationActor(connectionManager: ActorRef) extends UsersDBWorker[DBWorkerMessage](connectionManager) with DefaultDBWorker with Stash {
+class DBWorkerAuthenticationActor(override val yellowPages: ActorRef, override val name: String,
+                                  override val topic: ActorTopic, override val service: ActorService)
+  extends UsersDBWorker[DBWorkerMessage] with DefaultDBWorker with Stash {
 
-  override def receive: Receive = {
+  override def receive: Receive = ({
+    //TODO consider: these three methods in super class?
+    case message: RegistrationResponseMessage => getActorOrElse(Topic() :+ Database, ConnectionHandler, message)
+      .foreach(_ ! AskConnectionMessage())
+
     case m: GetConnectionMessage =>
       connection = Some(m.connection)
       unstashAll()
@@ -42,5 +51,5 @@ class DBWorkerAuthenticationActor(connectionManager: ActorRef) extends UsersDBWo
       ) pipeTo sender
 
     case _ => unhandled(_)
-  }
+  }: Receive) orElse super[UsersDBWorker].receive
 }

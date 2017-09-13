@@ -42,10 +42,10 @@ object AuthenticationServer {
       authenticateBasicAsync(realm = "login", myUserPassAuthenticator) { user =>
         get {
           complete {
-            (authenticationActor ? SendAllCollaborationsMessage(user.username)).mapTo[AllCollaborationsMessage].map(message =>
+            (authenticationActor ? SendAllCollaborationsMessage(user.username)).mapTo[Option[List[Collaboration]]].map(collaborationList =>
             HttpResponse(OK, entity = Json.toJson(LoginResponse(
               user = user,
-              collaborations = message.collaborationList
+              collaborations = collaborationList
             )).toString)
             )
           }

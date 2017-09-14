@@ -1,8 +1,7 @@
 package org.gammf.collabora.database.actors.master
 
-import akka.actor.{ActorRef, ActorSystem, Props}
+import akka.actor.ActorRef
 import org.gammf.collabora.communication.messages.{PublishCollaborationInCollaborationExchange, PublishErrorMessageInCollaborationExchange, PublishNotificationMessage}
-import org.gammf.collabora.database.actors.worker.DBWorkerCollaborationsActor
 import org.gammf.collabora.database.messages._
 import org.gammf.collabora.util.{CollaborationMessage, CollaborationType, ServerErrorCode, ServerErrorMessage, UpdateMessage, UpdateMessageTarget, UpdateMessageType}
 import org.gammf.collabora.yellowpages.ActorService.ActorService

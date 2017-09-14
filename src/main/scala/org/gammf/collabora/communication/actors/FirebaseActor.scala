@@ -28,7 +28,7 @@ class FirebaseActor(override val yellowPages: ActorRef, override val name: Strin
     case publishMessage: PublishNotificationMessage => publishMessage.message.target match {
             case UpdateMessageTarget.NOTE |
                  UpdateMessageTarget.MODULE |
-                 UpdateMessageTarget.MEMBER if publishMessage.message.messageType.equals(UpdateMessageType.CREATION) =>
+                 UpdateMessageTarget.MEMBER =>
               getActorOrElse(Topic() :+ Database, Master, publishMessage).
                 foreach(dbMaster =>
                   (dbMaster ? GetCollaborationMessage(publishMessage.collaborationID)).mapTo[Option[List[Collaboration]]].map {

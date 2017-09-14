@@ -19,7 +19,7 @@ class DBMasterModule(override val yellowPages: ActorRef, override val name: Stri
 
   override def receive: Receive = ({
 
-    case message: UpdateMessage => message.target match {//TODO ask mates
+    case message: UpdateMessage => message.target match {
       case UpdateMessageTarget.MODULE => getActorOrElse(Topic() :+ Database :+ Module, DefaultWorker, message)
         .foreach(_ ! (message.messageType match {
           case UpdateMessageType.CREATION => InsertModuleMessage(message.module.get, message.collaborationId.get, message.user)

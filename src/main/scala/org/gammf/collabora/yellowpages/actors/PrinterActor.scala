@@ -34,10 +34,10 @@ class PrinterActor(override val yellowPages: ActorRef,
 object PrinterActor {
 
   /**
-    * Factory methods that returns a [[Props]] to create a printer actor registered to the specified topic.
+    * Factory methods that returns a Props to create a printer actor registered to the specified topic.
     * @param yellowPages the reference to the yellow pages root actor.
     * @param topic the topic to which this actor is going to be registered.
-    * @return the [[Props]] to use to create a printer actor.
+    * @return the Props to use to create a printer actor.
     */
   def printerProps(yellowPages: ActorRef, topic: ActorTopic, name: String = "Printer"): Props =
     Props(new PrinterActor(yellowPages = yellowPages, name = name, topic = topic))

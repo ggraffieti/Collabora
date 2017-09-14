@@ -13,6 +13,12 @@ import org.gammf.collabora.yellowpages.util.Topic._
 import play.api.libs.json.{JsError, JsSuccess, Json}
 
 /**
+  * This actor completely manages the whole message receiving from the rabbitMQ exchange Updates.
+  * Needs a subscribing channel in order to receive the messages from the exchange, when it acquires a valid channel it
+  * starts listening, serching for client [[org.gammf.collabora.util.UpdateMessage]] to forward to an actor that can access the database.
+  */
+
+/**
   * This is an actor that manages the reception of client updates.
   */
 class RabbitMQUpdatesReceiverActor(override val yellowPages: ActorRef, override val name: String,
@@ -21,11 +27,13 @@ class RabbitMQUpdatesReceiverActor(override val yellowPages: ActorRef, override 
   private[this] var subQueue: Option[String] = None
 
   override def receive: Receive = ({
-    case message: RegistrationResponseMessage => getActorOrElse(Topic() :+ Communication :+ RabbitMQ, Naming, message).foreach(actorRef => actorRef ! ChannelNamesRequestMessage(CommunicationType.UPDATES))
+    case message: RegistrationResponseMessage =>
+      getActorOrElse(Topic() :+ Communication :+ RabbitMQ, Naming, message).foreach(actorRef => actorRef ! ChannelNamesRequestMessage(CommunicationType.UPDATES))
     case message: ChannelNamesResponseMessage =>
       subQueue = message.queue
       getActorOrElse(Topic() :+ Communication :+ RabbitMQ, ChannelCreating, message).foreach(_ ! SubscribingChannelCreationMessage(message.exchange, subQueue.get, None))
-    case message: ChannelCreatedMessage => getActorOrElse(Topic() :+ Communication :+ RabbitMQ, Subscribing, message).foreach(_ ! SubscribeMessage(message.channel, subQueue.get))
+    case message: ChannelCreatedMessage =>
+      getActorOrElse(Topic() :+ Communication :+ RabbitMQ, Subscribing, message).foreach(_ ! SubscribeMessage(message.channel, subQueue.get))
     case message: ClientUpdateMessage =>
       Json.parse(message.text).validate[UpdateMessage] match {
         case updateMessage: JsSuccess[UpdateMessage] => getActorOrElse(Topic() :+ Database, Master, message).foreach(_ ! updateMessage.value)

@@ -9,7 +9,8 @@ import org.gammf.collabora.yellowpages.actors.BasicActor
 import org.gammf.collabora.yellowpages.util.Topic.ActorTopic
 
 /**
-  * This is an actor that subscribes on a certain queue in a rabbitMQ channel, capturing all the messages.
+  * This is an actor that, when invoked by another actor, subscribes to a certain queue in a rabbitMQ channel, capturing
+  * all the messages and forwarding them to the other actor.
   */
 class RabbitMQSubscriberActor(override val yellowPages: ActorRef, override val name: String,
                               override val topic: ActorTopic, override val service: ActorService) extends BasicActor {
@@ -20,8 +21,7 @@ class RabbitMQSubscriberActor(override val yellowPages: ActorRef, override val n
     case SubscribeMessage(channel, queue) =>
       messageSender = Some(sender)
       val consumer = new DefaultConsumer(channel) {
-        override def handleDelivery(consumerTag: String, envelope: Envelope,
-                                    properties: BasicProperties, body: Array[Byte]) {
+        override def handleDelivery(consumerTag: String, envelope: Envelope, properties: BasicProperties, body: Array[Byte]) {
           channel.basicAck(envelope.getDeliveryTag, false)
           messageSender.get ! ClientUpdateMessage(body)
         }

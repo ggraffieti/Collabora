@@ -11,6 +11,7 @@ import org.gammf.collabora.yellowpages.ActorService.ActorService
 import org.gammf.collabora.yellowpages.util.Topic.ActorTopic
 
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.language.postfixOps
 import scala.concurrent.duration._
 
 import org.gammf.collabora.yellowpages.util.Topic
@@ -49,5 +50,7 @@ class DBMasterActor(override val yellowPages: ActorRef, override val name: Strin
         username = fail.username,
         message = ServerErrorMessage(user = fail.username, errorCode = ServerErrorCode.SERVER_ERROR)
       ))
+
+    case _: NoActionMessage => unhandled(_)
   }: Receive) orElse super[AbstractDBMaster].receive
 }

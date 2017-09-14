@@ -10,6 +10,8 @@ import org.gammf.collabora.yellowpages.actors.BasicActor
   */
 abstract class AbstractDBMaster extends BasicActor {
 
+  override def receive: Receive = super.receive
+
   protected def getUpdateTypeFromQueryMessage(query: QueryMessage): UpdateMessageType = query match {
     case _: InsertNoteMessage | _: InsertCollaborationMessage | _: InsertModuleMessage | _: InsertMemberMessage => UpdateMessageType.CREATION
     case _: UpdateNoteMessage | _: UpdateCollaborationMessage | _: UpdateModuleMessage | _: UpdateMemberMessage => UpdateMessageType.UPDATING

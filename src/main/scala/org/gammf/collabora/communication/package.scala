@@ -19,6 +19,7 @@ package object communication {
     * This is a simple enumeration containing the types of the client-server communication.
     */
   object CommunicationType extends Enumeration {
+    type CommunicationType = Value
     val UPDATES, NOTIFICATIONS, COLLABORATIONS = Value
   }
 }

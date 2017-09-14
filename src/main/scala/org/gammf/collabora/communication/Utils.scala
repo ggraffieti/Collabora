@@ -1,5 +1,7 @@
 package org.gammf.collabora.communication
 
+import scala.language.implicitConversions
+
 /**
   * This is a simple utility class.
   */

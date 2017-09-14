@@ -9,9 +9,9 @@ import org.gammf.collabora.yellowpages.util.{ActorInformation, CachableSet, Topi
 import org.gammf.collabora.yellowpages.util.Topic.ActorTopic
 import org.gammf.collabora.yellowpages.entriesImplicitConversions._
 
-
 import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.language.postfixOps
 
 /**
   * Represents a simple actor identified by a name, registered to a [[Topic]], offering an [[ActorService]].

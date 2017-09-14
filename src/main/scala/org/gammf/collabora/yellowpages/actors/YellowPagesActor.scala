@@ -3,6 +3,7 @@ package org.gammf.collabora.yellowpages.actors
 import akka.actor.{Actor, ActorRef, Props}
 import akka.util.Timeout
 import akka.pattern.ask
+
 import scala.concurrent.Await
 import org.gammf.collabora.yellowpages.messages._
 import org.gammf.collabora.yellowpages.util.ActorYellowPagesEntry
@@ -10,8 +11,8 @@ import org.gammf.collabora.yellowpages.ActorService._
 import org.gammf.collabora.yellowpages.util.Topic.ActorTopic
 
 import scala.annotation.tailrec
-
 import scala.concurrent.duration._
+import scala.language.postfixOps
 
 /**
   * @author Manuel Peruzzi

@@ -6,7 +6,7 @@ import com.newmotion.akka.rabbitmq.{ConnectionActor, ConnectionFactory}
 import org.gammf.collabora.communication.messages.{ChannelCreatedMessage, PublishingChannelCreationMessage, SubscribingChannelCreationMessage}
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
 
-class ChannelCreatorActorTest extends TestKit (ActorSystem("CollaboraServer")) with WordSpecLike with Matchers with BeforeAndAfterAll with ImplicitSender{
+class RabbitMQChannelCreatorActorTest extends TestKit (ActorSystem("CollaboraServer")) with WordSpecLike with Matchers with BeforeAndAfterAll with ImplicitSender{
 
     /*val factory = new ConnectionFactory()
     val connection:ActorRef = system.actorOf(ConnectionActor.props(factory), "rabbitmq")

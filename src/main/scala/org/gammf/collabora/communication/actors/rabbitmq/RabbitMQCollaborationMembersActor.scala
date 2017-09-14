@@ -1,23 +1,22 @@
-package org.gammf.collabora.communication.actors
+package org.gammf.collabora.communication.actors.rabbitmq
 
 import akka.actor.{ActorRef, Stash}
 import com.newmotion.akka.rabbitmq.Channel
 import org.gammf.collabora.communication.Utils.CommunicationType
 import org.gammf.collabora.communication.messages._
-import org.gammf.collabora.yellowpages.ActorService.ActorService
+import org.gammf.collabora.yellowpages.ActorService.{ActorService, _}
+import org.gammf.collabora.yellowpages.TopicElement._
 import org.gammf.collabora.yellowpages.actors.BasicActor
+import org.gammf.collabora.yellowpages.messages.RegistrationResponseMessage
+import org.gammf.collabora.yellowpages.util.Topic
 import org.gammf.collabora.yellowpages.util.Topic.ActorTopic
 import play.api.libs.json.Json
-import org.gammf.collabora.yellowpages.util.Topic
-import org.gammf.collabora.yellowpages.TopicElement._
-import org.gammf.collabora.yellowpages.ActorService._
-import org.gammf.collabora.yellowpages.messages.RegistrationResponseMessage
 
 /**
   * This is an actor that sends all the information needed by a user that has just been added to a collaboration.
   */
-class CollaborationMembersActor(override val yellowPages: ActorRef, override val name: String,
-                                override val topic: ActorTopic, override val service: ActorService) extends BasicActor with Stash {
+class RabbitMQCollaborationMembersActor(override val yellowPages: ActorRef, override val name: String,
+                                        override val topic: ActorTopic, override val service: ActorService) extends BasicActor with Stash {
 
   private[this] var pubChannel: Option[Channel] = None
   private[this] var pubExchange: Option[String] = None

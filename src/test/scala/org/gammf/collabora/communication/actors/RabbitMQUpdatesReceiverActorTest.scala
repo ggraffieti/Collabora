@@ -9,7 +9,7 @@ import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
 
 import scala.concurrent.duration._
 
-class UpdatesReceiverActorTest extends TestKit (ActorSystem("CollaboraServer")) with WordSpecLike  with Matchers with BeforeAndAfterAll with ImplicitSender {
+class RabbitMQUpdatesReceiverActorTest extends TestKit (ActorSystem("CollaboraServer")) with WordSpecLike  with Matchers with BeforeAndAfterAll with ImplicitSender {
 
   /*val factory = new ConnectionFactory()
   val connection:ActorRef = system.actorOf(ConnectionActor.props(factory), "rabbitmq")

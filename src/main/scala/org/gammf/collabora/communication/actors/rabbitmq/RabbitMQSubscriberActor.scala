@@ -1,4 +1,4 @@
-package org.gammf.collabora.communication.actors
+package org.gammf.collabora.communication.actors.rabbitmq
 
 import akka.actor._
 import com.newmotion.akka.rabbitmq._
@@ -11,8 +11,8 @@ import org.gammf.collabora.yellowpages.util.Topic.ActorTopic
 /**
   * This is an actor that subscribes on a certain queue in a rabbitMQ channel, capturing all the messages.
   */
-class SubscriberActor(override val yellowPages: ActorRef, override val name: String,
-                      override val topic: ActorTopic, override val service: ActorService) extends BasicActor {
+class RabbitMQSubscriberActor(override val yellowPages: ActorRef, override val name: String,
+                              override val topic: ActorTopic, override val service: ActorService) extends BasicActor {
 
   private[this] var messageSender: Option[ActorRef] = None
 

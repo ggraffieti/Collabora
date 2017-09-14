@@ -4,7 +4,6 @@ import akka.actor.{Actor, ActorRef, Props}
 import akka.util.Timeout
 import akka.pattern.ask
 import scala.concurrent.Await
-import scala.concurrent.duration.Duration
 import org.gammf.collabora.yellowpages.messages._
 import org.gammf.collabora.yellowpages.util.ActorYellowPagesEntry
 import org.gammf.collabora.yellowpages.ActorService._
@@ -22,12 +21,12 @@ import scala.concurrent.duration._
 sealed trait YellowPagesActor extends Actor {
   def name: String
   private[this] var yellowPages: List[ActorYellowPagesEntry] = List()
+  implicit val timeout: Timeout = Timeout(5 seconds)
 
   import org.gammf.collabora.yellowpages.entriesImplicitConversions._
   override def receive: Receive = {
     case msg: RegistrationRequestMessage => handleActorInsertion(msg)
     case msg: RedirectionRequestMessage => handleActorInsertion(msg)
-    case msg: RedirectionResponseMessage => handleActorDeletion(msg)
     case msg: DeletionRequestMessage => handleActorDeletion(msg)
     case msg: ActorRequestMessage => handleActorRequest(msg)
     case msg: HierarchyRequestMessage => handleHierarchy(msg.level)
@@ -49,7 +48,12 @@ sealed trait YellowPagesActor extends Actor {
       case _: RegistrationRequestMessage => RegistrationResponseMessage()
       case RedirectionRequestMessage(r, n, t, s) => RedirectionResponseMessage(r, n, t, s)
     }
-    def delegateActorsToNewYPActor(msg: InsertionRequestMessage): Unit = yellowPages.filter(_ < msg).foreach(yp => msg.reference ! (yp: RedirectionRequestMessage))
+    def delegateActorsToNewYPActor(msg: InsertionRequestMessage): Unit = yellowPages.filter(_ < msg).foreach(yp => {
+      Await.result(msg.reference ? (yp: RedirectionRequestMessage), timeout.duration).asInstanceOf[InsertionResponseMessage] match {
+        case m: RedirectionResponseMessage => yellowPages = yellowPages.filterNot(_ == (m: ActorYellowPagesEntry))
+        case _ => // If you don't want the actor reference it's fine, I'll keep it
+      }
+    })
   }
 
   private[this] def handleActorRequest(msg: ActorRequestMessage): Unit = {
@@ -75,7 +79,6 @@ sealed trait YellowPagesActor extends Actor {
   }
 
   private[this] def handleHierarchy(lvl: Int): Unit = {
-    implicit val timeout: Timeout = Timeout(5 seconds)
     this match {
       case _: RootYellowPagesActor => printHierarchy(getActors(lvl + 1))
       case _ => sender ! HierarchyResponseMessage(getActors(lvl + 1))

@@ -3,14 +3,7 @@ package org.gammf.collabora.yellowpages.actors
 import akka.actor.{ActorRef, ActorSystem, Props}
 import akka.testkit.{ImplicitSender, TestKit}
 import org.scalatest._
-import akka.util.Timeout
-import org.gammf.collabora.communication.actors.RabbitMQPublisherActor
-import org.gammf.collabora.yellowpages.ActorService._
-import org.gammf.collabora.yellowpages.messages.{ActorRequestMessage, _}
-import org.gammf.collabora.yellowpages.util.Topic
-import org.gammf.collabora.yellowpages.TopicElement._
 
-import scala.concurrent.duration._
 
 class YellowPagesActorTest extends TestKit(ActorSystem("CollaboraServer")) with ImplicitSender
   with WordSpecLike with Matchers with BeforeAndAfterAll {

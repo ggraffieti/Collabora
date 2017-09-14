@@ -1,6 +1,7 @@
 package org.gammf.collabora.communication.actors.rabbitmq
 
 import akka.actor.ActorRef
+import org.gammf.collabora.communication.toBytes
 import org.gammf.collabora.communication.messages.PublishMessage
 import org.gammf.collabora.yellowpages.ActorService.ActorService
 import org.gammf.collabora.yellowpages.actors.BasicActor
@@ -15,7 +16,7 @@ class RabbitMQPublisherActor(override val yellowPages: ActorRef, override val na
 
   override def receive: Receive = ({
     case PublishMessage(channel, exchange, routingKey, message) =>
-      channel.basicPublish(exchange, routingKey.getOrElse(""), null, message.toString.getBytes("UTF-8"))
+      channel.basicPublish(exchange, routingKey.getOrElse(""), null, message.toString)
       println("[PublisherActor] Message published! " + Json.prettyPrint(message) +", exchange: " + exchange + ", routing key " + routingKey)
   } :Receive) orElse super[BasicActor].receive
 }

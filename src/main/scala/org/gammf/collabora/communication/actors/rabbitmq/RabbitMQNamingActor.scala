@@ -1,7 +1,7 @@
 package org.gammf.collabora.communication.actors.rabbitmq
 
 import akka.actor.ActorRef
-import org.gammf.collabora.communication.Utils.CommunicationType
+import org.gammf.collabora.communication.CommunicationType
 import org.gammf.collabora.communication.messages.{ChannelNamesRequestMessage, ChannelNamesResponseMessage}
 import org.gammf.collabora.yellowpages.ActorService.ActorService
 import org.gammf.collabora.yellowpages.actors.BasicActor

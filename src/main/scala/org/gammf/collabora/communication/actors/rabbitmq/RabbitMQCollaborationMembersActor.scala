@@ -2,7 +2,7 @@ package org.gammf.collabora.communication.actors.rabbitmq
 
 import akka.actor.{ActorRef, Stash}
 import com.newmotion.akka.rabbitmq.Channel
-import org.gammf.collabora.communication.Utils.CommunicationType
+import org.gammf.collabora.communication.CommunicationType
 import org.gammf.collabora.communication.messages._
 import org.gammf.collabora.yellowpages.ActorService.{ActorService, _}
 import org.gammf.collabora.yellowpages.TopicElement._

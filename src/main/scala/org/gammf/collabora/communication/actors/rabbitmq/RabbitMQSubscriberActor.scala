@@ -2,8 +2,8 @@ package org.gammf.collabora.communication.actors.rabbitmq
 
 import akka.actor._
 import com.newmotion.akka.rabbitmq._
-import org.gammf.collabora.communication.Utils.fromBytes
 import org.gammf.collabora.communication.messages.{ClientUpdateMessage, SubscribeMessage}
+import org.gammf.collabora.communication.fromBytes
 import org.gammf.collabora.yellowpages.ActorService.ActorService
 import org.gammf.collabora.yellowpages.actors.BasicActor
 import org.gammf.collabora.yellowpages.util.Topic.ActorTopic
@@ -23,7 +23,7 @@ class RabbitMQSubscriberActor(override val yellowPages: ActorRef, override val n
         override def handleDelivery(consumerTag: String, envelope: Envelope,
                                     properties: BasicProperties, body: Array[Byte]) {
           channel.basicAck(envelope.getDeliveryTag, false)
-          messageSender.get ! ClientUpdateMessage(fromBytes(body))
+          messageSender.get ! ClientUpdateMessage(body)
         }
       }
       channel.basicConsume(queue, false, consumer)

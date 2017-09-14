@@ -22,7 +22,7 @@ class PrinterActor(override val yellowPages: ActorRef,
   }: Receive) orElse super.receive
 
   private[this] def handleHierarchy(nodes: List[HierarchyNode]): Unit = {
-    println(); println("[" + name + "] CURRENT HIERARCHY {"); println()
+    println(); println("[" + name + "] " + nodes.size + " actors found, CURRENT HIERARCHY {"); println()
     nodes.foreach(printNode); println(); println("} END CURRENT HIERARCHY")
     def printNode(n: HierarchyNode): Unit = {
       println(getIndent(n.level) + n.name + " => INFO[" + n.topic + ", " + n.service + ", " + n.reference + "]")

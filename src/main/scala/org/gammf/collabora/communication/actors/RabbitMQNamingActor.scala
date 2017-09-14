@@ -7,6 +7,8 @@ import org.gammf.collabora.yellowpages.ActorService.ActorService
 import org.gammf.collabora.yellowpages.actors.BasicActor
 import org.gammf.collabora.yellowpages.util.Topic.ActorTopic
 
+import scala.language.implicitConversions
+
 /**
   * This is an actor that handles the rabbitMQ naming issues.
   */

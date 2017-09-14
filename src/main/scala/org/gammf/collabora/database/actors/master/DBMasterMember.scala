@@ -59,17 +59,17 @@ class DBMasterMember(override val yellowPages: ActorRef, override val name: Stri
       case _ => unhandled(_)
     }
 
-    case message: SendInsertMemberNotificationMessage =>
-      getActorOrElse(Topic() :+ Communication :+ Notifications, Bridging, message)
-      .foreach(_ ! buildNotificationMessage(message.insertMessage))
+    case wrapper: SendInsertMemberNotificationMessage =>
+      getActorOrElse(Topic() :+ Communication :+ Notifications, Bridging, wrapper)
+      .foreach(_ ! buildNotificationMessage(wrapper.insertMessage))
 
-    case message: SendInsertMemberCollaborationMessage =>
-      getActorOrElse(Topic() :+ Database :+ Collaboration, Getter, message)
+    case wrapper: SendInsertMemberCollaborationMessage =>
+      getActorOrElse(Topic() :+ Database :+ Collaboration, Getter, wrapper)
         .foreach(collaborationGetter =>
-          (collaborationGetter ? GetCollaborationMessage(message.insertMessage.collaborationID))
+          (collaborationGetter ? GetCollaborationMessage(wrapper.insertMessage.collaborationID))
             .mapTo[Option[List[org.gammf.collabora.util.Collaboration]]].map {
-            case Some(head :: _) => getActorOrElse(Topic() :+ Communication :+ Collaborations :+ RabbitMQ , Master, message)
-              .foreach(_ ! PublishCollaborationInCollaborationExchange(message.insertMessage.userID, CollaborationMessage(user=message.insertMessage.userID,collaboration = head)))
+            case Some(head :: _) => getActorOrElse(Topic() :+ Communication :+ Collaborations :+ RabbitMQ , Master, wrapper)
+              .foreach(_ ! PublishCollaborationInCollaborationExchange(wrapper.insertMessage.user.user, CollaborationMessage(user=wrapper.insertMessage.userID,collaboration = head)))
             case _ =>
           })
 

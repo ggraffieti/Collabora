@@ -6,6 +6,7 @@ import com.newmotion.akka.rabbitmq.{Channel, ConnectionActor, ConnectionFactory}
 import com.rabbitmq.client.{Channel, Connection, ConnectionFactory}
 import org.gammf.collabora.{TestMessageUtil, TestUtil}
 import org.gammf.collabora.communication.messages._
+import org.gammf.collabora.yellowpages.ActorCreator
 import org.gammf.collabora.yellowpages.ActorService.ConnectionHandler
 import org.gammf.collabora.yellowpages.actors.YellowPagesActor
 import org.gammf.collabora.yellowpages.messages.{RegistrationRequestMessage, RegistrationResponseMessage}
@@ -21,13 +22,17 @@ class SubscriberActorTest extends TestKit (ActorSystem("CollaboraServer")) with 
   val CONNECTION_ACTOR_NAME = "RabbitConnection"
   val CHANNEL_CREATOR_NAME = "RabbitChannelCreator"
   val SUBSCRIBER_ACTOR_NAME = "SubscriberActor"
-  val rootYellowPages = system.actorOf(YellowPagesActor.rootProps())
+
+  val actorCreator = new ActorCreator(system)
+  val rootYellowPages = actorCreator.getYellowPagesRoot
+
   val factory = new ConnectionFactory()
   val rabbitConnection = system.actorOf(ConnectionActor.props(factory), CONNECTION_ACTOR_NAME)
   rootYellowPages ! RegistrationRequestMessage(rabbitConnection, CONNECTION_ACTOR_NAME, Topic() :+ Communication :+ RabbitMQ, ConnectionHandler)
 
   val channelCreator = system.actorOf(ChannelCreatorActor.printerProps(rootYellowPages, Topic() :+ Communication :+ RabbitMQ, CHANNEL_CREATOR_NAME))
   val subscriber = system.actorOf(SubscriberActor.printerProps(rootYellowPages, Topic() :+ Communication :+ RabbitMQ, SUBSCRIBER_ACTOR_NAME))
+
   val connectemp: Connection = factory.newConnection
   var channel: Channel = connectemp.createChannel
 
@@ -61,5 +66,5 @@ class SubscriberActorTest extends TestKit (ActorSystem("CollaboraServer")) with 
     }
 
   }
-  */
+*/
 }

@@ -9,6 +9,7 @@ import org.gammf.collabora.database.actors.master.DBMasterActor
 import org.gammf.collabora.database.actors.worker.DBWorkerNotesActor
 import org.gammf.collabora.database.messages._
 import org.gammf.collabora.util.{NoteState, SimpleNote}
+import org.gammf.collabora.yellowpages.ActorCreator
 import org.gammf.collabora.yellowpages.ActorService.ConnectionHandler
 import org.gammf.collabora.yellowpages.actors.YellowPagesActor
 import org.gammf.collabora.yellowpages.messages.{RegistrationRequestMessage, RegistrationResponseMessage}
@@ -32,7 +33,9 @@ class DBWorkerNotesActorTest extends TestKit (ActorSystem("CollaboraServer")) wi
   val DBMASTER_ACTOR_NAME = "DBMaster"
   val DBWORKER_NOTES_ACTOR_NAME = "DBWorkerNotes"
 
-  val rootYellowPages = system.actorOf(YellowPagesActor.rootProps())
+  val actorCreator = new ActorCreator(system)
+  val rootYellowPages = actorCreator.getYellowPagesRoot
+
   val factory = new ConnectionFactory()
   val rabbitConnection = system.actorOf(ConnectionActor.props(factory), CONNECTION_ACTOR_NAME)
   rootYellowPages ! RegistrationRequestMessage(rabbitConnection, CONNECTION_ACTOR_NAME, Topic() :+ Communication :+ RabbitMQ, ConnectionHandler)

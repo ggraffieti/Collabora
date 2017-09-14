@@ -5,6 +5,7 @@ import akka.testkit.{ImplicitSender, TestKit}
 import com.newmotion.akka.rabbitmq.{ConnectionActor, ConnectionFactory}
 import org.gammf.collabora.TestUtil
 import org.gammf.collabora.database.messages.{AskConnectionMessage, GetConnectionMessage}
+import org.gammf.collabora.yellowpages.ActorCreator
 import org.gammf.collabora.yellowpages.ActorService.ConnectionHandler
 import org.gammf.collabora.yellowpages.actors.YellowPagesActor
 import org.gammf.collabora.yellowpages.messages.{RegistrationRequestMessage, RegistrationResponseMessage}
@@ -19,7 +20,9 @@ class ConnectionManagerActorTest extends TestKit (ActorSystem("CollaboraServer")
   val CONNECTION_ACTOR_NAME = "RabbitConnection"
   val MONGO_CONNECTION_ACTOR_NAME = "MongoConnectionManager"
 
-  val rootYellowPages = system.actorOf(YellowPagesActor.rootProps())
+  val actorCreator = new ActorCreator(system)
+  val rootYellowPages = actorCreator.getYellowPagesRoot
+
   val factory = new ConnectionFactory()
   val rabbitConnection = system.actorOf(ConnectionActor.props(factory), CONNECTION_ACTOR_NAME)
   rootYellowPages ! RegistrationRequestMessage(rabbitConnection, CONNECTION_ACTOR_NAME, Topic() :+ Communication :+ RabbitMQ, ConnectionHandler)

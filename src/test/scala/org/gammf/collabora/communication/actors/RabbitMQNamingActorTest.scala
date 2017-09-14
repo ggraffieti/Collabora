@@ -6,6 +6,7 @@ import com.newmotion.akka.rabbitmq.{ConnectionActor, ConnectionFactory}
 import org.gammf.collabora.TestUtil
 import org.gammf.collabora.communication.Utils.CommunicationType
 import org.gammf.collabora.communication.messages.{ChannelNamesRequestMessage, ChannelNamesResponseMessage, PublishCollaborationInCollaborationExchange}
+import org.gammf.collabora.yellowpages.ActorCreator
 import org.gammf.collabora.yellowpages.ActorService.ConnectionHandler
 import org.gammf.collabora.yellowpages.actors.YellowPagesActor
 import org.gammf.collabora.yellowpages.messages.{RegistrationRequestMessage, RegistrationResponseMessage}
@@ -21,7 +22,8 @@ class RabbitMQNamingActorTest extends TestKit (ActorSystem("CollaboraServer")) w
   val NAMING_ACTOR_NAME = "NamingActor"
   val CHANNEL_CREATOR_NAME = "RabbitChannelCreator"
 
-  val rootYellowPages = system.actorOf(YellowPagesActor.rootProps())
+  val actorCreator = new ActorCreator(system)
+  val rootYellowPages = actorCreator.getYellowPagesRoot
 
   val factory = new ConnectionFactory()
   val rabbitConnection = system.actorOf(ConnectionActor.props(factory), CONNECTION_ACTOR_NAME)

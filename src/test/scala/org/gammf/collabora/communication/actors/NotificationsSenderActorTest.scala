@@ -4,15 +4,16 @@ import akka.actor.{ActorRef, ActorSystem, Props}
 import akka.testkit.{DefaultTimeout, ImplicitSender, TestKit}
 import com.newmotion.akka.rabbitmq.{ConnectionActor, ConnectionFactory}
 import com.rabbitmq.client.{ConnectionFactory, _}
-import org.gammf.collabora.EntryPoint.{system}
+import org.gammf.collabora.EntryPoint.system
 import org.gammf.collabora.{TestMessageUtil, TestUtil}
 import org.gammf.collabora.communication.Utils.CommunicationType
 import org.gammf.collabora.communication.messages._
 import org.gammf.collabora.database.actors.ConnectionManagerActor
 import org.gammf.collabora.database.actors.master.DBMasterActor
+import org.gammf.collabora.yellowpages.ActorCreator
 import org.gammf.collabora.yellowpages.ActorService.ConnectionHandler
 import org.gammf.collabora.yellowpages.actors.YellowPagesActor
-import org.gammf.collabora.yellowpages.messages.RegistrationRequestMessage
+import org.gammf.collabora.yellowpages.messages.{RegistrationRequestMessage, RegistrationResponseMessage}
 import org.gammf.collabora.yellowpages.util.Topic
 import org.gammf.collabora.yellowpages.TopicElement._
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
@@ -21,7 +22,7 @@ import scala.concurrent.duration._
 import org.scalatest.concurrent.Eventually
 
 class NotificationsSenderActorTest extends TestKit (ActorSystem("CollaboraServer")) with WordSpecLike with Eventually with DefaultTimeout with Matchers with BeforeAndAfterAll with ImplicitSender {
-/*
+
   private val EXCHANGE_NAME = "notifications"
   private val ROUTING_KEY = "59806a4af27da3fcfe0ac0ca"
   private val BROKER_HOST = "localhost"
@@ -37,7 +38,8 @@ class NotificationsSenderActorTest extends TestKit (ActorSystem("CollaboraServer
   val CHANNEL_CREATOR_NAME = "RabbitChannelCreator"
   val MONGO_CONNECTION_ACTOR_NAME = "MongoConnectionManager"
 
-  val rootYellowPages = system.actorOf(YellowPagesActor.rootProps())
+  val actorCreator = new ActorCreator(system)
+  val rootYellowPages = actorCreator.getYellowPagesRoot
 
   val factory = new ConnectionFactory()
   val rabbitConnection = system.actorOf(ConnectionActor.props(factory), CONNECTION_ACTOR_NAME)
@@ -57,7 +59,7 @@ class NotificationsSenderActorTest extends TestKit (ActorSystem("CollaboraServer
 
 
   override def beforeAll(): Unit ={
-    val factory = new ConnectionFactory
+   /* val factory = new ConnectionFactory
     factory.setHost(BROKER_HOST)
     val connection = factory.newConnection
     val channel = connection.createChannel
@@ -70,7 +72,7 @@ class NotificationsSenderActorTest extends TestKit (ActorSystem("CollaboraServer
       }
     }
     channel.basicConsume(queueName, true, consumer)
-
+*/
   }
 
   override def afterAll(): Unit = {
@@ -87,14 +89,14 @@ class NotificationsSenderActorTest extends TestKit (ActorSystem("CollaboraServer
     "communicate with RabbitMQNamingActor" in {
       within(TestUtil.TASK_WAIT_TIME seconds){
         namingActor ! ChannelNamesRequestMessage(CommunicationType.NOTIFICATIONS)
-        expectMsg(ChannelNamesResponseMessage(TestUtil.TYPE_NOTIFICATIONS, None))
+        expectMsg(RegistrationResponseMessage())
       }
     }
 
     "communicate with channelCreatorActor" in {
       within(TestUtil.TASK_WAIT_TIME seconds){
         channelCreator ! PublishingChannelCreationMessage(TestUtil.TYPE_NOTIFICATIONS, None)
-        expectMsgType[ChannelCreatedMessage]
+        expectMsg(ChannelNamesResponseMessage(TestUtil.TYPE_NOTIFICATIONS, None))
       }
     }
 /*
@@ -112,5 +114,5 @@ class NotificationsSenderActorTest extends TestKit (ActorSystem("CollaboraServer
     }
 */
   }
-*/
+
 }

@@ -9,38 +9,32 @@ import org.gammf.collabora.database.actors.master.DBMasterActor
 import org.gammf.collabora.database.actors.worker.DBWorkerMemberActor
 import org.gammf.collabora.database.messages._
 import org.gammf.collabora.util.{CollaborationRight, CollaborationUser, SimpleUser}
+import org.gammf.collabora.yellowpages.ActorService.ConnectionHandler
+import org.gammf.collabora.yellowpages.actors.YellowPagesActor
+import org.gammf.collabora.yellowpages.messages.{RegistrationRequestMessage, RegistrationResponseMessage}
+import org.gammf.collabora.yellowpages.util.Topic
+import org.gammf.collabora.yellowpages.TopicElement._
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
 
 import scala.concurrent.duration._
 
 class DBWorkerMemberActorTest extends TestKit (ActorSystem("CollaboraServer")) with WordSpecLike  with Matchers with BeforeAndAfterAll with ImplicitSender {
 
-/*
-  val CONNECTION_ACTOR_NAME = "rabbitmq"
-  val NAMING_ACTOR_NAME = "naming"
-  val CHANNEL_CREATOR_NAME = "channelCreator"
-  val PUBLISHER_ACTOR_NAME = "publisher"
-
   val COLLABORATION_USERNAME = "peru"
 
-  val factory = new ConnectionFactory()
-  val connection:ActorRef = system.actorOf(ConnectionActor.props(factory), CONNECTION_ACTOR_NAME)
-  val naming:ActorRef = system.actorOf(Props[RabbitMQNamingActor], NAMING_ACTOR_NAME)
-  val channelCreator :ActorRef= system.actorOf(Props[ChannelCreatorActor], CHANNEL_CREATOR_NAME)
-  val publisherActor:ActorRef = system.actorOf(Props[PublisherActor], PUBLISHER_ACTOR_NAME)
+  val CONNECTION_ACTOR_NAME = "RabbitConnection"
+  val MONGO_CONNECTION_ACTOR_NAME = "MongoConnectionManager"
+  val DBMASTER_ACTOR_NAME = "DBMaster"
+  val DBWORKER_MEMBER_ACTOR_NAME = "DBWorkerMembers"
 
+  val rootYellowPages = system.actorOf(YellowPagesActor.rootProps())
   val factory = new ConnectionFactory()
-  val connection:ActorRef = system.actorOf(ConnectionActor.props(factory), "rabbitmq")
-  val naming:ActorRef = system.actorOf(Props[RabbitMQNamingActor], "naming")
-  val channelCreator :ActorRef= system.actorOf(Props[ChannelCreatorActor], "channelCreator")
-  val publisherActor:ActorRef = system.actorOf(Props[PublisherActor], "publisher")
->>>>>>> e1352d43aebaf97ca96e951fc473704c444d2b97
-  val collaborationMemberActor:ActorRef = system.actorOf(Props(new CollaborationMembersActor(connection, naming, channelCreator, publisherActor)))
-  val notificationActor:ActorRef = system.actorOf(Props(new NotificationsSenderActor(connection, naming, channelCreator, publisherActor,system)))
-  val dbConnectionActor :ActorRef= system.actorOf(Props[ConnectionManagerActor])
-  val dbMasterActor:ActorRef = system.actorOf(Props.create(classOf[DBMasterActor], system, notificationActor,collaborationMemberActor))
-  val connectionManagerActor: ActorRef =  system.actorOf(Props[ConnectionManagerActor])
-  val usersActor:ActorRef = system.actorOf(Props.create(classOf[DBWorkerMemberActor], connectionManagerActor))
+  val rabbitConnection = system.actorOf(ConnectionActor.props(factory), CONNECTION_ACTOR_NAME)
+  rootYellowPages ! RegistrationRequestMessage(rabbitConnection, CONNECTION_ACTOR_NAME, Topic() :+ Communication :+ RabbitMQ, ConnectionHandler)
+
+  val mongoConnectionActor = system.actorOf(ConnectionManagerActor.printerProps(rootYellowPages, Topic() :+ Database, MONGO_CONNECTION_ACTOR_NAME))
+  val dbMasterActor = system.actorOf(DBMasterActor.printerProps(rootYellowPages, Topic() :+ Database, DBMASTER_ACTOR_NAME))
+  val dbWorkerMembersActor = system.actorOf(DBWorkerMemberActor.printerProps(rootYellowPages, Topic() :+ Database :+ Member, DBWORKER_MEMBER_ACTOR_NAME))
 
   val user = CollaborationUser(COLLABORATION_USERNAME, CollaborationRight.WRITE)
 
@@ -56,31 +50,24 @@ class DBWorkerMemberActorTest extends TestKit (ActorSystem("CollaboraServer")) w
     "insert new user in a collaboration correctly in the db" in {
 
       within(TestUtil.TASK_WAIT_TIME second) {
-        usersActor ! InsertMemberMessage(user, TestUtil.FAKE_ID, TestUtil.USER_ID)
-        expectMsgType[QueryOkMessage]
+        dbWorkerMembersActor ! InsertMemberMessage(user, TestUtil.FAKE_ID, TestUtil.USER_ID)
+        expectMsg(RegistrationResponseMessage())
       }
     }
 
     "update a user right in a collaboration correctly" in {
 
       within(TestUtil.TASK_WAIT_TIME second) {
-        usersActor ! UpdateMemberMessage(user, TestUtil.FAKE_ID, TestUtil.USER_ID)
+        dbWorkerMembersActor ! UpdateMemberMessage(user, TestUtil.FAKE_ID, TestUtil.USER_ID)
         expectMsgType[QueryOkMessage]
       }
 
       within(TestUtil.TASK_WAIT_TIME second) {
-        usersActor ! DeleteMemberMessage(user, TestUtil.FAKE_ID, TestUtil.USER_ID)
+        dbWorkerMembersActor ! DeleteMemberMessage(user, TestUtil.FAKE_ID, TestUtil.USER_ID)
         expectMsgType[QueryOkMessage]
       }
     }
-<<<<<<< HEAD
   }
-=======
 
-
-
-  }
->>>>>>> e1352d43aebaf97ca96e951fc473704c444d2b97
-*/
 }
 

@@ -14,30 +14,19 @@ import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
 
 class ChannelCreatorActorTest extends TestKit (ActorSystem("CollaboraServer")) with WordSpecLike with Matchers with BeforeAndAfterAll with ImplicitSender{
 
-/*
-    val CONNECTION_ACTOR_NAME = "rabbitmq"
-    val NAMING_ACTOR_NAME = "naming"
-    val CHANNEL_CREATOR_NAME = "channelCreator"
+
+    val CONNECTION_ACTOR_NAME = "RabbitConnection"
+    val NAMING_ACTOR_NAME = "NamingActor"
+    val CHANNEL_CREATOR_NAME = "RabbitChannelCreator"
+
+    val rootYellowPages = system.actorOf(YellowPagesActor.rootProps())
 
     val factory = new ConnectionFactory()
-    val connection:ActorRef = system.actorOf(ConnectionActor.props(factory), CONNECTION_ACTOR_NAME)
-    val naming: ActorRef = system.actorOf(Props[RabbitMQNamingActor], NAMING_ACTOR_NAME)
-    val channelCreator: ActorRef = system.actorOf(Props[ChannelCreatorActor], CHANNEL_CREATOR_NAME)
+    val rabbitConnection = system.actorOf(ConnectionActor.props(factory), CONNECTION_ACTOR_NAME)
+    rootYellowPages ! RegistrationRequestMessage(rabbitConnection, CONNECTION_ACTOR_NAME, Topic() :+ Communication :+ RabbitMQ, ConnectionHandler)
 
-    val factory = new ConnectionFactory()
-    val connection:ActorRef = system.actorOf(ConnectionActor.props(factory), "rabbitmq")
-    val naming: ActorRef = system.actorOf(Props[RabbitMQNamingActor], "naming")
-    val channelCreator: ActorRef = system.actorOf(Props[ChannelCreatorActor], "channelCreator")
-  */
-  val rootYellowPages = system.actorOf(YellowPagesActor.rootProps())
-
-  //COMMUNICATION-------------------------------------------------
-  val factory = new ConnectionFactory()
-  val rabbitConnection = system.actorOf(ConnectionActor.props(factory), "rabbitmq")
-  rootYellowPages ! RegistrationRequestMessage(rabbitConnection, "RabbitConnection", Topic() :+ Communication :+ RabbitMQ, ConnectionHandler)
-
-  val channelCreator = system.actorOf(ChannelCreatorActor.printerProps(rootYellowPages, Topic() :+ Communication :+ RabbitMQ, "RabbitChannelCreator"))
-  val namingActor = system.actorOf(RabbitMQNamingActor.printerProps(rootYellowPages, Topic() :+ Communication :+ RabbitMQ, "NamingActor"))
+    val channelCreator = system.actorOf(ChannelCreatorActor.printerProps(rootYellowPages, Topic() :+ Communication :+ RabbitMQ, CHANNEL_CREATOR_NAME))
+    val namingActor = system.actorOf(RabbitMQNamingActor.printerProps(rootYellowPages, Topic() :+ Communication :+ RabbitMQ, NAMING_ACTOR_NAME))
 
     override def afterAll(): Unit = {
       TestKit.shutdownActorSystem(system)

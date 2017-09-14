@@ -1,51 +1,45 @@
 package org.gammf.collabora.database.actors
-import akka.actor.{ActorRef, ActorSystem, Props}
+import akka.actor.ActorSystem
 import akka.testkit.{ImplicitSender, TestKit}
 import com.newmotion.akka.rabbitmq.{ConnectionActor, ConnectionFactory}
 import org.gammf.collabora.TestUtil
-import org.gammf.collabora.communication.actors._
 import org.gammf.collabora.database.actors.master.DBMasterActor
 import org.gammf.collabora.database.actors.worker.DBWorkerModulesActor
 import org.gammf.collabora.database.messages._
-import org.gammf.collabora.util.{Module, Note, NoteState, SimpleModule, SimpleNote}
+import org.gammf.collabora.util.{SimpleModule}
+import org.gammf.collabora.yellowpages.ActorService.ConnectionHandler
+import org.gammf.collabora.yellowpages.actors.YellowPagesActor
+import org.gammf.collabora.yellowpages.messages.{RegistrationRequestMessage, RegistrationResponseMessage}
+import org.gammf.collabora.yellowpages.util.Topic
+import org.gammf.collabora.yellowpages.TopicElement._
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
 
 import scala.concurrent.duration._
 
 class DBWorkerModulesActorTest extends TestKit (ActorSystem("CollaboraServer")) with WordSpecLike  with Matchers with BeforeAndAfterAll with ImplicitSender {
 
-/*
-  val CONNECTION_ACTOR_NAME = "rabbitmq"
-  val NAMING_ACTOR_NAME = "naming"
-  val CHANNEL_CREATOR_NAME = "channelCreator"
-  val PUBLISHER_ACTOR_NAME = "publisher"
+  val CONNECTION_ACTOR_NAME = "RabbitConnection"
+  val MONGO_CONNECTION_ACTOR_NAME = "MongoConnectionManager"
+  val DBMASTER_ACTOR_NAME = "DBMaster"
+  val DBWORKER_MODULES_ACTOR_NAME = "DBWorkerModules"
 
+  val rootYellowPages = system.actorOf(YellowPagesActor.rootProps())
   val factory = new ConnectionFactory()
-  val connection:ActorRef = system.actorOf(ConnectionActor.props(factory), CONNECTION_ACTOR_NAME)
-  val naming:ActorRef = system.actorOf(Props[RabbitMQNamingActor], NAMING_ACTOR_NAME)
-  val channelCreator :ActorRef= system.actorOf(Props[ChannelCreatorActor], CHANNEL_CREATOR_NAME)
-  val publisherActor:ActorRef = system.actorOf(Props[PublisherActor], PUBLISHER_ACTOR_NAME)
+  val rabbitConnection = system.actorOf(ConnectionActor.props(factory), CONNECTION_ACTOR_NAME)
+  rootYellowPages ! RegistrationRequestMessage(rabbitConnection, CONNECTION_ACTOR_NAME, Topic() :+ Communication :+ RabbitMQ, ConnectionHandler)
 
-val factory = new ConnectionFactory()
-  val connection:ActorRef = system.actorOf(ConnectionActor.props(factory), "rabbitmq")
-  val naming:ActorRef = system.actorOf(Props[RabbitMQNamingActor], "naming")
-  val channelCreator :ActorRef= system.actorOf(Props[ChannelCreatorActor], "channelCreator")
-  val publisherActor:ActorRef = system.actorOf(Props[PublisherActor], "publisher")
->>>>>>> e1352d43aebaf97ca96e951fc473704c444d2b97
-  val collaborationMemberActor:ActorRef = system.actorOf(Props(new CollaborationMembersActor(connection, naming, channelCreator, publisherActor)))
-  val notificationActor:ActorRef = system.actorOf(Props(new NotificationsSenderActor(connection, naming, channelCreator, publisherActor,system)))
-  val dbConnectionActor :ActorRef= system.actorOf(Props[ConnectionManagerActor])
-  val dbMasterActor:ActorRef = system.actorOf(Props.create(classOf[DBMasterActor], system, notificationActor,collaborationMemberActor))
-  val connectionManagerActor: ActorRef =  system.actorOf(Props[ConnectionManagerActor])
-  val modulesActor:ActorRef = system.actorOf(Props.create(classOf[DBWorkerModulesActor], connectionManagerActor))
+  val mongoConnectionActor = system.actorOf(ConnectionManagerActor.printerProps(rootYellowPages, Topic() :+ Database, MONGO_CONNECTION_ACTOR_NAME))
+  val dbMasterActor = system.actorOf(DBMasterActor.printerProps(rootYellowPages, Topic() :+ Database, DBMASTER_ACTOR_NAME))
+  val dBWorkerModulesActor = system.actorOf(DBWorkerModulesActor.printerProps(rootYellowPages, Topic() :+ Database :+ Module, DBWORKER_MODULES_ACTOR_NAME))
+
 
   val MODULE_ID:String = "123456788000000000000000"
   val MODULE_DESCRIPTION = "questo è un modulo importante"
   val MODULE_STATE = "doing"
 
-  //val module:Module = SimpleModule(Option(MODULE_ID),MODULE_DESCRIPTION,None,MODULE_STATE)
+  val module:org.gammf.collabora.util.Module = org.gammf.collabora.util.SimpleModule(Option(MODULE_ID),MODULE_DESCRIPTION,MODULE_STATE)
 
-  val module:Module = Module(Option(MODULE_ID),MODULE_DESCRIPTION,MODULE_STATE)
+ // val module:Module = Module(Option(MODULE_ID),MODULE_DESCRIPTION,MODULE_STATE)
 
 
   override def beforeAll(): Unit = {
@@ -59,32 +53,25 @@ val factory = new ConnectionFactory()
   "A DBWorkerModules actor" should {
     "insert new modules in a collaboration correctly in the db" in {
       within(TestUtil.TASK_WAIT_TIME second) {
-        modulesActor ! InsertModuleMessage(module, TestUtil.FAKE_ID, TestUtil.USER_ID)
-        expectMsgType[QueryOkMessage]
+        dBWorkerModulesActor ! InsertModuleMessage(module, TestUtil.FAKE_ID, TestUtil.USER_ID)
+        expectMsg(RegistrationResponseMessage())
       }
     }
 
     "update a module in a collaboration correctly" in {
       within(TestUtil.TASK_WAIT_TIME second) {
-        modulesActor ! UpdateModuleMessage(module, TestUtil.FAKE_ID, TestUtil.USER_ID)
+        dBWorkerModulesActor ! UpdateModuleMessage(module, TestUtil.FAKE_ID, TestUtil.USER_ID)
         expectMsgType[QueryOkMessage]
       }
     }
 
     "delete a module in a collaboration correctly" in {
       within(TestUtil.TASK_WAIT_TIME second) {
-        modulesActor ! DeleteModuleMessage(module, TestUtil.FAKE_ID, TestUtil.USER_ID)
+        dBWorkerModulesActor ! DeleteModuleMessage(module, TestUtil.FAKE_ID, TestUtil.USER_ID)
         expectMsgType[QueryOkMessage]
       }
     }
-<<<<<<< HEAD
   }
-=======
 
-
-
-  }
->>>>>>> e1352d43aebaf97ca96e951fc473704c444d2b97
-*/
 }
 

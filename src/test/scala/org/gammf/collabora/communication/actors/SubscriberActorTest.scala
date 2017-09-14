@@ -6,25 +6,28 @@ import com.newmotion.akka.rabbitmq.{Channel, ConnectionActor, ConnectionFactory}
 import com.rabbitmq.client.{Channel, Connection, ConnectionFactory}
 import org.gammf.collabora.{TestMessageUtil, TestUtil}
 import org.gammf.collabora.communication.messages._
+import org.gammf.collabora.yellowpages.ActorService.ConnectionHandler
+import org.gammf.collabora.yellowpages.actors.YellowPagesActor
+import org.gammf.collabora.yellowpages.messages.{RegistrationRequestMessage, RegistrationResponseMessage}
+import org.gammf.collabora.yellowpages.util.Topic
+import org.gammf.collabora.yellowpages.TopicElement._
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
 
 
 class SubscriberActorTest extends TestKit (ActorSystem("CollaboraServer")) with WordSpecLike with DefaultTimeout with Matchers with BeforeAndAfterAll with ImplicitSender {
-
 /*
-  val CONNECTION_ACTOR_NAME = "rabbitmq"
-  val CHANNEL_CREATOR_NAME = "channelCreator"
-  val SUBSCRIBER_ACTOR_NAME = "subscriber"
-
   private val EXCHANGE_NAME = "updates"
   private val ROUTING_KEY = ""
->>>>>>> e1352d43aebaf97ca96e951fc473704c444d2b97
-
+  val CONNECTION_ACTOR_NAME = "RabbitConnection"
+  val CHANNEL_CREATOR_NAME = "RabbitChannelCreator"
+  val SUBSCRIBER_ACTOR_NAME = "SubscriberActor"
+  val rootYellowPages = system.actorOf(YellowPagesActor.rootProps())
   val factory = new ConnectionFactory()
-  val connection:ActorRef = system.actorOf(ConnectionActor.props(factory), CONNECTION_ACTOR_NAME)
-  val channelCreator: ActorRef = system.actorOf(Props[ChannelCreatorActor], CHANNEL_CREATOR_NAME)
-  val subscriber:ActorRef = system.actorOf(Props[SubscriberActor], SUBSCRIBER_ACTOR_NAME)
+  val rabbitConnection = system.actorOf(ConnectionActor.props(factory), CONNECTION_ACTOR_NAME)
+  rootYellowPages ! RegistrationRequestMessage(rabbitConnection, CONNECTION_ACTOR_NAME, Topic() :+ Communication :+ RabbitMQ, ConnectionHandler)
 
+  val channelCreator = system.actorOf(ChannelCreatorActor.printerProps(rootYellowPages, Topic() :+ Communication :+ RabbitMQ, CHANNEL_CREATOR_NAME))
+  val subscriber = system.actorOf(SubscriberActor.printerProps(rootYellowPages, Topic() :+ Communication :+ RabbitMQ, SUBSCRIBER_ACTOR_NAME))
   val connectemp: Connection = factory.newConnection
   var channel: Channel = connectemp.createChannel
 
@@ -36,7 +39,7 @@ class SubscriberActorTest extends TestKit (ActorSystem("CollaboraServer")) with 
   "A Subscriber actor" should {
 
     "subscribes on a certain queue in a rabbitMQ channel correctly" in {
-      channelCreator ! SubscribingChannelCreationMessage(connection, TestUtil.TYPE_UPDATES, TestUtil.SERVER_UPDATE, None)
+      channelCreator ! SubscribingChannelCreationMessage(TestUtil.TYPE_UPDATES, TestUtil.SERVER_UPDATE, None)
       val ChannelCreatedMessage(channel) = expectMsgType[ChannelCreatedMessage]
       subscriber ! SubscribeMessage(channel, TestUtil.SERVER_UPDATE)
       this.channel = channel
@@ -57,5 +60,6 @@ class SubscriberActorTest extends TestKit (ActorSystem("CollaboraServer")) with 
       messages.length should be(TestUtil.MESSAGE_LENGTH)
     }
 
-  }*/
+  }
+  */
 }

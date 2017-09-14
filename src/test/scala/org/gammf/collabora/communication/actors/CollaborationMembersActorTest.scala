@@ -8,6 +8,11 @@ import org.gammf.collabora.{TestMessageUtil, TestUtil}
 import org.gammf.collabora.communication.Utils.CommunicationType
 import org.gammf.collabora.communication.messages._
 import org.gammf.collabora.database.actors.master.DBMasterActor
+import org.gammf.collabora.yellowpages.ActorService.ConnectionHandler
+import org.gammf.collabora.yellowpages.actors.YellowPagesActor
+import org.gammf.collabora.yellowpages.messages.RegistrationRequestMessage
+import org.gammf.collabora.yellowpages.util.Topic
+import org.gammf.collabora.yellowpages.TopicElement._
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
 
 import scala.concurrent.duration._
@@ -15,35 +20,31 @@ import org.scalatest.concurrent.Eventually
 
 
 class CollaborationMembersActorTest extends TestKit (ActorSystem("CollaboraServer")) with WordSpecLike with Eventually with DefaultTimeout with Matchers with BeforeAndAfterAll with ImplicitSender {
-
 /*
-  val CONNECTION_ACTOR_NAME = "rabbitmq"
-  val NAMING_ACTOR_NAME = "naming"
-  val CHANNEL_CREATOR_NAME = "channelCreator"
-  val PUBLISHER_ACTOR_NAME = "publisher"
-  val COLLABORATION_MEMBER_ACTOR_NAME = "collaboration-members"
-  val SUBSCRIBER_ACTOR_NAME = "subscriber"
-  val UPDATES_RECEIVER_ACTOR_NAME = "updates-receiver"
+  val PUBLISHER_ACTOR_NAME = "PublisherActor"
+  val COLLABORATION_MEMBER_ACTOR_NAME = "CollaborationActor"
+  val SUBSCRIBER_ACTOR_NAME = "SubscriberActor"
+  val NOTIFICATION_ACTOR_NAME = "NotificationActor"
+  val UPDATES_RECEIVER_ACTOR_NAME = "UpdatesReceiver"
+  val DBMASTER_ACTOR_NAME = "DBMaster"
+  val CONNECTION_ACTOR_NAME = "RabbitConnection"
+  val NAMING_ACTOR_NAME = "NamingActor"
+  val CHANNEL_CREATOR_NAME = "RabbitChannelCreator"
+
+  val rootYellowPages = system.actorOf(YellowPagesActor.rootProps())
 
   val factory = new ConnectionFactory()
-  val connection:ActorRef = system.actorOf(ConnectionActor.props(factory), CONNECTION_ACTOR_NAME)
-  val naming: ActorRef = system.actorOf(Props[RabbitMQNamingActor], NAMING_ACTOR_NAME)
-  val channelCreator: ActorRef = system.actorOf(Props[ChannelCreatorActor], CHANNEL_CREATOR_NAME)
-  val publisher: ActorRef = system.actorOf(Props[PublisherActor], PUBLISHER_ACTOR_NAME)
+  val rabbitConnection = system.actorOf(ConnectionActor.props(factory), CONNECTION_ACTOR_NAME)
+  rootYellowPages ! RegistrationRequestMessage(rabbitConnection, CONNECTION_ACTOR_NAME, Topic() :+ Communication :+ RabbitMQ, ConnectionHandler)
 
-  val factory = new ConnectionFactory()
-  val connection:ActorRef = system.actorOf(ConnectionActor.props(factory), "rabbitmq")
-  val naming: ActorRef = system.actorOf(Props[RabbitMQNamingActor], "naming")
-  val channelCreator: ActorRef = system.actorOf(Props[ChannelCreatorActor], "channelCreator")
-  val publisher: ActorRef = system.actorOf(Props[PublisherActor], "publisher")
->>>>>>> e1352d43aebaf97ca96e951fc473704c444d2b97
-  val collaborationMember: ActorRef = system.actorOf(Props(
-    new CollaborationMembersActor(connection, naming, channelCreator, publisher)), COLLABORATION_MEMBER_ACTOR_NAME)
-  val notificationActor:ActorRef = system.actorOf(Props(new NotificationsSenderActor(connection, naming, channelCreator, publisher,system)))
-  val dbMasterActor:ActorRef = system.actorOf(Props.create(classOf[DBMasterActor], system, notificationActor,collaborationMember))
-  val subscriber:ActorRef = system.actorOf(Props[SubscriberActor], SUBSCRIBER_ACTOR_NAME)
-  val updatesReceiver :ActorRef= system.actorOf(Props(
-    new UpdatesReceiverActor(connection, naming, channelCreator, subscriber, dbMasterActor)), UPDATES_RECEIVER_ACTOR_NAME)
+  val channelCreator = system.actorOf(ChannelCreatorActor.printerProps(rootYellowPages, Topic() :+ Communication :+ RabbitMQ, CHANNEL_CREATOR_NAME))
+  val namingActor = system.actorOf(RabbitMQNamingActor.printerProps(rootYellowPages, Topic() :+ Communication :+ RabbitMQ, NAMING_ACTOR_NAME))
+  val publisherActor = system.actorOf(PublisherActor.printerProps(rootYellowPages, Topic() :+ Communication :+ RabbitMQ, PUBLISHER_ACTOR_NAME))
+  val subscriber = system.actorOf(SubscriberActor.printerProps(rootYellowPages, Topic() :+ Communication :+ RabbitMQ, SUBSCRIBER_ACTOR_NAME))
+  val updatesReceiver = system.actorOf(UpdatesReceiverActor.printerProps(rootYellowPages, Topic() :+ Communication :+ Updates :+ RabbitMQ , UPDATES_RECEIVER_ACTOR_NAME))
+  val notificationActor = system.actorOf(NotificationsSenderActor.printerProps(rootYellowPages, Topic() :+ Communication :+ Notifications :+ RabbitMQ, NOTIFICATION_ACTOR_NAME))
+  val collaborationActor = system.actorOf(CollaborationMembersActor.printerProps(rootYellowPages, Topic() :+ Communication :+ Collaborations  :+ RabbitMQ, COLLABORATION_MEMBER_ACTOR_NAME))
+  val dbMasterActor = system.actorOf(DBMasterActor.printerProps(rootYellowPages, Topic() :+ Database, DBMASTER_ACTOR_NAME))
 
   var msgCollab,msgNotif: String = ""
 
@@ -66,14 +67,14 @@ class CollaborationMembersActorTest extends TestKit (ActorSystem("CollaboraServe
 
     "communicate with RabbitMQNamingActor" in {
       within(TestUtil.TASK_WAIT_TIME seconds){
-        naming ! ChannelNamesRequestMessage(CommunicationType.COLLABORATIONS)
+        namingActor ! ChannelNamesRequestMessage(CommunicationType.COLLABORATIONS)
         expectMsg(ChannelNamesResponseMessage(TestUtil.TYPE_COLLABORATIONS, None))
       }
     }
 
     "communicate with channelCreatorActor" in {
       within(TestUtil.TASK_WAIT_TIME seconds){
-        channelCreator ! PublishingChannelCreationMessage(connection, TestUtil.TYPE_COLLABORATIONS, None)
+        channelCreator ! PublishingChannelCreationMessage(TestUtil.TYPE_COLLABORATIONS, None)
         expectMsgType[ChannelCreatedMessage]
       }
     }
@@ -81,7 +82,7 @@ class CollaborationMembersActorTest extends TestKit (ActorSystem("CollaboraServe
     "send collaboration to user that have just added and a notification to all the old member of collaboration" in {
       val message = TestMessageUtil.collaborationMembersActorTestMessage
       notificationActor ! StartMessage
-      collaborationMember ! StartMessage
+      collaborationActor ! StartMessage
       updatesReceiver ! StartMessage
       updatesReceiver ! ClientUpdateMessage(message)
       eventually{
@@ -112,8 +113,6 @@ class CollaborationMembersActorTest extends TestKit (ActorSystem("CollaboraServe
     }
     channel.basicConsume(queueName, true, consumer)
   }
-
-
 
 */
 }

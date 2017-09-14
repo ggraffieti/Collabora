@@ -3,6 +3,7 @@ package org.gammf.collabora.database.actors.master
 import akka.actor.ActorRef
 import akka.pattern.ask
 import org.gammf.collabora.communication.messages.{CommunicationMessage, PublishCollaborationInCollaborationExchange, PublishErrorMessageInCollaborationExchange, PublishNotificationMessage}
+import org.gammf.collabora.communication.actors.{NotificationsSenderActor, FirebaseActor}
 import org.gammf.collabora.database.messages._
 import org.gammf.collabora.util.{CollaborationMessage, ServerErrorCode, ServerErrorMessage, UpdateMessage, UpdateMessageTarget, UpdateMessageType}
 import org.gammf.collabora.yellowpages.ActorService.ActorService
@@ -89,5 +90,14 @@ class DBMasterMember(override val yellowPages: ActorRef, override val name: Stri
   }
 }
 
+/**
+  * Message used internally by a [[DBMasterMember]] in order to send a message to a [[NotificationsSenderActor]].
+  * @param insertMessage the message to be sent.
+  */
 private case class SendInsertMemberNotificationMessage(insertMessage: InsertMemberMessage)
+
+/**
+  * Message used internally by a [[DBMasterMember]] in order to send a message to a [[FirebaseActor]].
+  * @param insertMessage the message to be sent.
+  */
 private case class SendInsertMemberCollaborationMessage(insertMessage: InsertMemberMessage)

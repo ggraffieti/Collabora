@@ -1,17 +1,18 @@
 package org.gammf.collabora.database.actors
+
 import akka.actor.{ActorRef, ActorSystem, Props}
 import akka.testkit.{ImplicitSender, TestKit}
 import com.newmotion.akka.rabbitmq.{ConnectionActor, ConnectionFactory}
 import org.gammf.collabora.communication.actors._
 import org.gammf.collabora.database.actors.master.DBMasterActor
-import org.gammf.collabora.database.actors.worker.DBWorkerModulesActor
+import org.gammf.collabora.database.actors.worker.DBWorkerNoteActor
 import org.gammf.collabora.database.messages._
-import org.gammf.collabora.util.{Module, Note, NoteState, SimpleModule, SimpleNote}
+import org.gammf.collabora.util.{Note, NoteState, SimpleNote}
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
 
 import scala.concurrent.duration._
 
-class DBWorkerModulesActorTest extends TestKit (ActorSystem("CollaboraServer")) with WordSpecLike  with Matchers with BeforeAndAfterAll with ImplicitSender {
+class DBWorkerNoteActorTest extends TestKit (ActorSystem("CollaboraServer")) with WordSpecLike  with Matchers with BeforeAndAfterAll with ImplicitSender {
 
   /*val factory = new ConnectionFactory()
   val connection:ActorRef = system.actorOf(ConnectionActor.props(factory), "rabbitmq")
@@ -23,10 +24,11 @@ class DBWorkerModulesActorTest extends TestKit (ActorSystem("CollaboraServer")) 
   val dbConnectionActor :ActorRef= system.actorOf(Props[ConnectionManagerActor])
   val dbMasterActor:ActorRef = system.actorOf(Props.create(classOf[DBMasterActor], system, notificationActor,collaborationMemberActor))
   val connectionManagerActor: ActorRef =  system.actorOf(Props[ConnectionManagerActor])
-  val modulesActor:ActorRef = system.actorOf(Props.create(classOf[DBWorkerModulesActor], connectionManagerActor))
-  val moduleId:String = "123456788000000000000000"
+  val notesActor:ActorRef = system.actorOf(Props.create(classOf[DBWorkerNotesActor], connectionManagerActor))
+  val noteId:String = "123456788354670000000000"
 
-  val module:Module = Module(Option(moduleId),"questo è un modulo importante","doing")
+  val notetmp:Note = SimpleNote(Option(noteId), "prova test", None,
+    None, None, new NoteState("done",None), None)
 
   override def beforeAll(): Unit = {
 
@@ -36,24 +38,25 @@ class DBWorkerModulesActorTest extends TestKit (ActorSystem("CollaboraServer")) 
     TestKit.shutdownActorSystem(system)
   }
 
-  "A DBWorkerModules actor" should {
-    "insert new modules in a collaboration correctly in the db" in {
+  "A DBWorkerNotes actor" should {
+    "insert new notes correctly in the db" in {
+
       within(5 second) {
-        modulesActor ! InsertModuleMessage(module, "59806a4af27da3fcfe0ac0ca", "maffone")
+        notesActor ! InsertNoteMessage(notetmp, "59806a4af27da3fcfe0ac0ca", "maffone")
         expectMsgType[QueryOkMessage]
       }
     }
 
-    "update a module in a collaboration correctly" in {
+    "update notes correctly" in {
       within(5 second) {
-        modulesActor ! UpdateModuleMessage(module, "59806a4af27da3fcfe0ac0ca", "maffone")
+        notesActor ! UpdateNoteMessage(notetmp, "59806a4af27da3fcfe0ac0ca", "maffone")
         expectMsgType[QueryOkMessage]
       }
     }
 
-    "delete a module in a collaboration correctly" in {
+    "delete notes correctly" in {
       within(5 second) {
-        modulesActor ! DeleteModuleMessage(module, "59806a4af27da3fcfe0ac0ca", "maffone")
+        notesActor ! DeleteNoteMessage(notetmp, "59806a4af27da3fcfe0ac0ca", "maffone")
         expectMsgType[QueryOkMessage]
       }
     }

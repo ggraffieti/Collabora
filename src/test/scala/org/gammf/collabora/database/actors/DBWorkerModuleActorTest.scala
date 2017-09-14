@@ -1,19 +1,17 @@
 package org.gammf.collabora.database.actors
-
 import akka.actor.{ActorRef, ActorSystem, Props}
 import akka.testkit.{ImplicitSender, TestKit}
 import com.newmotion.akka.rabbitmq.{ConnectionActor, ConnectionFactory}
 import org.gammf.collabora.communication.actors._
 import org.gammf.collabora.database.actors.master.DBMasterActor
-import org.gammf.collabora.database.actors.worker.DBWorkerCollaborationsActor
+import org.gammf.collabora.database.actors.worker.DBWorkerModuleActor
 import org.gammf.collabora.database.messages._
-import org.gammf.collabora.util.{Collaboration, CollaborationRight, CollaborationType, CollaborationUser, Location, Module, NoteState, SimpleCollaboration, SimpleModule, SimpleNote}
-import org.joda.time.DateTime
+import org.gammf.collabora.util.{Module, Note, NoteState, SimpleModule, SimpleNote}
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
 
 import scala.concurrent.duration._
 
-class DBWorkerCollaborationsActorTest extends TestKit (ActorSystem("CollaboraServer")) with WordSpecLike  with Matchers with BeforeAndAfterAll with ImplicitSender {
+class DBWorkerModuleActorTest extends TestKit (ActorSystem("CollaboraServer")) with WordSpecLike  with Matchers with BeforeAndAfterAll with ImplicitSender {
 
   /*val factory = new ConnectionFactory()
   val connection:ActorRef = system.actorOf(ConnectionActor.props(factory), "rabbitmq")
@@ -25,18 +23,10 @@ class DBWorkerCollaborationsActorTest extends TestKit (ActorSystem("CollaboraSer
   val dbConnectionActor :ActorRef= system.actorOf(Props[ConnectionManagerActor])
   val dbMasterActor:ActorRef = system.actorOf(Props.create(classOf[DBMasterActor], system, notificationActor,collaborationMemberActor))
   val connectionManagerActor: ActorRef =  system.actorOf(Props[ConnectionManagerActor])
-  val collaborationsActor:ActorRef = system.actorOf(Props.create(classOf[DBWorkerCollaborationsActor], connectionManagerActor))
-  val collabID:String = "123456788698540008123400"
+  val modulesActor:ActorRef = system.actorOf(Props.create(classOf[DBWorkerModulesActor], connectionManagerActor))
+  val moduleId:String = "123456788000000000000000"
 
-  val collab:Collaboration = SimpleCollaboration(
-    id = Some(collabID),
-    name = "simplecollaboration",
-    collaborationType = CollaborationType.GROUP,
-    users = Some(List(CollaborationUser("fone", CollaborationRight.ADMIN), CollaborationUser("peru", CollaborationRight.ADMIN))),
-    modules = Option.empty,
-    notes = Some(List(SimpleNote(None, "questo è il contenuto",Some(new DateTime()),Some(Location(23.32,23.42)),Option.empty,NoteState("doing", Some("fone")),None),
-      SimpleNote(None,"questo è il contenuto2",Some(new DateTime()),Some(Location(233.32,233.42)),None,NoteState("done", Option("peru")),None)))
-  )
+  val module:Module = Module(Option(moduleId),"questo è un modulo importante","doing")
 
   override def beforeAll(): Unit = {
 
@@ -46,27 +36,30 @@ class DBWorkerCollaborationsActorTest extends TestKit (ActorSystem("CollaboraSer
     TestKit.shutdownActorSystem(system)
   }
 
-  "A DBWorkerCollaborations actor" should {
-    "insert new collaboration in the db" in {
-
+  "A DBWorkerModules actor" should {
+    "insert new modules in a collaboration correctly in the db" in {
       within(5 second) {
-        collaborationsActor ! InsertCollaborationMessage(collab, "maffone")
+        modulesActor ! InsertModuleMessage(module, "59806a4af27da3fcfe0ac0ca", "maffone")
         expectMsgType[QueryOkMessage]
       }
     }
 
-    "update a collaboration in the db" in {
+    "update a module in a collaboration correctly" in {
       within(5 second) {
-        collaborationsActor ! UpdateCollaborationMessage(collab, "maffone")
+        modulesActor ! UpdateModuleMessage(module, "59806a4af27da3fcfe0ac0ca", "maffone")
         expectMsgType[QueryOkMessage]
       }
     }
 
-    "delete a collaboration in the db" in {
+    "delete a module in a collaboration correctly" in {
       within(5 second) {
-        collaborationsActor ! DeleteCollaborationMessage(collab, "maffone")
+        modulesActor ! DeleteModuleMessage(module, "59806a4af27da3fcfe0ac0ca", "maffone")
         expectMsgType[QueryOkMessage]
       }
     }
+
+
+
   }*/
 }
+

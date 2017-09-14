@@ -9,10 +9,7 @@ import reactivemongo.bson.{BSON, BSONDocument}
 import org.gammf.collabora.database._
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import org.gammf.collabora.yellowpages.util.Topic
-import org.gammf.collabora.yellowpages.TopicElement._
 import org.gammf.collabora.yellowpages.ActorService._
-import org.gammf.collabora.yellowpages.messages.RegistrationResponseMessage
 import org.gammf.collabora.yellowpages.util.Topic.ActorTopic
 
 /**
@@ -22,16 +19,7 @@ class DBWorkerAuthenticationActor(override val yellowPages: ActorRef, override v
                                   override val topic: ActorTopic, override val service: ActorService)
   extends UsersDBWorker[DBWorkerMessage] with DefaultDBWorker with Stash {
 
-  override def receive: Receive = ({
-    //TODO consider: these three methods in super class?
-    case message: RegistrationResponseMessage => getActorOrElse(Topic() :+ Database, ConnectionHandler, message)
-      .foreach(_ ! AskConnectionMessage())
-
-    case m: GetConnectionMessage =>
-      connection = Some(m.connection)
-      unstashAll()
-
-    case _ if connection.isEmpty => stash()
+  override def receive: Receive = super.receive orElse ({
 
     case message: LoginMessage =>
       find(
@@ -51,5 +39,5 @@ class DBWorkerAuthenticationActor(override val yellowPages: ActorRef, override v
       ) pipeTo sender
 
     case _ => unhandled(_)
-  }: Receive) orElse super[UsersDBWorker].receive
+  }: Receive)
 }

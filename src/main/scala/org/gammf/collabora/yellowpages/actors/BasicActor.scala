@@ -88,7 +88,6 @@ trait BasicActor extends Actor {
     * @param service the service which the [[Actor]] must offer.
     */
   private[this] def askYellowPagesForActor(topic: ActorTopic, service: ActorService): Unit = {
-    println("[" + name + "] asking yellow pages..")
     (yellowPages ? ActorRequestMessage(topic, service)).mapTo[ActorResponseMessage].map {
       case response: ActorResponseOKMessage => response :: cachableRefs
       case _ =>

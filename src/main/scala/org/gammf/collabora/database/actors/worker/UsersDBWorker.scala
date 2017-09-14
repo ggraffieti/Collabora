@@ -34,7 +34,7 @@ abstract class UsersDBWorker[T] extends AbstractDBWorker[T] {
     * Check if in the user collection exists at least one user that match the selector. If any it returns all of them.
     * @param selector the selector used to find documents.
     * @param okStrategy the strategy that have to be used to map documents found to the generic type T. The
-    *                   strategy maps from [[ List[BSONDocument] ]] to T.
+    *                   strategy maps from a List of BSONDocument  to T.
     * @param failStrategy the fail strategy that have to be used if somethings went wrong.
     * @return a future representation of a message of generic type type T, representing the success or the failure of the query
     */

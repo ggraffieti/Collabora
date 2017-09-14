@@ -1,22 +1,21 @@
-package org.gammf.collabora.communication.actors
+package org.gammf.collabora.communication.actors.rabbitmq
 
 import akka.actor._
 import com.newmotion.akka.rabbitmq._
 import com.rabbitmq.client.BuiltinExchangeType
 import org.gammf.collabora.communication.messages.{ChannelCreatedMessage, PublishingChannelCreationMessage, SubscribingChannelCreationMessage}
-import org.gammf.collabora.yellowpages.ActorService.ActorService
-import org.gammf.collabora.yellowpages.actors.BasicActor
-import org.gammf.collabora.yellowpages.util.Topic.ActorTopic
-import org.gammf.collabora.yellowpages.util.Topic
+import org.gammf.collabora.yellowpages.ActorService.{ActorService, _}
 import org.gammf.collabora.yellowpages.TopicElement._
-import org.gammf.collabora.yellowpages.ActorService._
+import org.gammf.collabora.yellowpages.actors.BasicActor
+import org.gammf.collabora.yellowpages.util.Topic
+import org.gammf.collabora.yellowpages.util.Topic.ActorTopic
 
 /**
   * @author Manuel Peruzzi
   * This is an actor that builds and returns to the sender a specific RabbitMQ channel created on the provided connection.
   */
-class ChannelCreatorActor(override val yellowPages: ActorRef, override val name: String,
-                          override val topic: ActorTopic, override val service: ActorService) extends BasicActor {
+class RabbitMQChannelCreatorActor(override val yellowPages: ActorRef, override val name: String,
+                                  override val topic: ActorTopic, override val service: ActorService) extends BasicActor {
 
   override def receive: Receive = ({
     case message: SubscribingChannelCreationMessage =>

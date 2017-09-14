@@ -1,6 +1,7 @@
 package org.gammf.collabora.communication.actors
 
 import akka.actor.ActorRef
+import org.gammf.collabora.communication.actors.rabbitmq.RabbitMQNotificationsSenderActor
 import org.gammf.collabora.communication.messages.PublishNotificationMessage
 import org.gammf.collabora.yellowpages.ActorService.ActorService
 import org.gammf.collabora.yellowpages.actors.BasicActor
@@ -29,7 +30,7 @@ class NotificationsDispatcherActor(override val yellowPages: ActorRef, override 
 }
 
 /**
-  * Message used internally by a [[NotificationsDispatcherActor]] in order to manage message-forwarding to a [[NotificationsSenderActor]]
+  * Message used internally by a [[NotificationsDispatcherActor]] in order to manage message-forwarding to a [[RabbitMQNotificationsSenderActor]]
   *
   * @param message the message to be forwarded
   */

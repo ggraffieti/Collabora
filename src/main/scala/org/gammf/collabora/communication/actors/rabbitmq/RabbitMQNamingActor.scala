@@ -1,4 +1,4 @@
-package org.gammf.collabora.communication.actors
+package org.gammf.collabora.communication.actors.rabbitmq
 
 import akka.actor.ActorRef
 import org.gammf.collabora.communication.Utils.CommunicationType

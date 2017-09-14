@@ -4,12 +4,11 @@ import akka.actor.{ActorRef, Stash}
 import org.gammf.collabora.util.{Collaboration, Module, Note, UpdateMessage, UpdateMessageTarget, UpdateMessageType}
 import reactivemongo.bson.{BSONDocument, BSONObjectID}
 import org.gammf.collabora.database._
-import org.gammf.collabora.database.messages.ChangeModuleState
+import org.gammf.collabora.database.messages.{ChangeModuleState, NoActionMessage}
 
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 import org.gammf.collabora.yellowpages.util.Topic.ActorTopic
-
 import org.gammf.collabora.yellowpages.util.Topic
 import org.gammf.collabora.yellowpages.TopicElement._
 import org.gammf.collabora.yellowpages.ActorService._
@@ -54,7 +53,7 @@ class DBWorkerChangeModuleStateActor(override val yellowPages: ActorRef, overrid
                   collaborationId = collaborationId,
                   updatedModule = Module(id = module.id, description = module.description, state = State.DOING)
                 )
-              case _ => None
+              case _ => NoActionMessage()
             }))
         }
       )

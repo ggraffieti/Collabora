@@ -24,6 +24,7 @@ class SubscriberActorTest extends TestKit (ActorSystem("CollaboraServer")) with 
 /*
   private val EXCHANGE_NAME = "updates"
   private val ROUTING_KEY = ""
+  /*
   val CONNECTION_ACTOR_NAME = "RabbitConnection"
   val CHANNEL_CREATOR_NAME = "RabbitChannelCreator"
   val SUBSCRIBER_ACTOR_NAME = "SubscriberActor"
@@ -35,10 +36,10 @@ class SubscriberActorTest extends TestKit (ActorSystem("CollaboraServer")) with 
   val rabbitConnection = system.actorOf(ConnectionActor.props(factory), CONNECTION_ACTOR_NAME)
   rootYellowPages ! RegistrationRequestMessage(rabbitConnection, CONNECTION_ACTOR_NAME, Topic() :+ Communication :+ RabbitMQ, ConnectionHandler)
 
-  val channelCreator = system.actorOf(ChannelCreatorActor.printerProps(rootYellowPages, Topic() :+ Communication :+ RabbitMQ, CHANNEL_CREATOR_NAME))
-  val subscriber = system.actorOf(SubscriberActor.printerProps(rootYellowPages, Topic() :+ Communication :+ RabbitMQ, SUBSCRIBER_ACTOR_NAME))
+  val channelCreator = system.actorOf(ChannelCreatorActor.channelCreatorProps(rootYellowPages, Topic() :+ Communication :+ RabbitMQ, CHANNEL_CREATOR_NAME))
+  val subscriber = system.actorOf(SubscriberActor.subscriberProps(rootYellowPages, Topic() :+ Communication :+ RabbitMQ, SUBSCRIBER_ACTOR_NAME))
 */
-/*
+
   val factory = new ConnectionFactory()
   val connectemp: Connection = factory.newConnection
   var channel: Channel = connectemp.createChannel
@@ -57,15 +58,17 @@ class SubscriberActorTest extends TestKit (ActorSystem("CollaboraServer")) with 
   "A Subscriber actor" should {
 
     "subscribes on a certain queue in a rabbitMQ channel correctly" in {
-      (rootYellowPages ? ActorRequestMessage(Topic() :+ Communication :+ RabbitMQ, ChannelCreating))
+     /* (rootYellowPages ? ActorRequestMessage(Topic() :+ Communication :+ RabbitMQ, ChannelCreating))
         .mapTo[ActorResponseMessage].map {
         case response: ActorResponseOKMessage => response.actor ! SubscribingChannelCreationMessage(TestUtil.TYPE_UPDATES, TestUtil.SERVER_UPDATE, None)
         case _ =>
 
           expectMsgType[RegistrationResponseMessage]
       }
+      */
       channelCreator ! SubscribingChannelCreationMessage(TestUtil.TYPE_UPDATES, TestUtil.SERVER_UPDATE, None)
-      val ChannelCreatedMessage(channel) = expectMsgType[ChannelCreatedMessage]
+      val ChannelCreatedMessage(channel) = expectMsgType[RegistrationResponseMessage]
+
       subscriber ! SubscribeMessage(channel, TestUtil.SERVER_UPDATE)
       this.channel = channel
       val message = TestMessageUtil.messageSubscriberActorTest

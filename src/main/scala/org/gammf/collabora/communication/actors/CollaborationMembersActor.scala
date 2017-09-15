@@ -1,6 +1,6 @@
 package org.gammf.collabora.communication.actors
 
-import akka.actor.{ActorRef, Stash}
+import akka.actor.{ActorRef, Props, Stash}
 import com.newmotion.akka.rabbitmq.Channel
 import org.gammf.collabora.communication.Utils.CommunicationType
 import org.gammf.collabora.communication.messages._
@@ -16,8 +16,10 @@ import org.gammf.collabora.yellowpages.messages.RegistrationResponseMessage
 /**
   * This is an actor that sends all the information needed by a user that has just been added to a collaboration.
   */
-class CollaborationMembersActor(override val yellowPages: ActorRef, override val name: String,
-                                override val topic: ActorTopic, override val service: ActorService) extends BasicActor with Stash {
+class CollaborationMembersActor(override val yellowPages: ActorRef,
+                                override val name: String,
+                                override val topic: ActorTopic,
+                                override val service: ActorService = Master) extends BasicActor with Stash {
 
   private[this] var pubChannel: Option[Channel] = None
   private[this] var pubExchange: Option[String] = None
@@ -44,4 +46,17 @@ class CollaborationMembersActor(override val yellowPages: ActorRef, override val
       }
 
   }: Receive) orElse super[BasicActor].receive
+}
+
+object CollaborationMembersActor {
+
+  /**
+    * Factory methods that return a [[Props]] to create a collaboration members actor registered actor
+    * @param yellowPages the reference to the yellow pages root actor.
+    * @param topic the topic to which this actor is going to be registered.
+    * @return the [[Props]] to use to create a collaboration members actor.
+    */
+
+  def collaborationMemberProps(yellowPages: ActorRef, topic: ActorTopic, name: String = "CollaborationActor") : Props =
+    Props(new CollaborationMembersActor(yellowPages = yellowPages, name = name, topic = topic))
 }

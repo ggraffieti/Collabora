@@ -1,6 +1,6 @@
 package org.gammf.collabora.communication.actors
 
-import akka.actor.{ActorRef, Stash}
+import akka.actor.{ActorRef, Props, Stash}
 import com.newmotion.akka.rabbitmq.Channel
 import org.gammf.collabora.communication.Utils.CommunicationType
 import org.gammf.collabora.communication.messages._
@@ -16,8 +16,10 @@ import org.gammf.collabora.yellowpages.messages.RegistrationResponseMessage
 /**
   * This is an actor that manages sending notifications to clients.
   */
-class NotificationsSenderActor(override val yellowPages: ActorRef, override val name: String,
-                               override val topic: ActorTopic, override val service: ActorService) extends BasicActor with Stash {
+class NotificationsSenderActor(override val yellowPages: ActorRef,
+                               override val name: String,
+                               override val topic: ActorTopic,
+                               override val service: ActorService = Master) extends BasicActor with Stash {
 
   private[this] var pubChannel: Option[Channel] = None
   private[this] var pubExchange: Option[String] = None
@@ -37,4 +39,17 @@ class NotificationsSenderActor(override val yellowPages: ActorRef, override val 
         case _ => stash()
       }
   }: Receive) orElse super[BasicActor].receive
+}
+
+object NotificationsSenderActor {
+
+  /**
+    * Factory methods that return a [[Props]] to create a notifications sender registered actor
+    * @param yellowPages the reference to the yellow pages root actor.
+    * @param topic the topic to which this actor is going to be registered.
+    * @return the [[Props]] to use to create a notifications sender actor.
+    */
+
+  def notificationsSenderProps(yellowPages: ActorRef, topic: ActorTopic, name: String = "NotificationActor") : Props =
+    Props(new NotificationsSenderActor(yellowPages = yellowPages, name = name, topic = topic))
 }

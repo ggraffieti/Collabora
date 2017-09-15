@@ -6,43 +6,31 @@ import akka.http.scaladsl.model.headers._
 import akka.http.scaladsl.server.Route
 import org.scalatest.{Matchers, WordSpec}
 import akka.http.scaladsl.testkit.{RouteTestTimeout, ScalatestRouteTest}
+import akka.util.Timeout
 import com.newmotion.akka.rabbitmq.{ConnectionActor, ConnectionFactory}
 import org.gammf.collabora.{TestMessageUtil, TestUtil}
 import org.gammf.collabora.authentication.actors.AuthenticationActor
 import org.gammf.collabora.communication.actors._
 import org.gammf.collabora.database.actors.ConnectionManagerActor
 import org.gammf.collabora.database.actors.master.DBMasterActor
+import org.gammf.collabora.yellowpages.ActorCreator
+import org.gammf.collabora.yellowpages.ActorService.ConnectionHandler
+import org.gammf.collabora.yellowpages.util.Topic
+import org.gammf.collabora.yellowpages.TopicElement._
+import org.gammf.collabora.yellowpages.actors.YellowPagesActor
+import org.gammf.collabora.yellowpages.messages.RegistrationRequestMessage
 
 import scala.concurrent.duration._
+import scala.concurrent.ExecutionContext.Implicits.global
 
 class AuthenticationServerTest extends WordSpec with Matchers with ScalatestRouteTest {
-/*
-  val CONNECTION_ACTOR_NAME = "rabbitmq"
-  val NAMING_ACTOR_NAME = "naming"
-  val CHANNEL_CREATOR_NAME = "channelCreator"
-  val PUBLISHER_ACTOR_NAME = "publisher"
-  val SUBSCRIBER_ACTOR_NAME = "subscriber"
-  val UPDATES_RECEIVER_ACTOR_NAME = "updates-receiver"
 
-  val dbConnectionActor: ActorRef = system.actorOf(Props[ConnectionManagerActor])
-
-  val factory = new ConnectionFactory()
-  val connection:ActorRef = system.actorOf(ConnectionActor.props(factory), CONNECTION_ACTOR_NAME)
-  val naming: ActorRef = system.actorOf(Props[RabbitMQNamingActor], NAMING_ACTOR_NAME)
-  val channelCreator: ActorRef = system.actorOf(Props[ChannelCreatorActor], CHANNEL_CREATOR_NAME)
-  val publisherActor: ActorRef = system.actorOf(Props[PublisherActor], PUBLISHER_ACTOR_NAME)
-  val collaborationMemberActor:ActorRef = system.actorOf(Props(
-    new CollaborationMembersActor(connection, naming, channelCreator, publisherActor)))
-  val notificationActor: ActorRef = system.actorOf(Props(new NotificationsSenderActor(connection, naming, channelCreator, publisherActor,system)))
-  val dbMasterActor:ActorRef = system.actorOf(Props.create(classOf[DBMasterActor], system, notificationActor,collaborationMemberActor))
-  val subscriber:ActorRef = system.actorOf(Props[SubscriberActor], SUBSCRIBER_ACTOR_NAME)
-  val updatesReceiver:ActorRef = system.actorOf(Props(
-    new UpdatesReceiverActor(connection, naming, channelCreator, subscriber, dbMasterActor)), UPDATES_RECEIVER_ACTOR_NAME)
-  val authenticationActor: ActorRef = system.actorOf(Props.create(classOf[AuthenticationActor], dbMasterActor))
-
-  AuthenticationServer.start(system, authenticationActor)
-
+  implicit protected[this] val askTimeout: Timeout = Timeout(5 second)
   implicit val timeout: RouteTestTimeout = RouteTestTimeout(TestUtil.TASK_WAIT_TIME seconds)
+
+  val actorCreator = new ActorCreator(system)
+  actorCreator.startCreation
+  val rootYellowPages = actorCreator.getYellowPagesRoot
 
   val insertUser = TestMessageUtil.insertUserRequest_AuthServerTest
 
@@ -105,5 +93,6 @@ class AuthenticationServerTest extends WordSpec with Matchers with ScalatestRout
         responseAs[String] shouldEqual "Data passed cannot be unmarshalled to User"
       }
     }
-  }*/
+  }
+
 }

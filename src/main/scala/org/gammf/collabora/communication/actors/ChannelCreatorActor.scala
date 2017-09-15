@@ -15,8 +15,10 @@ import org.gammf.collabora.yellowpages.ActorService._
   * @author Manuel Peruzzi
   * This is an actor that builds and returns to the sender a specific RabbitMQ channel created on the provided connection.
   */
-class ChannelCreatorActor(override val yellowPages: ActorRef, override val name: String,
-                          override val topic: ActorTopic, override val service: ActorService) extends BasicActor {
+class ChannelCreatorActor(override val yellowPages: ActorRef,
+                          override val name: String,
+                          override val topic: ActorTopic,
+                          override val service: ActorService = ChannelCreating) extends BasicActor {
 
   override def receive: Receive = ({
     case message: SubscribingChannelCreationMessage =>
@@ -43,3 +45,33 @@ class ChannelCreatorActor(override val yellowPages: ActorRef, override val name:
     getActorOrElse(Topic() :+ Communication :+ RabbitMQ, ConnectionHandler, forwardMessage).foreach(_ ! CreateChannel(ChannelActor.props(setup)))
   }
 }
+
+
+object ChannelCreatorActor {
+
+  /**
+    * Factory methods that return a [[Props]] to create a channel creator registered actor
+    * @param yellowPages the reference to the yellow pages root actor.
+    * @param topic the topic to which this actor is going to be registered.
+    * @return the [[Props]] to use to create a channel creator actor.
+    */
+
+  def channelCreatorProps(yellowPages: ActorRef, topic: ActorTopic, name: String = "RabbitChannelCreator") : Props =
+    Props(new ChannelCreatorActor(yellowPages = yellowPages, name = name, topic = topic))
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -11,8 +11,8 @@ import org.gammf.collabora.yellowpages.util.Topic
 import org.gammf.collabora.yellowpages.util.Topic.ActorTopic
 
 /**
-  * @author Manuel Peruzzi
-  * This is an actor that builds and returns to the sender a specific RabbitMQ channel created on the provided connection.
+  * This is an actor that builds and returns to the sender a specific RabbitMQ channel.
+  * The sender have to provide all the relevant information, to allow this actor to build a custom channel on need.
   */
 class RabbitMQChannelCreatorActor(override val yellowPages: ActorRef, override val name: String,
                                   override val topic: ActorTopic, override val service: ActorService) extends BasicActor {
@@ -27,8 +27,7 @@ class RabbitMQChannelCreatorActor(override val yellowPages: ActorRef, override v
     case ChannelCreated(_) => println("[Channel Creator Actor] Channel created!")
   }: Receive) orElse super[BasicActor].receive
 
-  private[this] def createChannel(exchange: String, queue: Option[String],
-                                  routingKey: Option[String], messageSender: ActorRef, forwardMessage: Any): Unit = {
+  private[this] def createChannel(exchange: String, queue: Option[String], routingKey: Option[String], messageSender: ActorRef, forwardMessage: Any): Unit = {
     def setup(channel: Channel, self: ActorRef) {
       channel.exchangeDeclare(exchange, BuiltinExchangeType.DIRECT, true)
       queue match {

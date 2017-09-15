@@ -14,6 +14,7 @@ import org.gammf.collabora.yellowpages.util.Topic
 import org.gammf.collabora.yellowpages.TopicElement._
 import org.gammf.collabora.yellowpages.ActorService._
 import org.gammf.collabora.yellowpages.messages.{HierarchyRequestMessage, RegistrationRequestMessage}
+import org.gammf.collabora.authentication.LOCALHOST_ADDRESS
 
 object EntryPoint extends App {
   val system = ActorSystem("CollaboraServer")
@@ -110,8 +111,7 @@ object EntryPoint extends App {
     new AuthenticationActor(rootYellowPages, "authenticationActor", Topic() :+ Authentication, Bridging)
   ))
 
-
-  AuthenticationServer.start(system, authenticationActor)
+  AuthenticationServer.start(system, authenticationActor, if (args.length == 0) LOCALHOST_ADDRESS else args(0))
 
   val printerActor = system.actorOf(PrinterActor
     .printerProps(rootYellowPages, Topic() :+ General))

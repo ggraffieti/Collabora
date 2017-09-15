@@ -15,9 +15,11 @@ import scala.concurrent.duration._
 import scala.language.postfixOps
 
 /**
-  * @author Manuel Peruzzi
   * This is an actor that deals with the yellow pages service.
   * Can handle registration requests and actor requests, with the help of some other yellow pages actors.
+  * A yellow pages actor can manage even the registration of other yellow pages actors. In this way more yellow pages actors
+  * can cooperate, splitting up the work, in order to form a structured hierarchy of yellow pages, each one containing
+  * a subset of the actors of the global actor system.
   */
 sealed trait YellowPagesActor extends Actor {
   def name: String
@@ -101,14 +103,19 @@ sealed trait YellowPagesActor extends Actor {
 }
 
 /**
-  * The root of the yellow pages services.
-  * Every yellow pages related request should be sent to this actor.
+  * Represents the master of the [[YellowPagesActor]].
+  * Every yellow pages related request from any actor should be sent to this actor, in particular registration requests and actor requests.
+  * A complex actor system should be based on a structured yellow pages service, built on mutiple levels. Despite this,
+  * every actor of the system should only interact with this actor, that will forward all the requests to the yellow pages
+  * of the appropriate level.
   * @param name the name of the yellow pages root actor.
   */
 case class RootYellowPagesActor(override val name: String) extends YellowPagesActor
 
 /**
   * A generic actor that offer a yellow pages service.
+  * As every other actor, this actor have to relate to the [[RootYellowPagesActor]]. Becomes useful to create a yellow pages
+  * hierarchy, managing all the requests on a certain [[org.gammf.collabora.yellowpages.util.Topic.ActorTopic]].
   * @param yellowPages the reference to the yellow pages root actor.
   * @param name the name of this actor.
   * @param topic the topic to which this actor is registered.
@@ -130,10 +137,10 @@ object YellowPagesActor {
   def rootProps(): Props = Props(RootYellowPagesActor(name = "Root_YellowPages"))
 
   /**
-    * Factory methods that returns a [[Props]] to create a yellow pages actor registered to the specified topic.
+    * Factory methods that returns a Props to create a yellow pages actor registered to the specified topic.
     * @param yellowPages the reference to the yellow pages root actor.
     * @param topic the topic to which this actor is going to be registered.
-    * @return the [[Props]] to use to create a yellow pages topic actor.
+    * @return the Props to use to create a yellow pages topic actor.
     */
   def topicProps(yellowPages: ActorRef, topic: ActorTopic, name: String = "Topic_YellowPages"): Props =
     Props(TopicYellowPagesActor(yellowPages = yellowPages, name = name, topic = topic))

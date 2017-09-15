@@ -1,6 +1,6 @@
 package org.gammf.collabora.communication.messages
 
-import org.gammf.collabora.communication.Utils.CommunicationType
+import org.gammf.collabora.communication.CommunicationType.CommunicationType
 
 /**
   * Simple trait that represents a message about a rabbitMQ naming issue.
@@ -8,10 +8,10 @@ import org.gammf.collabora.communication.Utils.CommunicationType
 sealed trait NamingMessage extends Message
 
 /**
-  * Represents a request for retrieve the rabbitMQ terminology names about a certain communication.
+  * Represents a request for retrieving the rabbitMQ terminology names about a certain communication.
   * @param communicationType the type of the communication.
   */
-case class ChannelNamesRequestMessage(communicationType: CommunicationType.Value)
+case class ChannelNamesRequestMessage(communicationType: CommunicationType)
   extends NamingMessage
 
 /**
@@ -21,4 +21,3 @@ case class ChannelNamesRequestMessage(communicationType: CommunicationType.Value
   */
 case class ChannelNamesResponseMessage(exchange: String, queue: Option[String])
   extends NamingMessage
-

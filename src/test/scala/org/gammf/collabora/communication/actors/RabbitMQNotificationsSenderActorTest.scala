@@ -5,7 +5,7 @@ import akka.testkit.{DefaultTimeout, ImplicitSender, TestKit}
 import com.newmotion.akka.rabbitmq.{ConnectionActor, ConnectionFactory}
 import com.rabbitmq.client.{ConnectionFactory, _}
 import org.gammf.collabora.EntryPoint.{notificationActor, system}
-import org.gammf.collabora.communication.Utils.CommunicationType
+import org.gammf.collabora.communication.CommunicationType
 import org.gammf.collabora.communication.messages._
 import org.gammf.collabora.database.actors.ConnectionManagerActor
 import org.gammf.collabora.database.actors.master.DBMasterActor
@@ -14,7 +14,7 @@ import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
 import scala.concurrent.duration._
 import org.scalatest.concurrent.Eventually
 
-class NotificationsSenderActorTest extends TestKit (ActorSystem("CollaboraServer")) with WordSpecLike with Eventually with DefaultTimeout with Matchers with BeforeAndAfterAll with ImplicitSender {
+class RabbitMQNotificationsSenderActorTest extends TestKit (ActorSystem("CollaboraServer")) with WordSpecLike with Eventually with DefaultTimeout with Matchers with BeforeAndAfterAll with ImplicitSender {
 
   /*private val EXCHANGE_NAME = "notifications"
   private val ROUTING_KEY = "59806a4af27da3fcfe0ac0ca"

@@ -22,7 +22,7 @@ class PrinterActor(override val yellowPages: ActorRef,
   }: Receive) orElse super.receive
 
   private[this] def handleHierarchy(nodes: List[HierarchyNode]): Unit = {
-    println(); println("[" + name + "] CURRENT HIERARCHY {"); println()
+    println(); println("[" + name + "] " + nodes.size + " actors found, CURRENT HIERARCHY {"); println()
     nodes.foreach(printNode); println(); println("} END CURRENT HIERARCHY")
     def printNode(n: HierarchyNode): Unit = {
       println(getIndent(n.level) + n.name + " => INFO[" + n.topic + ", " + n.service + ", " + n.reference + "]")
@@ -34,10 +34,10 @@ class PrinterActor(override val yellowPages: ActorRef,
 object PrinterActor {
 
   /**
-    * Factory methods that returns a [[Props]] to create a printer actor registered to the specified topic.
+    * Factory methods that returns a Props to create a printer actor registered to the specified topic.
     * @param yellowPages the reference to the yellow pages root actor.
     * @param topic the topic to which this actor is going to be registered.
-    * @return the [[Props]] to use to create a printer actor.
+    * @return the Props to use to create a printer actor.
     */
   def printerProps(yellowPages: ActorRef, topic: ActorTopic, name: String = "Printer"): Props =
     Props(new PrinterActor(yellowPages = yellowPages, name = name, topic = topic))

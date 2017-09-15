@@ -2,11 +2,11 @@ package org.gammf.collabora.yellowpages.messages
 
 import akka.actor.ActorRef
 import org.gammf.collabora.yellowpages.ActorService.ActorService
-import org.gammf.collabora.yellowpages.actors.YellowPagesActor
 import org.gammf.collabora.yellowpages.util.Topic.ActorTopic
 
 /**
-  * Represents a request from an actor to a [[YellowPagesActor]] that leads to an entry insertion in the yellow pages.
+  * Represents a request from an actor to a [[org.gammf.collabora.yellowpages.actors.YellowPagesActor]] that leads to an
+  * entry insertion in the yellow pages.
   */
 sealed trait InsertionRequestMessage extends YellowPagesMessage {
 

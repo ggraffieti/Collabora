@@ -3,6 +3,8 @@ package org.gammf.collabora.database.actors.master
 import akka.actor.ActorRef
 import akka.pattern.ask
 import org.gammf.collabora.communication.messages.{CommunicationMessage, PublishCollaborationInCollaborationExchange, PublishErrorMessageInCollaborationExchange, PublishNotificationMessage}
+import org.gammf.collabora.communication.actors.FirebaseActor
+import org.gammf.collabora.communication.actors.rabbitmq.RabbitMQNotificationsSenderActor
 import org.gammf.collabora.database.messages._
 import org.gammf.collabora.util.{CollaborationMessage, ServerErrorCode, ServerErrorMessage, UpdateMessage, UpdateMessageTarget, UpdateMessageType}
 import org.gammf.collabora.yellowpages.ActorService.ActorService
@@ -57,17 +59,17 @@ class DBMasterMember(override val yellowPages: ActorRef, override val name: Stri
       case _ => unhandled(_)
     }
 
-    case message: SendInsertMemberNotificationMessage =>
-      getActorOrElse(Topic() :+ Communication :+ Notifications, Bridging, message)
-      .foreach(_ ! buildNotificationMessage(message.insertMessage))
+    case wrapper: SendInsertMemberNotificationMessage =>
+      getActorOrElse(Topic() :+ Communication :+ Notifications, Bridging, wrapper)
+      .foreach(_ ! buildNotificationMessage(wrapper.insertMessage))
 
-    case message: SendInsertMemberCollaborationMessage =>
-      getActorOrElse(Topic() :+ Database :+ Collaboration, Getter, message)
+    case wrapper: SendInsertMemberCollaborationMessage =>
+      getActorOrElse(Topic() :+ Database :+ Collaboration, Getter, wrapper)
         .foreach(collaborationGetter =>
-          (collaborationGetter ? GetCollaborationMessage(message.insertMessage.collaborationID))
+          (collaborationGetter ? GetCollaborationMessage(wrapper.insertMessage.collaborationID))
             .mapTo[Option[List[org.gammf.collabora.util.Collaboration]]].map {
-            case Some(head :: _) => getActorOrElse(Topic() :+ Communication :+ Collaborations :+ RabbitMQ , Master, message)
-              .foreach(_ ! PublishCollaborationInCollaborationExchange(message.insertMessage.userID, CollaborationMessage(user=message.insertMessage.userID,collaboration = head)))
+            case Some(head :: _) => getActorOrElse(Topic() :+ Communication :+ Collaborations :+ RabbitMQ , Master, wrapper)
+              .foreach(_ ! PublishCollaborationInCollaborationExchange(wrapper.insertMessage.user.user, CollaborationMessage(user=wrapper.insertMessage.userID,collaboration = head)))
             case _ =>
           })
 
@@ -89,5 +91,15 @@ class DBMasterMember(override val yellowPages: ActorRef, override val name: Stri
   }
 }
 
+/**
+  * Message used internally by a [[DBMasterMember]] in order to send a message to a [[RabbitMQNotificationsSenderActor]].
+  *
+  * @param insertMessage the message to be sent.
+  */
 private case class SendInsertMemberNotificationMessage(insertMessage: InsertMemberMessage)
+
+/**
+  * Message used internally by a [[DBMasterMember]] in order to send a message to a [[FirebaseActor]].
+  * @param insertMessage the message to be sent.
+  */
 private case class SendInsertMemberCollaborationMessage(insertMessage: InsertMemberMessage)

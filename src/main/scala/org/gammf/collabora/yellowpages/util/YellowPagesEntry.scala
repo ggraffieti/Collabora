@@ -8,7 +8,6 @@ import org.gammf.collabora.yellowpages.util.Topic.ActorTopic
 import language.reflectiveCalls
 
 /**
-  * @author Manuel Peruzzi
   * Represents a generic yellow pages entry.
   * Contains the entity reference, the topic to which the entity is registered and the service offered by the entity.
   * @tparam A the generic type used to reference the entity.
@@ -45,9 +44,9 @@ sealed trait YellowPagesEntry[A, B, C] {
 }
 
 /**
-  * @author Manuel Peruzzi
   * Represents a yellow pages entry in the actor world.
-  * Contains the actor reference, the actor name, the topic to which the actor is registered and the service offered by the actor.
+  * Contains the actor reference, the actor name, the [[org.gammf.collabora.yellowpages.util.Topic.ActorTopic]] to which
+  * the actor is registered and the [[org.gammf.collabora.yellowpages.ActorService.ActorService]] offered by the actor.
   */
 sealed trait ActorYellowPagesEntry extends YellowPagesEntry[ActorRef, TopicElement, ActorService] {
   protected[this] type EntryParam = {
@@ -96,7 +95,6 @@ sealed trait ActorYellowPagesEntry extends YellowPagesEntry[ActorRef, TopicEleme
 }
 
 /**
-  * @author Manuel Peruzzi
   * Simple implementation of a yellow pages entry in the actor world.
   * @param reference the reference to the actor registered to the service.
   * @param topic the topic to which the actor is registered.

@@ -5,7 +5,6 @@ import org.gammf.collabora.yellowpages.TopicElement.TopicElement
 import scala.annotation.tailrec
 
 /**
-  * @author Manuel Peruzzi
   * Represents a generic structured topic, in order to identify the scope in which an actor operates.
   * Every topic consists of a main topic and can contain some other subtopics.
   * @tparam A the generic topic type class.
@@ -23,7 +22,7 @@ sealed trait Topic[A] {
   def subtopics: Option[Topic[A]]
 
   /**
-    * Returns the size of the topic, the number of structured topics.
+    * Returns the size of the topic, as the number of structured topics.
     */
   def size(): Int
 
@@ -113,7 +112,6 @@ sealed trait Topic[A] {
 }
 
 /**
-  * @author Manuel Peruzzi
   * Represents an actual topic containing at least a main topic.
   * @param _main the main topic.
   * @param _subtopics the subtopics.
@@ -122,7 +120,6 @@ sealed trait Topic[A] {
 case class ActualTopic[A](_main: A, _subtopics: Topic[A]) extends TopicImpl[A]
 
 /**
-  * @author Manuel Peruzzi
   * Represents an empty topic.
   * @tparam A the generic topic type class.
   */
@@ -136,7 +133,6 @@ object :: {
 }
 
 /**
-  * @author Manuel Peruzzi
   * A generic implementation of a structured topic.
   * @tparam A the generic topic type class.
   */

@@ -5,6 +5,7 @@ import com.newmotion.akka.rabbitmq.{ConnectionActor, ConnectionFactory}
 import org.gammf.collabora.authentication.AuthenticationServer
 import org.gammf.collabora.authentication.actors.AuthenticationActor
 import org.gammf.collabora.communication.actors._
+import org.gammf.collabora.communication.actors.rabbitmq._
 import org.gammf.collabora.database.actors.ConnectionManagerActor
 import org.gammf.collabora.database.actors.master._
 import org.gammf.collabora.database.actors.worker._
@@ -13,6 +14,7 @@ import org.gammf.collabora.yellowpages.util.Topic
 import org.gammf.collabora.yellowpages.TopicElement._
 import org.gammf.collabora.yellowpages.ActorService._
 import org.gammf.collabora.yellowpages.messages.{HierarchyRequestMessage, RegistrationRequestMessage}
+import org.gammf.collabora.authentication.LOCALHOST_ADDRESS
 
 object EntryPoint extends App {
   val system = ActorSystem("CollaboraServer")
@@ -25,20 +27,20 @@ object EntryPoint extends App {
   rootYellowPages ! RegistrationRequestMessage(rabbitConnection, "RabbitConnection", Topic() :+ Communication :+ RabbitMQ, ConnectionHandler)
 
   val channelCreator = system.actorOf(Props(
-    new ChannelCreatorActor(rootYellowPages, "RabbitChannelCreator", Topic() :+ Communication :+ RabbitMQ, ChannelCreating)), "channelCreator")
+    new RabbitMQChannelCreatorActor(rootYellowPages, "RabbitChannelCreator", Topic() :+ Communication :+ RabbitMQ, ChannelCreating)), "channelCreator")
   val namingActor = system.actorOf(Props(
     new RabbitMQNamingActor(rootYellowPages, "NamingActor", Topic() :+ Communication :+ RabbitMQ, Naming)), "naming")
   val publisherActor = system.actorOf(Props(
-    new PublisherActor(rootYellowPages, "PublisherActor", Topic() :+ Communication :+ RabbitMQ, Publishing)), "publisher")
+    new RabbitMQPublisherActor(rootYellowPages, "PublisherActor", Topic() :+ Communication :+ RabbitMQ, Publishing)), "publisher")
   val subscriber = system.actorOf(Props(
-    new SubscriberActor(rootYellowPages, "SubscriberActor", Topic() :+ Communication :+ RabbitMQ, Subscribing)), "subscriber")
+    new RabbitMQSubscriberActor(rootYellowPages, "SubscriberActor", Topic() :+ Communication :+ RabbitMQ, Subscribing)), "subscriber")
 
   val updatesReceiver = system.actorOf(Props
-  (new UpdatesReceiverActor(rootYellowPages, "UpdatesReceiver", Topic() :+ Communication :+ Updates :+ RabbitMQ , Master)), "updates-receiver")
+  (new RabbitMQUpdatesReceiverActor(rootYellowPages, "UpdatesReceiver", Topic() :+ Communication :+ Updates :+ RabbitMQ , Master)), "updates-receiver")
   val notificationActor = system.actorOf(Props(
-    new NotificationsSenderActor(rootYellowPages, "NotificationActor", Topic() :+ Communication :+ Notifications :+ RabbitMQ, Master)), "notifications-actor")
+    new RabbitMQNotificationsSenderActor(rootYellowPages, "NotificationActor", Topic() :+ Communication :+ Notifications :+ RabbitMQ, Master)), "notifications-actor")
   val collaborationActor = system.actorOf(Props(
-    new CollaborationMembersActor(rootYellowPages, "CollaborationActor", Topic() :+ Communication :+ Collaborations  :+ RabbitMQ, Master)), "collaborations-acotr")
+    new RabbitMQCollaborationMembersActor(rootYellowPages, "CollaborationActor", Topic() :+ Communication :+ Collaborations  :+ RabbitMQ, Master)), "collaborations-acotr")
 
   val notificationDispatcherActor = system.actorOf(Props(
     new NotificationsDispatcherActor(rootYellowPages, "NotificationDispatcher", Topic() :+ Communication :+ Notifications, Bridging)
@@ -109,8 +111,7 @@ object EntryPoint extends App {
     new AuthenticationActor(rootYellowPages, "authenticationActor", Topic() :+ Authentication, Bridging)
   ))
 
-
-  AuthenticationServer.start(system, authenticationActor)
+  AuthenticationServer.start(system, authenticationActor, if (args.length == 0) LOCALHOST_ADDRESS else args(0))
 
   val printerActor = system.actorOf(PrinterActor
     .printerProps(rootYellowPages, Topic() :+ General))

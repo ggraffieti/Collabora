@@ -38,7 +38,7 @@ class SubscriberActorTest extends TestKit (ActorSystem("CollaboraServer")) with 
   val channelCreator = system.actorOf(ChannelCreatorActor.printerProps(rootYellowPages, Topic() :+ Communication :+ RabbitMQ, CHANNEL_CREATOR_NAME))
   val subscriber = system.actorOf(SubscriberActor.printerProps(rootYellowPages, Topic() :+ Communication :+ RabbitMQ, SUBSCRIBER_ACTOR_NAME))
 */
-
+/*
   val factory = new ConnectionFactory()
   val connectemp: Connection = factory.newConnection
   var channel: Channel = connectemp.createChannel
@@ -86,5 +86,5 @@ class SubscriberActorTest extends TestKit (ActorSystem("CollaboraServer")) with 
     }
 
   }
-
+*/
 }

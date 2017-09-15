@@ -4,6 +4,8 @@ import akka.actor.{ActorRef, ActorSystem, Props}
 import akka.testkit.{ImplicitSender, TestKit}
 import com.newmotion.akka.rabbitmq.{ConnectionActor, ConnectionFactory}
 import org.gammf.collabora.communication.actors._
+import org.gammf.collabora.database.actors.master.DBMasterActor
+import org.gammf.collabora.database.actors.worker.DBWorkerMemberActor
 import org.gammf.collabora.database.messages._
 import org.gammf.collabora.util.{CollaborationRight, CollaborationUser}
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
@@ -12,7 +14,7 @@ import scala.concurrent.duration._
 
 class DBWorkerMemberActorTest extends TestKit (ActorSystem("CollaboraServer")) with WordSpecLike  with Matchers with BeforeAndAfterAll with ImplicitSender {
 
-  val factory = new ConnectionFactory()
+  /*val factory = new ConnectionFactory()
   val connection:ActorRef = system.actorOf(ConnectionActor.props(factory), "rabbitmq")
   val naming:ActorRef = system.actorOf(Props[RabbitMQNamingActor], "naming")
   val channelCreator :ActorRef= system.actorOf(Props[ChannelCreatorActor], "channelCreator")
@@ -58,6 +60,6 @@ class DBWorkerMemberActorTest extends TestKit (ActorSystem("CollaboraServer")) w
 
 
 
-  }
+  }*/
 }
 

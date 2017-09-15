@@ -29,7 +29,7 @@ class Firebase {
     * Method used to set title of the notification
     * @param title the title to be setted
     */
-  def setTtile(title:String): Unit = {
+  def setTitle(title:String): Unit = {
     attributes.update("title",title)
   }
 
@@ -89,7 +89,7 @@ class Firebase {
 object UseFirebase extends App {
   var firebase:Firebase = new Firebase
   firebase.setKey("AAAAJtSw2Gk:APA91bEXmB5sRFqSnuYIP3qofHQ0RfHrAzTllJ0vYWtHXKZsMdbuXmUKbr16BVZsMO0cMmm_BWE8oLzkFcyuMr_V6O6ilqvLu7TrOgirVES51Ux9PsKfJ17iOMvTF_WtwqEURqMGBbLf")
-  firebase.setTtile("TITOLONE")
+  firebase.setTitle("TITOLONE")
   firebase.setBody("BODYESEMPIO")
   firebase.to("collabora-project-id")
   firebase.send()

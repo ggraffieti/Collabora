@@ -2,11 +2,11 @@ package org.gammf.collabora.yellowpages.messages
 
 import akka.actor.ActorRef
 import org.gammf.collabora.yellowpages.ActorService.ActorService
-import org.gammf.collabora.yellowpages.util.Topic
 import org.gammf.collabora.yellowpages.util.Topic.ActorTopic
 
 /**
-  * Represents an actor request from an actor, that asks for the reference of an actor with the specified [[Topic]] and [[ActorService]].
+  * Represents an actor request from an actor, that asks for the reference of an actor with the specified
+  * [[org.gammf.collabora.yellowpages.util.Topic.ActorTopic]] and [[ActorService]].
   *
   * @param topic the topic to which the requested actor have to be registered.
   * @param service the service offered by the requested actor.
@@ -14,7 +14,7 @@ import org.gammf.collabora.yellowpages.util.Topic.ActorTopic
 case class ActorRequestMessage(topic: ActorTopic, service: ActorService) extends YellowPagesMessage
 
 /**
-  * It's a response to an [[ActorRequestMessage]].
+  * Represents a response to an [[ActorRequestMessage]].
   */
 sealed trait ActorResponseMessage
 

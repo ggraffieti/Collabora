@@ -1,8 +1,6 @@
 package org.gammf.collabora.yellowpages.messages
 
 import org.gammf.collabora.yellowpages.util.ActorYellowPagesEntry
-import org.gammf.collabora.yellowpages.actors.YellowPagesActor
-import org.gammf.collabora.yellowpages.actors.PrinterActor
 
 /**
   * Represents a message about the hierarchical structure of the actor system.
@@ -10,7 +8,8 @@ import org.gammf.collabora.yellowpages.actors.PrinterActor
 trait HierarchyMessage
 
 /**
-  * Represents a request sent to an [[YellowPagesActor]] in order to build a hierarchical structure of the actor system.
+  * Represents a request sent to an [[org.gammf.collabora.yellowpages.actors.YellowPagesActor]] in order to build a
+  * hierarchical structure of the actor system.
   * @param level a number indicating the depth level of the current structure.
   */
 case class HierarchyRequestMessage(level: Int) extends HierarchyMessage
@@ -22,7 +21,7 @@ case class HierarchyRequestMessage(level: Int) extends HierarchyMessage
 case class HierarchyResponseMessage(actors: List[(Int, ActorYellowPagesEntry)])
 
 /**
-  * Represents a printing request, in which an actor asks a [[PrinterActor]] to print a hierarchical structure.
+  * Represents a printing request, in which an actor asks a [[org.gammf.collabora.yellowpages.actors.PrinterActor]] to print a hierarchical structure.
   * @param actors the actors that are part of the hierarchical structure.
   */
 case class HierarchyPrintMessage(actors: List[HierarchyNode])

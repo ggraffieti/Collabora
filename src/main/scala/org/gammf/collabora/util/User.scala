@@ -5,6 +5,8 @@ import play.api.libs.functional.syntax._
 import play.api.libs.json._
 import reactivemongo.bson.{BSONDocument, BSONDocumentReader, BSONDocumentWriter}
 
+import org.gammf.collabora.database._
+
 /**
   * Simple trait representing a user of Collabora
   */
@@ -59,12 +61,12 @@ object User {
   implicit object BSONtoUser extends BSONDocumentReader[User] {
     override def read(bson: BSONDocument): User = {
       User(
-        username = bson.getAs[String]("_id").get,
-        email = bson.getAs[String]("email").get,
-        name = bson.getAs[String]("name").get,
-        surname = bson.getAs[String]("surname").get,
-        birthday = bson.getAs[DateTime]("birthday").get,
-        hashedPassword = bson.getAs[String]("password").get
+        username = bson.getAs[String](USER_ID).get,
+        email = bson.getAs[String](USER_EMAIL).get,
+        name = bson.getAs[String](USER_NAME).get,
+        surname = bson.getAs[String](USER_SURNAME).get,
+        birthday = bson.getAs[DateTime](USER_BIRTHDAY).get,
+        hashedPassword = bson.getAs[String](USER_PASSWORD).get
       )
     }
   }
@@ -72,12 +74,12 @@ object User {
   implicit object UserToBson extends BSONDocumentWriter[User] {
     override def write(user: User): BSONDocument = {
       BSONDocument(
-        "_id" -> user.username,
-        "email" -> user.email,
-        "name" -> user.name,
-        "surname" -> user.surname,
-        "birthday" -> user.birthday.toDate,
-        "password" -> user.hashedPassword
+        USER_ID -> user.username,
+        USER_EMAIL -> user.email,
+        USER_NAME -> user.name,
+        USER_SURNAME -> user.surname,
+        USER_BIRTHDAY -> user.birthday.toDate,
+        USER_PASSWORD -> user.hashedPassword
       )
     }
   }

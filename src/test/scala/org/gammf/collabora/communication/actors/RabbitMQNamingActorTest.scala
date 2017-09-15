@@ -3,14 +3,14 @@ package org.gammf.collabora.communication.actors
 import akka.actor.{ActorRef, ActorSystem, Props}
 import akka.testkit.{ImplicitSender, TestKit}
 import com.newmotion.akka.rabbitmq.{ConnectionActor, ConnectionFactory}
-import org.gammf.collabora.communication.Utils.CommunicationType
-import org.gammf.collabora.communication.messages.{ChannelNamesRequestMessage, ChannelNamesResponseMessage, PublishMemberAddedMessage}
+import org.gammf.collabora.communication.CommunicationType
+import org.gammf.collabora.communication.messages.{ChannelNamesRequestMessage, ChannelNamesResponseMessage, PublishCollaborationInCollaborationExchange}
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
 import scala.concurrent.duration._
 
 class RabbitMQNamingActorTest extends TestKit (ActorSystem("CollaboraServer")) with WordSpecLike with Matchers with BeforeAndAfterAll with ImplicitSender {
 
-  val factory = new ConnectionFactory()
+ /* val factory = new ConnectionFactory()
   val connection:ActorRef = system.actorOf(ConnectionActor.props(factory), "rabbitmq")
   val naming: ActorRef = system.actorOf(Props[RabbitMQNamingActor], "naming")
   val channelCreator: ActorRef = system.actorOf(Props[ChannelCreatorActor], "channelCreator")
@@ -42,5 +42,5 @@ class RabbitMQNamingActorTest extends TestKit (ActorSystem("CollaboraServer")) w
       }
     }
   }
-
+*/
 }

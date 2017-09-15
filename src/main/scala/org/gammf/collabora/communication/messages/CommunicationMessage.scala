@@ -1,6 +1,6 @@
 package org.gammf.collabora.communication.messages
 
-import org.gammf.collabora.util.{AllCollaborationsMessage, Collaboration, CollaborationMessage, UpdateMessage}
+import org.gammf.collabora.util.{CollaborationMessage, ServerErrorMessage, UpdateMessage}
 
 /**
   * Simple trait that represent a message about the communication.
@@ -24,12 +24,15 @@ case class PublishNotificationMessage(collaborationID: String, message: UpdateMe
 /**
   * Represents a message sent to a user that has just been added to a collaboration.
   * @param username the identifier of the user to which the message is addressed.
-  * @param message the text of the message to be published in json format.
+  * @param message the message to be published.
   */
-case class PublishMemberAddedMessage(username: String, message: CollaborationMessage)
+case class PublishCollaborationInCollaborationExchange(username: String, message: CollaborationMessage)
   extends CommunicationMessage
 
-case class PublishFirebaseNotification(collaborationID: String, collaboration:Collaboration)
+/**
+  * Represents a message sent to a user, for notify an error occured in the server.
+  * @param username the identifier of the user to which the message is addressed.
+  * @param message the error message to be published.
+  */
+case class PublishErrorMessageInCollaborationExchange(username: String, message: ServerErrorMessage)
   extends CommunicationMessage
-
-case class PublishUserLoginMessage(username: String, message: AllCollaborationsMessage)

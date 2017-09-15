@@ -2,11 +2,11 @@ package org.gammf.collabora.yellowpages.messages
 
 import akka.actor.ActorRef
 import org.gammf.collabora.yellowpages.ActorService.ActorService
-import org.gammf.collabora.yellowpages.actors.YellowPagesActor
 import org.gammf.collabora.yellowpages.util.Topic.ActorTopic
 
 /**
-  * Represents a request from an actor to a [[YellowPagesActor]] that leads to an entry insertion in the yellow pages.
+  * Represents a request from an actor to a [[org.gammf.collabora.yellowpages.actors.YellowPagesActor]] that leads to an
+  * entry insertion in the yellow pages.
   */
 sealed trait InsertionRequestMessage extends YellowPagesMessage {
 
@@ -67,7 +67,7 @@ case class RegistrationResponseMessage() extends InsertionResponseMessage
 
 /**
   * Represents a confirmation of actor redirection in the yellow pages.
-  * It's a response to an [[RedirectionRequestMessage]].
+  * It's a response to a [[RedirectionRequestMessage]].
   *
   * @param reference the reference to the actor of the entry.
   * @param name the name of the actor of the entry.
@@ -76,3 +76,9 @@ case class RegistrationResponseMessage() extends InsertionResponseMessage
   */
 case class RedirectionResponseMessage(reference: ActorRef, name: String, topic: ActorTopic, service: ActorService)
   extends InsertionResponseMessage
+
+/**
+  * Represents an error happened during an actor insertion in the yellow pages.
+  * It's a negative response to a [[InsertionRequestMessage]].
+  */
+case class InsertionErrorMessage() extends InsertionResponseMessage

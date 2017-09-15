@@ -3,6 +3,7 @@ version "${version}"
 
 apply plugin: 'java'
 apply plugin: 'scala'
+apply plugin: 'com.github.johnrengelman.shadow'
 
 sourceCompatibility = "${jdkVersion}"
 
@@ -32,6 +33,18 @@ dependencies {
 
 }
 
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.github.jengelman.gradle.plugins:shadow:2.0.1'
+    }
+}
+
+compileScala {
+    scalaCompileOptions.additionalParameters = ["-feature"]
+}
 
 task restoreDBTask(type: Exec) {
     if (System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows')) {
@@ -51,3 +64,18 @@ task spec(dependsOn: ['testClasses'], type: JavaExec) {
 testClasses.doLast {
     tasks.spec.execute()
 }
+
+shadowJar {
+    baseName = "${artifactId}-redist"
+    manifest {
+        attributes 'Implementation-Title': 'Collabora',
+                'Implementation-Version': version,
+                'Main-Class': 'org.gammf.collabora.EntryPoint'
+    }
+    transform(com.github.jengelman.gradle.plugins.shadow.transformers.AppendingTransformer) {
+        resource = 'reference.conf'
+    }
+}
+
+
+defaultTasks 'clean', 'build', 'check', 'javadoc', 'scalaDoc', 'assemble', 'shadowJar'

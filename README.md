@@ -49,12 +49,19 @@ The project has been developed using IntelliJ Idea, and can be easily imported i
 - We use space instead of tabs, and tabs of 2 spaces. Be sure you follow this rules before starting to code.
 
 #### Import procedure
-- First of all, fork this repository. We working on forks, and merge changes with pull requests.
 - Install git on your system, if you haven't yet.
-- Clone your fork with `git clone https://github.com/<your username>/Collabora`
+- Clone your fork with `git clone https://github.com/manuelperuzzi/Collabora`
 - We use git flow, so for every new feature have to be implemented in a new branch called `<feature-*>`.
-- For building the project use grade. You can delegate the intelliJ run to gradle, go to File -> Settings -> Build, Execution, Deployment -> Build Tools -> Gradle -> Runner, and check Delegate IDE button run/builds to gradle.
-    - For running it outiside the IDE, run `./gradlew` if you are a Linux or Mac user, `.\gradlew.bat` if you are a Windows user. This generates automatically the fatJar and the java/scala doc
+- For building the project use grade. You can delegate the intelliJ run action to gradle, go to File -> Settings -> Build, Execution, Deployment -> Build Tools -> Gradle -> Runner, and check Delegate IDE button run/builds to gradle. The tests are executed automatically at every build.
+    - For running it outiside the IDE, and generate all the artifacts, run `./gradlew` if you are a Linux or Mac user, `.\gradlew.bat` if you are a Windows user. This generates automatically the fatJar and the java/scala doc.
+    
+### Developing the project
+Contributions to this project are welcome (see the important message above). Just some rules:
+1. We use [git flow](https://github.com/nvie/gitflow), so if you write new features, please do so in a separate `feature-` branch.
+1. We recommend forking the project, developing your stuff, then contributing back via pull request directly from GitHub
+1. Commit often. Do not throw at us pull requests with a single giant commit adding or changing the world. Split it in multiple commits and request a merge to the mainline often.
+1. Do not introduce low quality code. All the new code must comply with the checker rules (we include an Idea inspection profile in the distribution) and must not introduce any other warning. Resolutions of existing warnings (if any is present) are very welcome instead.
+
 
 [idea]: https://www.jetbrains.com/idea/
 [mongo]: https://www.mongodb.com/

@@ -84,7 +84,7 @@ object AuthenticationServer {
     * @param actorSystem the actor system of the application.
     * @param authActor the authentication actor, used as interface with the actor system.
     */
-  def start(actorSystem: ActorSystem, authActor: ActorRef) {
+  def start(actorSystem: ActorSystem, authActor: ActorRef, serverIpAddress: String) {
 
     authenticationActor = authActor
 
@@ -92,9 +92,9 @@ object AuthenticationServer {
     implicit val materializer: ActorMaterializer = ActorMaterializer()
     implicit val executionContext: ExecutionContextExecutor = system.dispatcher
 
-    Http().bindAndHandle(route, SERVER_IP_ADDRESS, SERVER_PORT)
+    Http().bindAndHandle(route, serverIpAddress, SERVER_PORT)
 
-    println(s"Server online at http://$SERVER_IP_ADDRESS:$SERVER_PORT\n")
+    println(s"Server online at http://$serverIpAddress:$SERVER_PORT\n")
   }
 
   private def myUserPassAuthenticator(credentials: Credentials): Future[Option[User]] =

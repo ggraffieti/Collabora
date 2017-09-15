@@ -15,8 +15,8 @@ import org.gammf.collabora.yellowpages.ActorService._
 import scala.concurrent.ExecutionContext.Implicits.global
 
 /**
-  * This is an actor that sends Firebase notification about Note,Module,Member operation
-  * to all the client that are registered in the specific collaborationID Topic
+  * This is an actor that sends Firebase notification about operations on notes, modules, members
+  * to all the clients that are registered in the specific collaborationID Topic
   */
 class FirebaseActor(override val yellowPages: ActorRef, override val name: String,
                     override val topic: ActorTopic, override val service: ActorService) extends BasicActor{
@@ -47,10 +47,6 @@ class FirebaseActor(override val yellowPages: ActorRef, override val name: Strin
     firebase.send()
   }
 
-  /**
-    * Method used to insert in the message the User and the operation that the user requested
-    * @return
-    */
   private def setUserAndOperation(message: UpdateMessage): String = {
     message.user + (message.messageType match {
       case UpdateMessageType.CREATION => " added"
@@ -59,10 +55,6 @@ class FirebaseActor(override val yellowPages: ActorRef, override val name: Strin
     })
   }
 
-  /**
-    * Method used to insert in the message the object of the requested operation
-    * @return
-    */
   private def setTextTarget(message: UpdateMessage): String = {
     message.target match {
       case UpdateMessageTarget.NOTE => " a note"

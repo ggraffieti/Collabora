@@ -30,7 +30,7 @@ object LoginResponse {
 
 /**
   * Basic implementation of [[LoginResponse]]
-  * @param user the [[User]] object, containing info about the logged user
+  * @param user the [[org.gammf.collabora.util.User]] object, containing info about the logged user
   * @param collaborations a list of user's collaboartions
   */
 case class SimpleLoginReponse(user: User, collaborations: Option[List[Collaboration]]) extends LoginResponse

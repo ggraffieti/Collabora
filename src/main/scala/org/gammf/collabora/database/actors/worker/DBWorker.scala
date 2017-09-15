@@ -34,7 +34,7 @@ trait DBWorker[T] extends BasicActor {
     * Check if in the collection is present at least one document that match the selector,
     * @param selector the selector used to find the document
     * @param okStrategy the strategy that have to be used to map the document found to the generic type T. The
-    *                   strategy maps from [[ Option[BSONDocument] ]] because the selector shoud not match any document.
+    *                   strategy maps from an Option of BSONDocument because the selector shoud not match any document.
     * @param failStrategy the fail strategy that have to be used if somethings went wrong.
     *
     * @return a future representation of a message of generic type type T, representing the success or the failure of the query
@@ -47,7 +47,7 @@ trait DBWorker[T] extends BasicActor {
     * Check if in the collection exists at least one document that match the selector. If any it returns all of them.
     * @param selector the selector used to find documents.
     * @param okStrategy the strategy that have to be used to map documents found to the generic type T. The
-    *                   strategy maps from [[ List[BSONDocument] ]] to T.
+    *                   strategy maps from a List of BSONDocument to T.
     * @param failStrategy the fail strategy that have to be used if somethings went wrong.
     * @return a future representation of a message of generic type type T, representing the success or the failure of the query
     */

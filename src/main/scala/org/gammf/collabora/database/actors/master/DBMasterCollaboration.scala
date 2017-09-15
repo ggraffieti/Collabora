@@ -71,6 +71,6 @@ object DBMasterCollaboration {
     * @return the [[Props]] to use to create a database master collaboration actor.
     */
 
-  def printerProps(yellowPages: ActorRef, topic: ActorTopic, name: String = "DBMasterCollaboration") : Props =
+  def dbMasterCollaborationProps(yellowPages: ActorRef, topic: ActorTopic, name: String = "DBMasterCollaboration") : Props =
     Props(new DBMasterCollaboration(yellowPages = yellowPages, name = name, topic = topic))
 }

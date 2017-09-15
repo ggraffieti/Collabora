@@ -60,7 +60,7 @@ object RabbitMQNamingActor {
     * @return the [[Props]] to use to create a RabbitMQ Naming actor.
     */
 
-  def printerProps(yellowPages: ActorRef, topic: ActorTopic, name: String = "NamingActor") : Props =
+  def namingProps(yellowPages: ActorRef, topic: ActorTopic, name: String = "NamingActor") : Props =
     Props(new RabbitMQNamingActor(yellowPages = yellowPages, name = name, topic = topic))
 }
 

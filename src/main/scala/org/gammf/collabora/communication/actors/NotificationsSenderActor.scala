@@ -50,6 +50,6 @@ object NotificationsSenderActor {
     * @return the [[Props]] to use to create a notifications sender actor.
     */
 
-  def printerProps(yellowPages: ActorRef, topic: ActorTopic, name: String = "NotificationActor") : Props =
+  def notificationsSenderProps(yellowPages: ActorRef, topic: ActorTopic, name: String = "NotificationActor") : Props =
     Props(new NotificationsSenderActor(yellowPages = yellowPages, name = name, topic = topic))
 }

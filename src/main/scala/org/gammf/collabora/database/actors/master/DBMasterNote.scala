@@ -58,6 +58,6 @@ object DBMasterNote {
     * @return the [[Props]] to use to create a database master note actor.
     */
 
-  def printerProps(yellowPages: ActorRef, topic: ActorTopic, name: String = "DBMasterNote") : Props =
+  def dbMasterNoteProps(yellowPages: ActorRef, topic: ActorTopic, name: String = "DBMasterNote") : Props =
     Props(new DBMasterNote(yellowPages = yellowPages, name = name, topic = topic))
 }

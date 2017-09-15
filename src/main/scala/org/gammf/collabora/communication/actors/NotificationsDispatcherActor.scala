@@ -38,6 +38,6 @@ object NotificationsDispatcherActor {
     * @return the [[Props]] to use to create a notifications dispatcher actor.
     */
 
-  def printerProps(yellowPages: ActorRef, topic: ActorTopic, name: String = "NotificationDispatcher") : Props =
+  def notificationsDispatcherProps(yellowPages: ActorRef, topic: ActorTopic, name: String = "NotificationDispatcher") : Props =
     Props(new NotificationsDispatcherActor(yellowPages = yellowPages, name = name, topic = topic))
 }

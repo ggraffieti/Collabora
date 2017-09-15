@@ -78,6 +78,6 @@ object DBWorkerCollaborationsActor {
     * @return the [[Props]] to use to create a database worker collaborations actor.
     */
 
-  def printerProps(yellowPages: ActorRef, topic: ActorTopic, name: String = "DBWorkerCollaborations") : Props =
+  def dbWorkerCollaborationsProps(yellowPages: ActorRef, topic: ActorTopic, name: String = "DBWorkerCollaborations") : Props =
     Props(new DBWorkerCollaborationsActor(yellowPages = yellowPages, name = name, topic = topic))
 }

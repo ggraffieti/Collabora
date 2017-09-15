@@ -57,6 +57,6 @@ object CollaborationMembersActor {
     * @return the [[Props]] to use to create a collaboration members actor.
     */
 
-  def printerProps(yellowPages: ActorRef, topic: ActorTopic, name: String = "CollaborationActor") : Props =
+  def collaborationMemberProps(yellowPages: ActorRef, topic: ActorTopic, name: String = "CollaborationActor") : Props =
     Props(new CollaborationMembersActor(yellowPages = yellowPages, name = name, topic = topic))
 }

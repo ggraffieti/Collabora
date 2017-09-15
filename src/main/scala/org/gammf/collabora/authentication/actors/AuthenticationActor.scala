@@ -70,6 +70,6 @@ object AuthenticationActor {
     * @param topic the topic to which this actor is going to be registered.
     * @return the [[Props]] to use to create a authentication actor.
     */
-  def printerProps(yellowPages: ActorRef, topic: ActorTopic, name: String = "AuthenticationActor") : Props =
+  def authenticationProps(yellowPages: ActorRef, topic: ActorTopic, name: String = "AuthenticationActor") : Props =
     Props(new AuthenticationActor(yellowPages = yellowPages, name = name, topic = topic))
 }

@@ -62,6 +62,6 @@ object DBMasterActor {
     * @return the [[Props]] to use to create a database master actor.
     */
 
-  def printerProps(yellowPages: ActorRef, topic: ActorTopic, name: String = "DBMaster") : Props =
+  def dbMasterProps(yellowPages: ActorRef, topic: ActorTopic, name: String = "DBMaster") : Props =
     Props(new DBMasterActor(yellowPages = yellowPages, name = name, topic = topic))
 }

@@ -82,6 +82,6 @@ object FirebaseActor {
     * @return the [[Props]] to use to create a firebase actor.
     */
 
-  def printerProps(yellowPages: ActorRef, topic: ActorTopic, name: String = "FirebaseActor") : Props =
+  def firebaseProps(yellowPages: ActorRef, topic: ActorTopic, name: String = "FirebaseActor") : Props =
     Props(new FirebaseActor(yellowPages = yellowPages, name = name, topic = topic))
 }

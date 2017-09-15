@@ -42,7 +42,7 @@ object SubscriberActor{
     * @return the [[Props]] to use to create a subscriber actor.
     */
 
-  def printerProps(yellowPages: ActorRef, topic: ActorTopic, name: String = "SubscriberActor") : Props =
+  def subscriberProps(yellowPages: ActorRef, topic: ActorTopic, name: String = "SubscriberActor") : Props =
     Props(new SubscriberActor(yellowPages = yellowPages, name = name, topic = topic))
 }
 

@@ -29,7 +29,7 @@ class YellowPagesActorTest extends TestKit(ActorSystem("CollaboraServer")) with 
     }
   }
 
-  val naming = system.actorOf(RabbitMQNamingActor.printerProps(root, Topic() :+ Communication :+ RabbitMQ, "Naming Actor"))
+  val naming = system.actorOf(RabbitMQNamingActor.namingProps(root, Topic() :+ Communication :+ RabbitMQ, "Naming Actor"))
 
   "The root yellow pages actor" must {
     "respond with a RegistrationResponseMessage if an actor with (topic = General, service = Naming) asks to be registered" in {
@@ -67,8 +67,8 @@ class YellowPagesActorTest extends TestKit(ActorSystem("CollaboraServer")) with 
     }
   }
 
-  val channelCreator = system.actorOf(ChannelCreatorActor.printerProps(root, Topic() :+ Communication :+ RabbitMQ, "channelCreator"))
-  val publisherActor = system.actorOf(PublisherActor.printerProps(root, Topic() :+ Communication :+ RabbitMQ, "Publisher Actor"))
+  val channelCreator = system.actorOf(ChannelCreatorActor.channelCreatorProps(root, Topic() :+ Communication :+ RabbitMQ, "channelCreator"))
+  val publisherActor = system.actorOf(PublisherActor.publisherProps(root, Topic() :+ Communication :+ RabbitMQ, "Publisher Actor"))
 
   "At this point, the root yellow pages" should {
     "have no problems with registering the two new actors in -> (topic = Communication, service = ChannelCreating) and (topic = Communication.RabbitMQ, service = ChannelCreating)" in {

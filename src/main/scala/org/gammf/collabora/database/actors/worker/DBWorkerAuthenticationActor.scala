@@ -64,6 +64,6 @@ object DBWorkerAuthenticationActor {
     * @param topic the topic to which this actor is going to be registered.
     * @return the [[Props]] to use to create a database worker authentication actor.
     */
-  def printerProps(yellowPages: ActorRef, topic: ActorTopic, name: String = "DBWorkerAuthentication") : Props =
+  def dbWorkerAuthenticationProps(yellowPages: ActorRef, topic: ActorTopic, name: String = "DBWorkerAuthentication") : Props =
     Props(new DBWorkerAuthenticationActor(yellowPages = yellowPages, name = name, topic = topic))
 }

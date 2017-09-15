@@ -91,6 +91,6 @@ object DBWorkerModulesActor {
     * @return the [[Props]] to use to create a database worker modules actor.
     */
 
-  def printerProps(yellowPages: ActorRef, topic: ActorTopic, name: String = "DBWorkerModules") : Props =
+  def dbWorkerModulesProps(yellowPages: ActorRef, topic: ActorTopic, name: String = "DBWorkerModules") : Props =
     Props(new DBWorkerModulesActor(yellowPages = yellowPages, name = name, topic = topic))
 }

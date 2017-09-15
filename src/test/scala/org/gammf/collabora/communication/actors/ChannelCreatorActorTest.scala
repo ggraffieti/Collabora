@@ -21,9 +21,6 @@ import scala.concurrent.ExecutionContext.Implicits.global
 class ChannelCreatorActorTest extends TestKit (ActorSystem("CollaboraServer")) with WordSpecLike with Matchers with BeforeAndAfterAll with ImplicitSender{
 
     implicit protected[this] val askTimeout: Timeout = Timeout(5 second)
-    val CONNECTION_ACTOR_NAME = "RabbitConnection"
-    val NAMING_ACTOR_NAME = "NamingActor"
-    val CHANNEL_CREATOR_NAME = "RabbitChannelCreator"
 
     val actorCreator = new ActorCreator(system)
     actorCreator.startCreation

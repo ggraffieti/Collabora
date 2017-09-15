@@ -137,6 +137,6 @@ object DBWorkerChangeModuleStateActor {
     * @param topic the topic to which this actor is going to be registered.
     * @return the [[Props]] to use to create a database worker change module state actor.
     */
-  def printerProps(yellowPages: ActorRef, topic: ActorTopic, name: String = "DBWorkerChangeModuleState") : Props =
+  def dbWorkerChangeModuleStateProps(yellowPages: ActorRef, topic: ActorTopic, name: String = "DBWorkerChangeModuleState") : Props =
     Props(new DBWorkerChangeModuleStateActor(yellowPages = yellowPages, name = name, topic = topic))
 }

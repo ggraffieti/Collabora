@@ -31,7 +31,7 @@ object PublisherActor{
     * @return the [[Props]] to use to create a publisher actor.
     */
 
-  def printerProps(yellowPages: ActorRef, topic: ActorTopic, name:String = "PublisherActor") : Props =
+  def publisherProps(yellowPages: ActorRef, topic: ActorTopic, name:String = "PublisherActor") : Props =
     Props(new PublisherActor(yellowPages = yellowPages, name = name, topic = topic))
 
 

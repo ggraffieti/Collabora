@@ -45,6 +45,6 @@ object ConnectionManagerActor {
     * @return the [[Props]] to use to create a connection manager actor.
     */
 
-  def printerProps(yellowPages: ActorRef, topic: ActorTopic, name: String = "MongoConnectionManager") : Props =
+  def connectionManagerProps(yellowPages: ActorRef, topic: ActorTopic, name: String = "MongoConnectionManager") : Props =
     Props(new ConnectionManagerActor(yellowPages = yellowPages, name = name, topic = topic))
 }

@@ -70,6 +70,6 @@ object DBWorkerMemberActor {
     * @param topic the topic to which this actor is going to be registered.
     * @return the [[Props]] to use to create a database worker member actor.
     */
-  def printerProps(yellowPages: ActorRef, topic: ActorTopic, name: String = "DBWorkerMember") : Props =
+  def dbWorkerMemberProps(yellowPages: ActorRef, topic: ActorTopic, name: String = "DBWorkerMember") : Props =
     Props(new DBWorkerMemberActor(yellowPages = yellowPages, name = name, topic = topic))
 }

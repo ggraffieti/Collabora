@@ -27,7 +27,6 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 class CollaborationMembersActorTest extends TestKit (ActorSystem("CollaboraServer")) with WordSpecLike with Eventually with DefaultTimeout with Matchers with BeforeAndAfterAll with ImplicitSender {
 
-
   var msgCollab,msgNotif: String = ""
   implicit protected[this] val askTimeout: Timeout = Timeout(5 second)
 

@@ -56,7 +56,7 @@ object ChannelCreatorActor {
     * @return the [[Props]] to use to create a channel creator actor.
     */
 
-  def printerProps(yellowPages: ActorRef, topic: ActorTopic, name: String = "RabbitChannelCreator") : Props =
+  def channelCreatorProps(yellowPages: ActorRef, topic: ActorTopic, name: String = "RabbitChannelCreator") : Props =
     Props(new ChannelCreatorActor(yellowPages = yellowPages, name = name, topic = topic))
 }
 

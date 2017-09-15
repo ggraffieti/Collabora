@@ -24,7 +24,7 @@ import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class AuthenticationServerTest extends WordSpec with Matchers with ScalatestRouteTest {
-  /*
+
   implicit protected[this] val askTimeout: Timeout = Timeout(5 second)
   implicit val timeout: RouteTestTimeout = RouteTestTimeout(TestUtil.TASK_WAIT_TIME seconds)
 
@@ -94,5 +94,5 @@ class AuthenticationServerTest extends WordSpec with Matchers with ScalatestRout
       }
     }
   }
-  */
+
 }

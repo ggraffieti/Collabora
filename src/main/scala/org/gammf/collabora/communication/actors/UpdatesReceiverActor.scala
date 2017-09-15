@@ -47,6 +47,6 @@ object UpdatesReceiverActor {
     * @return the [[Props]] to use to create a updates receiver actor.
     */
 
-  def printerProps(yellowPages: ActorRef, topic: ActorTopic, name: String = "UpdatesReceiver") : Props =
+  def updatesReceiverProps(yellowPages: ActorRef, topic: ActorTopic, name: String = "UpdatesReceiver") : Props =
     Props(new UpdatesReceiverActor(yellowPages = yellowPages, name = name, topic = topic))
 }

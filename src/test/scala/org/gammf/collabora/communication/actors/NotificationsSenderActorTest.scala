@@ -2,6 +2,8 @@ package org.gammf.collabora.communication.actors
 
 import akka.actor.{ActorRef, ActorSystem, Props}
 import akka.testkit.{DefaultTimeout, ImplicitSender, TestKit}
+import akka.pattern.ask
+import akka.util.Timeout
 import com.newmotion.akka.rabbitmq.{ConnectionActor, ConnectionFactory}
 import com.rabbitmq.client.{ConnectionFactory, _}
 import org.gammf.collabora.EntryPoint.system
@@ -11,9 +13,9 @@ import org.gammf.collabora.communication.messages._
 import org.gammf.collabora.database.actors.ConnectionManagerActor
 import org.gammf.collabora.database.actors.master.DBMasterActor
 import org.gammf.collabora.yellowpages.ActorCreator
-import org.gammf.collabora.yellowpages.ActorService.ConnectionHandler
+import org.gammf.collabora.yellowpages.ActorService.{ChannelCreating, ConnectionHandler, Master, Naming}
 import org.gammf.collabora.yellowpages.actors.YellowPagesActor
-import org.gammf.collabora.yellowpages.messages.{RegistrationRequestMessage, RegistrationResponseMessage}
+import org.gammf.collabora.yellowpages.messages._
 import org.gammf.collabora.yellowpages.util.Topic
 import org.gammf.collabora.yellowpages.TopicElement._
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
@@ -21,12 +23,21 @@ import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
 import scala.concurrent.duration._
 import org.scalatest.concurrent.Eventually
 
+import scala.concurrent.ExecutionContext.Implicits.global
+
 class NotificationsSenderActorTest extends TestKit (ActorSystem("CollaboraServer")) with WordSpecLike with Eventually with DefaultTimeout with Matchers with BeforeAndAfterAll with ImplicitSender {
 
   private val EXCHANGE_NAME = "notifications"
   private val ROUTING_KEY = "59806a4af27da3fcfe0ac0ca"
   private val BROKER_HOST = "localhost"
 
+  var msg: String = ""
+  implicit protected[this] val askTimeout: Timeout = Timeout(5 second)
+
+  val actorCreator = new ActorCreator(system)
+  actorCreator.startCreation
+  val rootYellowPages = actorCreator.getYellowPagesRoot
+/*
   val PUBLISHER_ACTOR_NAME = "PublisherActor"
   val COLLABORATION_MEMBER_ACTOR_NAME = "CollaborationActor"
   val SUBSCRIBER_ACTOR_NAME = "SubscriberActor"
@@ -47,7 +58,7 @@ class NotificationsSenderActorTest extends TestKit (ActorSystem("CollaboraServer
 
   val channelCreator = system.actorOf(ChannelCreatorActor.printerProps(rootYellowPages, Topic() :+ Communication :+ RabbitMQ, CHANNEL_CREATOR_NAME))
   val namingActor = system.actorOf(RabbitMQNamingActor.printerProps(rootYellowPages, Topic() :+ Communication :+ RabbitMQ, NAMING_ACTOR_NAME))
-/*  val publisherActor = system.actorOf(PublisherActor.printerProps(rootYellowPages, Topic() :+ Communication :+ RabbitMQ, PUBLISHER_ACTOR_NAME))
+  val publisherActor = system.actorOf(PublisherActor.printerProps(rootYellowPages, Topic() :+ Communication :+ RabbitMQ, PUBLISHER_ACTOR_NAME))
   val subscriber = system.actorOf(SubscriberActor.printerProps(rootYellowPages, Topic() :+ Communication :+ RabbitMQ, SUBSCRIBER_ACTOR_NAME))
   val updatesReceiver = system.actorOf(UpdatesReceiverActor.printerProps(rootYellowPages, Topic() :+ Communication :+ Updates :+ RabbitMQ , UPDATES_RECEIVER_ACTOR_NAME))
   val notificationActor = system.actorOf(NotificationsSenderActor.printerProps(rootYellowPages, Topic() :+ Communication :+ Notifications :+ RabbitMQ, NOTIFICATION_ACTOR_NAME))
@@ -55,7 +66,6 @@ class NotificationsSenderActorTest extends TestKit (ActorSystem("CollaboraServer
   val mongoConnectionActor = system.actorOf(ConnectionManagerActor.printerProps(rootYellowPages, Topic() :+ Database, MONGO_CONNECTION_ACTOR_NAME))
   val dbMasterActor = system.actorOf(DBMasterActor.printerProps(rootYellowPages, Topic() :+ Database, DBMASTER_ACTOR_NAME))
 */
-  var msg: String = ""
 
 
   override def beforeAll(): Unit ={
@@ -80,7 +90,7 @@ class NotificationsSenderActorTest extends TestKit (ActorSystem("CollaboraServer
   }
 
   override implicit val patienceConfig: PatienceConfig = PatienceConfig(
-    timeout = scaled(60 seconds),
+    timeout = scaled(TestUtil.TIMEOUT_SECOND seconds),
     interval = scaled(TestUtil.INTERVAL_MILLIS millis)
   )
 
@@ -88,23 +98,40 @@ class NotificationsSenderActorTest extends TestKit (ActorSystem("CollaboraServer
 
     "communicate with RabbitMQNamingActor" in {
       within(TestUtil.TASK_WAIT_TIME seconds){
-        namingActor ! ChannelNamesRequestMessage(CommunicationType.NOTIFICATIONS)
-        expectMsg(RegistrationResponseMessage())
+        (rootYellowPages ? ActorRequestMessage(Topic() :+ Communication :+ RabbitMQ, Naming))
+          .mapTo[ActorResponseMessage].map {
+          case response: ActorResponseOKMessage => response.actor ! ChannelNamesRequestMessage(CommunicationType.NOTIFICATIONS)
+          case _ =>
+
+            expectMsg(RegistrationResponseMessage())
+        }
       }
     }
 
     "communicate with channelCreatorActor" in {
       within(TestUtil.TASK_WAIT_TIME seconds){
-        channelCreator ! PublishingChannelCreationMessage(TestUtil.TYPE_NOTIFICATIONS, None)
-        expectMsg(ChannelNamesResponseMessage(TestUtil.TYPE_NOTIFICATIONS, None))
+        (rootYellowPages ? ActorRequestMessage(Topic() :+ Communication :+ RabbitMQ, ChannelCreating))
+          .mapTo[ActorResponseMessage].map {
+          case response: ActorResponseOKMessage => response.actor ! PublishingChannelCreationMessage(TestUtil.TYPE_NOTIFICATIONS, None)
+          case _ =>
+
+            expectMsg(ChannelNamesResponseMessage(TestUtil.TYPE_NOTIFICATIONS, None))
+        }
       }
     }
-/*
-    "notify clients when there are updates on db" in {
+
+  /*  "notify clients when there are updates on db" in {
       val message = TestMessageUtil.messageNotificationsSenderActorTest
-      updatesReceiver ! StartMessage
-      notificationActor ! StartMessage
-      updatesReceiver ! ClientUpdateMessage(message)
+      //updatesReceiver ! StartMessage
+      //notificationActor ! StartMessage
+
+      //updatesReceiver ! ClientUpdateMessage(message)
+      (rootYellowPages ? ActorRequestMessage(Topic() :+ Communication :+ Updates :+ RabbitMQ, Master))
+        .mapTo[ActorResponseMessage].map {
+        case response: ActorResponseOKMessage => response.actor ! ClientUpdateMessage(message)
+        case _ =>
+
+      }
       eventually{
         msg should not be ""
       }

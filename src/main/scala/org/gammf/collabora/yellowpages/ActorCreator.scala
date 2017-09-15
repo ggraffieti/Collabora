@@ -14,21 +14,23 @@ import org.gammf.collabora.yellowpages.messages.RegistrationRequestMessage
 import org.gammf.collabora.yellowpages.util.Topic
 import org.gammf.collabora.yellowpages.TopicElement._
 
-class ActorCreator(system: ActorSystem) {
+case class ActorCreator(system: ActorSystem) {
 
   val rootYellowPages = system.actorOf(YellowPagesActor.rootProps())
 
-  val factory = new ConnectionFactory()
-  val rabbitConnection = system.actorOf(ConnectionActor.props(factory), "rabbitmq")
-  rootYellowPages ! RegistrationRequestMessage(rabbitConnection, "RabbitConnection", Topic() :+ Communication :+ RabbitMQ, ConnectionHandler)
+  def startCreation {
+    val factory = new ConnectionFactory()
+    val rabbitConnection = system.actorOf(ConnectionActor.props(factory), "rabbitmq")
+    rootYellowPages ! RegistrationRequestMessage(rabbitConnection, "RabbitConnection", Topic() :+ Communication :+ RabbitMQ, ConnectionHandler)
 
-  createCommunicationActor()
-  createConnectionManagerActor()
-  createDBMasterActors()
-  createDBDefaultWorkers()
-  createDBExtraWorkers()
-  createAuthActor()
-  createYellowPagesActor()
+    createCommunicationActor()
+    createConnectionManagerActor()
+    createDBMasterActors()
+    createDBDefaultWorkers()
+    createDBExtraWorkers()
+    createAuthActor()
+    createYellowPagesActor()
+  }
 
   def createCommunicationActor() : Unit = {
     val channelCreator = system.actorOf(ChannelCreatorActor.printerProps(rootYellowPages, Topic() :+ Communication :+ RabbitMQ, "RabbitChannelCreator"))

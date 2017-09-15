@@ -18,6 +18,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
   * In order to communicate with other actors, this actor needs a reference to a [[YellowPagesActor]].
   */
 trait BasicActor extends Actor {
+
   implicit protected[this] val askTimeout: Timeout = Timeout(5 seconds)
 
   protected val cachableRefs: CachableSet[ActorInformation] = CachableSet[ActorInformation]()

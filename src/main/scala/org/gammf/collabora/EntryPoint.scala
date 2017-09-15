@@ -19,6 +19,7 @@ object EntryPoint extends App {
   val system = ActorSystem("CollaboraServer")
 
   val actorCreator = new ActorCreator(system)
+  actorCreator.startCreation
   val rootYellowPages = actorCreator.getYellowPagesRoot
 
   Thread.sleep(1000)

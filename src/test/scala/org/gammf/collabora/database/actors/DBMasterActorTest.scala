@@ -1,32 +1,48 @@
 package org.gammf.collabora.database.actors
 
 import akka.actor.{ActorRef, ActorSystem, Props}
+import akka.pattern.ask
 import akka.testkit.{ImplicitSender, TestKit}
+import akka.util.Timeout
 import com.newmotion.akka.rabbitmq.{ConnectionActor, ConnectionFactory}
 import com.rabbitmq.client.{AMQP, BuiltinExchangeType, DefaultConsumer, Envelope}
 import org.gammf.collabora.{TestMessageUtil, TestUtil}
 import org.gammf.collabora.communication.actors._
 import org.gammf.collabora.communication.messages.{ClientUpdateMessage, StartMessage}
 import org.gammf.collabora.database.actors.master.DBMasterActor
+import org.gammf.collabora.yellowpages.ActorCreator
+import org.gammf.collabora.yellowpages.ActorService.Master
+import org.gammf.collabora.yellowpages.messages.{ActorRequestMessage, ActorResponseMessage, ActorResponseOKMessage}
+import org.gammf.collabora.yellowpages.util.Topic
+import org.gammf.collabora.yellowpages.TopicElement._
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
 
 import scala.concurrent.duration._
 import org.scalatest.concurrent.Eventually
 
+import scala.concurrent.ExecutionContext.Implicits.global
+
 
 class DBMasterActorTest extends TestKit (ActorSystem("CollaboraServer")) with WordSpecLike with Eventually with Matchers with BeforeAndAfterAll with ImplicitSender {
 
-/*
-  val CONNECTION_ACTOR_NAME = "rabbitmq"
+  private val EXCHANGE_NAME = "notifications"
+  private val ROUTING_KEY = "59806a4af27da3fcfe0ac0ca"
+  private val BROKER_HOST = "localhost"
+
+  var msg: String = ""
+
+  implicit protected[this] val askTimeout: Timeout = Timeout(5 second)
+  val actorCreator = new ActorCreator(system)
+  actorCreator.startCreation
+  val rootYellowPages = actorCreator.getYellowPagesRoot
+
+  /*
+   val CONNECTION_ACTOR_NAME = "rabbitmq"
   val NAMING_ACTOR_NAME = "naming"
   val CHANNEL_CREATOR_NAME = "channelCreator"
   val PUBLISHER_ACTOR_NAME = "publisher"
   val UPDATES_RECEIVER_ACTOR_NAME = "updates-receiver"
   val SUBSCRIBER_ACTOR_NAME = "subscriber"
-
-  private val EXCHANGE_NAME = "notifications"
-  private val ROUTING_KEY = "59806a4af27da3fcfe0ac0ca"
-  private val BROKER_HOST = "localhost"
 
   val dbConnectionActor: ActorRef = system.actorOf(Props[ConnectionManagerActor])
   val factory = new ConnectionFactory()
@@ -41,8 +57,8 @@ class DBMasterActorTest extends TestKit (ActorSystem("CollaboraServer")) with Wo
   val subscriber:ActorRef = system.actorOf(Props[SubscriberActor], SUBSCRIBER_ACTOR_NAME)
   val updatesReceiver:ActorRef = system.actorOf(Props(
     new UpdatesReceiverActor(connection, naming, channelCreator, subscriber, dbMasterActor)), UPDATES_RECEIVER_ACTOR_NAME)
+*/
 
-  var msg: String = ""
 
   override def beforeAll(): Unit = {
     val factory = new ConnectionFactory
@@ -59,8 +75,8 @@ class DBMasterActorTest extends TestKit (ActorSystem("CollaboraServer")) with Wo
     }
     channel.basicConsume(queueName, true, consumer)
 
-    updatesReceiver ! StartMessage
-    notificationActor ! StartMessage
+    //updatesReceiver ! StartMessage
+    //notificationActor ! StartMessage
 
   }
   override def afterAll(): Unit = {
@@ -74,15 +90,22 @@ class DBMasterActorTest extends TestKit (ActorSystem("CollaboraServer")) with Wo
 
   "A DBMaster actor" should {
 
-    "act like a gateway for every request from and to the DB" in {
+ /*   "act like a gateway for every request from and to the DB" in {
       val message = TestMessageUtil.messageDBMasterActorTest
-      updatesReceiver ! ClientUpdateMessage(message)
+      //updatesReceiver ! ClientUpdateMessage(message)
+      (rootYellowPages ? ActorRequestMessage(Topic() :+ Communication :+ Updates :+ RabbitMQ, Master))
+        .mapTo[ActorResponseMessage].map {
+        case response: ActorResponseOKMessage => response.actor ! ClientUpdateMessage(message)
+        case _ =>
+
+      }
       eventually{
         msg should not be ""
       }
       val contain = TestMessageUtil.messageToBeContainedDBMasterActorTest
       assert(msg.contains(contain))
     }
+    */
   }
-*/
+
 }

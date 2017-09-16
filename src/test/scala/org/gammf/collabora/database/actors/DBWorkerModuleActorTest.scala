@@ -1,32 +1,41 @@
 package org.gammf.collabora.database.actors
-import akka.actor.{ActorRef, ActorSystem, Props}
+
+import akka.actor.ActorSystem
 import akka.testkit.{ImplicitSender, TestKit}
+import akka.pattern.ask
+import akka.util.Timeout
 import com.newmotion.akka.rabbitmq.{ConnectionActor, ConnectionFactory}
-import org.gammf.collabora.communication.actors._
+import org.gammf.collabora.TestUtil
 import org.gammf.collabora.database.actors.master.DBMasterActor
 import org.gammf.collabora.database.actors.worker.DBWorkerModuleActor
 import org.gammf.collabora.database.messages._
-import org.gammf.collabora.util.{Module, Note, NoteState, SimpleModule, SimpleNote}
+import org.gammf.collabora.util.SimpleModule
+import org.gammf.collabora.yellowpages.ActorCreator
+import org.gammf.collabora.yellowpages.ActorService.{ConnectionHandler, DefaultWorker}
+import org.gammf.collabora.yellowpages.actors.YellowPagesActor
+import org.gammf.collabora.yellowpages.messages._
+import org.gammf.collabora.yellowpages.util.Topic
+import org.gammf.collabora.yellowpages.TopicElement._
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
 
 import scala.concurrent.duration._
+import scala.concurrent.ExecutionContext.Implicits.global
 
 class DBWorkerModuleActorTest extends TestKit (ActorSystem("CollaboraServer")) with WordSpecLike  with Matchers with BeforeAndAfterAll with ImplicitSender {
 
-  /*val factory = new ConnectionFactory()
-  val connection:ActorRef = system.actorOf(ConnectionActor.props(factory), "rabbitmq")
-  val naming:ActorRef = system.actorOf(Props[RabbitMQNamingActor], "naming")
-  val channelCreator :ActorRef= system.actorOf(Props[ChannelCreatorActor], "channelCreator")
-  val publisherActor:ActorRef = system.actorOf(Props[PublisherActor], "publisher")
-  val collaborationMemberActor:ActorRef = system.actorOf(Props(new CollaborationMembersActor(connection, naming, channelCreator, publisherActor)))
-  val notificationActor:ActorRef = system.actorOf(Props(new NotificationsSenderActor(connection, naming, channelCreator, publisherActor,system)))
-  val dbConnectionActor :ActorRef= system.actorOf(Props[ConnectionManagerActor])
-  val dbMasterActor:ActorRef = system.actorOf(Props.create(classOf[DBMasterActor], system, notificationActor,collaborationMemberActor))
-  val connectionManagerActor: ActorRef =  system.actorOf(Props[ConnectionManagerActor])
-  val modulesActor:ActorRef = system.actorOf(Props.create(classOf[DBWorkerModulesActor], connectionManagerActor))
-  val moduleId:String = "123456788000000000000000"
+  implicit protected[this] val askTimeout: Timeout = Timeout(5 second)
+  val actorCreator = new ActorCreator(system)
+  actorCreator.startCreation
+  val rootYellowPages = actorCreator.getYellowPagesRoot
 
-  val module:Module = Module(Option(moduleId),"questo è un modulo importante","doing")
+  val MODULE_ID:String = "123456788000000000000000"
+  val MODULE_DESCRIPTION = "questo è un modulo importante"
+  val MODULE_STATE = "doing"
+
+  val module:org.gammf.collabora.util.Module = org.gammf.collabora.util.SimpleModule(Option(MODULE_ID),MODULE_DESCRIPTION,MODULE_STATE)
+
+ // val module:Module = Module(Option(MODULE_ID),MODULE_DESCRIPTION,MODULE_STATE)
+
 
   override def beforeAll(): Unit = {
 
@@ -38,28 +47,41 @@ class DBWorkerModuleActorTest extends TestKit (ActorSystem("CollaboraServer")) w
 
   "A DBWorkerModules actor" should {
     "insert new modules in a collaboration correctly in the db" in {
-      within(5 second) {
-        modulesActor ! InsertModuleMessage(module, "59806a4af27da3fcfe0ac0ca", "maffone")
-        expectMsgType[QueryOkMessage]
+      within(TestUtil.TASK_WAIT_TIME second) {
+        (rootYellowPages ? ActorRequestMessage(Topic() :+ Database :+ Module, DefaultWorker))
+          .mapTo[ActorResponseMessage].map {
+          case response: ActorResponseOKMessage => response.actor ! InsertModuleMessage(module, TestUtil.FAKE_ID, TestUtil.USER_ID)
+          case _ =>
+
+            expectMsg(RegistrationResponseMessage())
+        }
       }
     }
 
     "update a module in a collaboration correctly" in {
-      within(5 second) {
-        modulesActor ! UpdateModuleMessage(module, "59806a4af27da3fcfe0ac0ca", "maffone")
-        expectMsgType[QueryOkMessage]
+      within(TestUtil.TASK_WAIT_TIME second) {
+        (rootYellowPages ? ActorRequestMessage(Topic() :+ Database :+ Module, DefaultWorker))
+          .mapTo[ActorResponseMessage].map {
+          case response: ActorResponseOKMessage => response.actor ! UpdateModuleMessage(module, TestUtil.FAKE_ID, TestUtil.USER_ID)
+          case _ =>
+
+            expectMsgType[QueryOkMessage]
+        }
       }
     }
 
     "delete a module in a collaboration correctly" in {
-      within(5 second) {
-        modulesActor ! DeleteModuleMessage(module, "59806a4af27da3fcfe0ac0ca", "maffone")
-        expectMsgType[QueryOkMessage]
+      within(TestUtil.TASK_WAIT_TIME second) {
+        (rootYellowPages ? ActorRequestMessage(Topic() :+ Database :+ Module, DefaultWorker))
+          .mapTo[ActorResponseMessage].map {
+          case response: ActorResponseOKMessage => response.actor ! DeleteModuleMessage(module, TestUtil.FAKE_ID, TestUtil.USER_ID)
+          case _ =>
+
+            expectMsgType[QueryOkMessage]
+        }
       }
     }
+  }
 
-
-
-  }*/
 }
 

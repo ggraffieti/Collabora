@@ -1,10 +1,11 @@
 package org.gammf.collabora.database.actors.worker
 
-import akka.actor.{ActorRef, Stash}
+import akka.actor.{ActorRef, Props, Stash}
 import akka.pattern.pipe
 import org.gammf.collabora.database._
 import org.gammf.collabora.database.messages._
-import org.gammf.collabora.yellowpages.ActorService.ActorService
+
+import org.gammf.collabora.yellowpages.ActorService.{ActorService, DefaultWorker}
 import reactivemongo.bson.{BSONDocument, BSONObjectID}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -13,8 +14,10 @@ import org.gammf.collabora.yellowpages.util.Topic.ActorTopic
 /**
   * A worker that performs query on members.
   */
-class DBWorkerMemberActor(override val yellowPages: ActorRef, override val name: String,
-                          override val topic: ActorTopic, override val service: ActorService)
+class DBWorkerMemberActor(override val yellowPages: ActorRef,
+                          override val name: String,
+                          override val topic: ActorTopic,
+                          override val service: ActorService = DefaultWorker)
   extends CollaborationsDBWorker[DBWorkerMessage] with DefaultDBWorker with Stash {
 
   override def receive: Receive = super.receive orElse ({
@@ -47,4 +50,15 @@ class DBWorkerMemberActor(override val yellowPages: ActorRef, override val name:
       ) pipeTo sender
 
   }: Receive)
+}
+
+object DBWorkerMemberActor {
+  /**
+    * Factory methods that return a [[Props]] to create a database worker member registered actor
+    * @param yellowPages the reference to the yellow pages root actor.
+    * @param topic the topic to which this actor is going to be registered.
+    * @return the [[Props]] to use to create a database worker member actor.
+    */
+  def dbWorkerMemberProps(yellowPages: ActorRef, topic: ActorTopic, name: String = "DBWorkerMember") : Props =
+    Props(new DBWorkerMemberActor(yellowPages = yellowPages, name = name, topic = topic))
 }

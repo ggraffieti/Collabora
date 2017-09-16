@@ -1,6 +1,6 @@
 package org.gammf.collabora.database.actors.master
 
-import akka.actor.ActorRef
+import akka.actor.{ActorRef, Props}
 import akka.pattern.ask
 import org.gammf.collabora.communication.messages.{CommunicationMessage, PublishCollaborationInCollaborationExchange, PublishErrorMessageInCollaborationExchange, PublishNotificationMessage}
 import org.gammf.collabora.communication.actors.FirebaseActor
@@ -18,8 +18,10 @@ import scala.concurrent.ExecutionContext.Implicits.global
 /**
   * The master actor that manages all the query about members.
   */
-class DBMasterMember(override val yellowPages: ActorRef, override val name: String,
-                     override val topic: ActorTopic, override val service: ActorService) extends AbstractDBMaster {
+class DBMasterMember(override val yellowPages: ActorRef,
+                     override val name: String,
+                     override val topic: ActorTopic,
+                     override val service: ActorService = Master) extends AbstractDBMaster {
 
   override def receive: Receive = ({
 
@@ -103,3 +105,16 @@ private case class SendInsertMemberNotificationMessage(insertMessage: InsertMemb
   * @param insertMessage the message to be sent.
   */
 private case class SendInsertMemberCollaborationMessage(insertMessage: InsertMemberMessage)
+
+
+object DBMasterMember {
+  /**
+    * Factory methods that return a [[Props]] to create a database master member registered actor
+    * @param yellowPages the reference to the yellow pages root actor.
+    * @param topic the topic to which this actor is going to be registered.
+    * @return the [[Props]] to use to create a database master member actor.
+    */
+
+  def dbMasterMemberProps(yellowPages: ActorRef, topic: ActorTopic, name: String = "DBMasterMember") : Props =
+    Props(new DBMasterMember(yellowPages = yellowPages, name = name, topic = topic))
+}

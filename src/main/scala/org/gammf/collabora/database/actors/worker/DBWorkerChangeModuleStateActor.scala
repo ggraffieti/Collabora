@@ -1,6 +1,6 @@
 package org.gammf.collabora.database.actors.worker
 
-import akka.actor.{ActorRef, Stash}
+import akka.actor.{ActorRef, Props, Stash}
 import org.gammf.collabora.util.{Collaboration, Module, Note, UpdateMessage, UpdateMessageTarget, UpdateMessageType}
 import reactivemongo.bson.{BSONDocument, BSONObjectID}
 import org.gammf.collabora.database._
@@ -17,8 +17,10 @@ import org.gammf.collabora.yellowpages.ActorService._
   * A Worker that performs module state changement. The changement is based on previous module state and
   * the state of the notes
   */
-class DBWorkerChangeModuleStateActor(override val yellowPages: ActorRef, override val name: String,
-                                     override val topic: ActorTopic, override val service: ActorService)
+class DBWorkerChangeModuleStateActor(override val yellowPages: ActorRef,
+                                     override val name: String,
+                                     override val topic: ActorTopic,
+                                     override val service: ActorService = StateChanger)
   extends CollaborationsDBWorker[Option[BSONDocument]] with Stash {
 
   override def receive: Receive = super.receive orElse ({
@@ -111,4 +113,16 @@ private object State {
   val TODO: String = "To Do"
   val DOING: String = "Doing"
   val DONE: String = "Done"
+}
+
+object DBWorkerChangeModuleStateActor {
+
+  /**
+    * Factory methods that return a [[Props]] to create a database worker change module state registered actor
+    * @param yellowPages the reference to the yellow pages root actor.
+    * @param topic the topic to which this actor is going to be registered.
+    * @return the [[Props]] to use to create a database worker change module state actor.
+    */
+  def dbWorkerChangeModuleStateProps(yellowPages: ActorRef, topic: ActorTopic, name: String = "DBWorkerChangeModuleState") : Props =
+    Props(new DBWorkerChangeModuleStateActor(yellowPages = yellowPages, name = name, topic = topic))
 }

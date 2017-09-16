@@ -1,45 +1,43 @@
 package org.gammf.collabora.communication.actors
 
-import akka.actor.{ActorRef, ActorSystem, Props}
+import akka.actor.{ActorRef, ActorSystem}
 import akka.testkit.{DefaultTimeout, ImplicitSender, TestKit}
-import com.newmotion.akka.rabbitmq.{ConnectionActor, ConnectionFactory}
-import com.rabbitmq.client.{ConnectionFactory, _}
-import org.gammf.collabora.EntryPoint.{notificationActor, system}
+import akka.pattern.ask
+import akka.util.Timeout
 import org.gammf.collabora.communication.CommunicationType
+import org.gammf.collabora.TestUtil
 import org.gammf.collabora.communication.messages._
-import org.gammf.collabora.database.actors.ConnectionManagerActor
-import org.gammf.collabora.database.actors.master.DBMasterActor
+import org.gammf.collabora.yellowpages.ActorContainer
+import org.gammf.collabora.yellowpages.ActorService.{ChannelCreating, Naming}
+import org.gammf.collabora.yellowpages.messages._
+import org.gammf.collabora.yellowpages.util.Topic
+import org.gammf.collabora.yellowpages.TopicElement._
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
 
 import scala.concurrent.duration._
 import org.scalatest.concurrent.Eventually
 
-class RabbitMQNotificationsSenderActorTest extends TestKit (ActorSystem("CollaboraServer")) with WordSpecLike with Eventually with DefaultTimeout with Matchers with BeforeAndAfterAll with ImplicitSender {
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.language.postfixOps
 
-  /*private val EXCHANGE_NAME = "notifications"
+
+class RabbitMQNotificationsSenderActorTest extends TestKit (ActorSystem("CollaboraTest")) with WordSpecLike with Eventually with DefaultTimeout with Matchers with BeforeAndAfterAll with ImplicitSender {
+
+  private val EXCHANGE_NAME = "notifications"
   private val ROUTING_KEY = "59806a4af27da3fcfe0ac0ca"
   private val BROKER_HOST = "localhost"
 
-  val factory = new ConnectionFactory()
-  val connection:ActorRef = system.actorOf(ConnectionActor.props(factory), "rabbitmq")
-  val naming:ActorRef = system.actorOf(Props[RabbitMQNamingActor], "naming")
-  val channelCreator :ActorRef= system.actorOf(Props[ChannelCreatorActor], "channelCreator")
-  val publisherActor:ActorRef = system.actorOf(Props[PublisherActor], "publisher")
-  val collaborationMemberActor:ActorRef = system.actorOf(Props(
-    new CollaborationMembersActor(connection, naming, channelCreator, publisherActor)))
-  val notificationActor:ActorRef = system.actorOf(Props(
-    new NotificationsSenderActor(connection, naming, channelCreator, publisherActor,system)))
-  val dbConnectionActor :ActorRef= system.actorOf(Props[ConnectionManagerActor])
-  val dbMasterActor:ActorRef = system.actorOf(Props.create(classOf[DBMasterActor], system, notificationActor,collaborationMemberActor))
-  val subscriber:ActorRef = system.actorOf(Props[SubscriberActor], "subscriber")
-  val updatesReceiver :ActorRef= system.actorOf(Props(
-    new UpdatesReceiverActor(connection, naming, channelCreator, subscriber, dbMasterActor)), "updates-receiver")
-
   var msg: String = ""
+  implicit protected[this] val askTimeout: Timeout = Timeout(5 second)
 
+  var rootYellowPages: ActorRef = _
 
   override def beforeAll(): Unit ={
-    val factory = new ConnectionFactory
+    ActorContainer.init()
+    ActorContainer.createAll()
+    rootYellowPages = ActorContainer.rootYellowPages
+    Thread.sleep(200)
+    /*val factory = new ConnectionFactory
     factory.setHost(BROKER_HOST)
     val connection = factory.newConnection
     val channel = connection.createChannel
@@ -48,57 +46,68 @@ class RabbitMQNotificationsSenderActorTest extends TestKit (ActorSystem("Collabo
     channel.queueBind(queueName, EXCHANGE_NAME, ROUTING_KEY)
     val consumer = new DefaultConsumer(channel) {
       override def handleDelivery(consumerTag: String, envelope: Envelope, properties: AMQP.BasicProperties, body: Array[Byte]): Unit = {
-        msg = new String(body, "UTF-8")
+        msg = new String(body, TestUtil.STRING_ENCODING)
       }
     }
-    channel.basicConsume(queueName, true, consumer)
-
+    channel.basicConsume(queueName, true, consumer)*/
   }
 
   override def afterAll(): Unit = {
+    ActorContainer.shutdown()
     TestKit.shutdownActorSystem(system)
   }
 
   override implicit val patienceConfig: PatienceConfig = PatienceConfig(
-    timeout = scaled(4 seconds),
-    interval = scaled(100 millis)
+    timeout = scaled(TestUtil.TIMEOUT_SECOND seconds),
+    interval = scaled(TestUtil.INTERVAL_MILLIS millis)
   )
 
   "A NotificationsSender actor" should {
 
     "communicate with RabbitMQNamingActor" in {
-      within(5 seconds){
-        naming ! ChannelNamesRequestMessage(CommunicationType.NOTIFICATIONS)
-        expectMsg(ChannelNamesResponseMessage("notifications", None))
+      within(TestUtil.TASK_WAIT_TIME seconds){
+        (rootYellowPages ? ActorRequestMessage(Topic() :+ Communication :+ RabbitMQ, Naming))
+          .mapTo[ActorResponseMessage].map {
+          case response: ActorResponseOKMessage => response.actor ! ChannelNamesRequestMessage(CommunicationType.NOTIFICATIONS)
+          case _ =>
+
+            expectMsg(RegistrationResponseMessage())
+        }
       }
     }
 
     "communicate with channelCreatorActor" in {
-      within(5 seconds){
-        channelCreator ! PublishingChannelCreationMessage(connection, "notifications", None)
-        expectMsgType[ChannelCreatedMessage]
+      within(TestUtil.TASK_WAIT_TIME seconds){
+        (rootYellowPages ? ActorRequestMessage(Topic() :+ Communication :+ RabbitMQ, ChannelCreating))
+          .mapTo[ActorResponseMessage].map {
+          case response: ActorResponseOKMessage => response.actor ! PublishingChannelCreationMessage(TestUtil.TYPE_NOTIFICATIONS, None)
+          case _ =>
+
+            expectMsg(ChannelNamesResponseMessage(TestUtil.TYPE_NOTIFICATIONS, None))
+        }
       }
     }
 
-    "notify clients when there are updates on db" in {
-      val message = "{\"messageType\": \"CREATION\",\"collaborationId\":\"59806a4af27da3fcfe0ac0ca\",\"target\" : \"NOTE\",\"user\" : \"maffone\",\"note\": {\"content\" : \"prova test\",\"expiration\" : \"2017-08-07T08:01:17.171+02:00\",\"location\" : { \"latitude\" : 546, \"longitude\" : 324 },\"previousNotes\" : [ \"5980710df27da3fcfe0ac88e\", \"5980710df27da3fcfe0ac88f\" ],\"state\" : { \"definition\" : \"done\", \"responsible\" : \"maffone\"}}}"
-      updatesReceiver ! StartMessage
-      notificationActor ! StartMessage
-      updatesReceiver ! ClientUpdateMessage(message)
+  /*  "notify clients when there are updates on db" in {
+      val message = TestMessageUtil.messageNotificationsSenderActorTest
+      //updatesReceiver ! StartMessage
+      //notificationActor ! StartMessage
+
+      //updatesReceiver ! ClientUpdateMessage(message)
+      (rootYellowPages ? ActorRequestMessage(Topic() :+ Communication :+ Updates :+ RabbitMQ, Master))
+        .mapTo[ActorResponseMessage].map {
+        case response: ActorResponseOKMessage => response.actor ! ClientUpdateMessage(message)
+        case _ =>
+
+      }
       eventually{
         msg should not be ""
       }
-      val startMsg = "{\"target\":\"NOTE\",\"messageType\":\"CREATION\",\"user\":\"maffone\",\"note\":{\"id\":"
-      val endMsg = "\"content\":\"prova test\",\"expiration\":\"2017-08-07T08:01:17.171+02:00\",\"location\":{\"latitude\":546,\"longitude\":324},\"previousNotes\":[\"5980710df27da3fcfe0ac88e\",\"5980710df27da3fcfe0ac88f\"],\"state\":{\"definition\":\"done\",\"responsible\":\"maffone\"}},\"collaborationId\":\"59806a4af27da3fcfe0ac0ca\"}"
-
+      val startMsg = TestMessageUtil.startMessageNotificationsSenderActorTest
+      val endMsg = TestMessageUtil.endMessageNotificationsSenderActorTest
       assert(msg.startsWith(startMsg)&& msg.endsWith(endMsg))
     }
-
-
-
-  }
-
-
 */
+  }
 
 }

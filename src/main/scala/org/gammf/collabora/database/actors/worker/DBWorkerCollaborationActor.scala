@@ -1,6 +1,6 @@
 package org.gammf.collabora.database.actors.worker
 
-import akka.actor.ActorRef
+import akka.actor.{ActorRef, Props}
 import akka.pattern.pipe
 import org.gammf.collabora.database._
 import org.gammf.collabora.database.messages._
@@ -15,7 +15,7 @@ import org.gammf.collabora.yellowpages.util.Topic.ActorTopic
   * A worker that performs query on collaborations.
   */
 class DBWorkerCollaborationActor(override val yellowPages: ActorRef, override val name: String,
-                                 override val topic: ActorTopic, override val service: ActorService)
+                                 override val topic: ActorTopic, override val service: ActorService = DefaultWorker)
   extends CollaborationsDBWorker[DBWorkerMessage] with DefaultDBWorker {
 
   override def receive: Receive =  super.receive orElse ({
@@ -46,4 +46,16 @@ class DBWorkerCollaborationActor(override val yellowPages: ActorRef, override va
     case _ => println("["+ name + "] Huh?"); unhandled(_)
 
   }: Receive)
+}
+
+object DBWorkerCollaborationActor {
+  /**
+    * Factory methods that return a [[Props]] to create a database worker collaborations registered actor
+    * @param yellowPages the reference to the yellow pages root actor.
+    * @param topic the topic to which this actor is going to be registered.
+    * @return the [[Props]] to use to create a database worker collaborations actor.
+    */
+
+  def dbWorkerCollaborationProps(yellowPages: ActorRef, topic: ActorTopic, name: String = "DBWorkerCollaborations") : Props =
+    Props(new DBWorkerCollaborationActor(yellowPages = yellowPages, name = name, topic = topic))
 }

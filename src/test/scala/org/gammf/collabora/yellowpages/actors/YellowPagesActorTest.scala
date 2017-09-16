@@ -7,8 +7,7 @@ import org.scalatest._
 
 class YellowPagesActorTest extends TestKit(ActorSystem("CollaboraServer")) with ImplicitSender
   with WordSpecLike with Matchers with BeforeAndAfterAll {
-  /*implicit val timeout: Timeout = Timeout(5 seconds)
-
+  implicit val timeout: Timeout = Timeout(5 seconds)
 
   val root: ActorRef = system.actorOf(YellowPagesActor.rootProps())
 
@@ -23,7 +22,7 @@ class YellowPagesActorTest extends TestKit(ActorSystem("CollaboraServer")) with 
     }
   }
 
-  val naming: ActorRef = system.actorOf(Props[RabbitMQNamingActor], "naming")
+  val naming = system.actorOf(RabbitMQNamingActor.namingProps(root, Topic() :+ Communication :+ RabbitMQ, "Naming Actor"))
 
   "The root yellow pages actor" must {
     "respond with a RegistrationResponseMessage if an actor with (topic = General, service = Naming) asks to be registered" in {
@@ -42,11 +41,11 @@ class YellowPagesActorTest extends TestKit(ActorSystem("CollaboraServer")) with 
       expectMsgType[ActorResponseErrorMessage]
       root ! ActorRequestMessage(Topic() :+ General, ChannelCreating)
       expectMsgType[ActorResponseErrorMessage]
-      root ! ActorRequestMessage(Topic() :+ General, CollaborationSending)
+      root ! ActorRequestMessage(Topic() :+ General, ConnectionHandler)
       expectMsgType[ActorResponseErrorMessage]
-      root ! ActorRequestMessage(Topic() :+ General, NotificationSending)
+      root ! ActorRequestMessage(Topic() :+ General, Authenticator)
       expectMsgType[ActorResponseErrorMessage]
-      root ! ActorRequestMessage(Topic() :+ General, Worker)
+      root ! ActorRequestMessage(Topic() :+ General, Bridging)
       expectMsgType[ActorResponseErrorMessage]
       root ! ActorRequestMessage(Topic() :+ General, Master)
       expectMsgType[ActorResponseErrorMessage]
@@ -61,12 +60,12 @@ class YellowPagesActorTest extends TestKit(ActorSystem("CollaboraServer")) with 
     }
   }
 
-  val channelCreator: ActorRef = system.actorOf(Props[ChannelCreatorActor], "channelCreator")
-  val publisherActor: ActorRef = system.actorOf(Props[PublisherActor], "publisher")
+  val channelCreator = system.actorOf(ChannelCreatorActor.channelCreatorProps(root, Topic() :+ Communication :+ RabbitMQ, "channelCreator"))
+  val publisherActor = system.actorOf(PublisherActor.publisherProps(root, Topic() :+ Communication :+ RabbitMQ, "Publisher Actor"))
 
   "At this point, the root yellow pages" should {
     "have no problems with registering the two new actors in -> (topic = Communication, service = ChannelCreating) and (topic = Communication.RabbitMQ, service = ChannelCreating)" in {
-      root ! RegistrationRequestMessage(publisherActor, "publisher", Topic() :+ Communication, Publishing)
+      root ! RegistrationRequestMessage(publisherActor, "publisher", Topic() :+ Communication :+ RabbitMQ, Publishing)
       expectMsgType[RegistrationResponseMessage]
       root ! RegistrationRequestMessage(channelCreator, "channelCreator", Topic() :+ Communication :+ RabbitMQ, ChannelCreating)
       expectMsgType[RegistrationResponseMessage]
@@ -82,24 +81,27 @@ class YellowPagesActorTest extends TestKit(ActorSystem("CollaboraServer")) with 
       root ! ActorRequestMessage(Topic() :+ Communication :+ RabbitMQ :+ Database, ChannelCreating)
       expectMsgType[ActorResponseErrorMessage]
     }
-    "respond with ActorResponseErrorMessage if an ActorRequestMessage having (topic <= Communication.RabbitMQ, service != ChannelCreating) is sento to it. Except for (topic = Comminication, service = Publishing)" in {
+    "respond with ActorResponseErrorMessage if an ActorRequestMessage having (topic <= Communication.RabbitMQ, service != ChannelCreating) " +
+      "is sento to it. Except for (topic = Comminication, service = Publishing)" in {
       root ! ActorRequestMessage(Topic() :+ Communication :+ RabbitMQ, Publishing)
-      expectMsgType[ActorResponseErrorMessage]
+      expectMsg(ActorResponseOKMessage(publisherActor, Topic() :+ Communication :+ RabbitMQ, Publishing))
       root ! ActorRequestMessage(Topic() :+ Communication, Master)
       expectMsgType[ActorResponseErrorMessage]
-      root ! ActorRequestMessage(Topic() :+ Communication :+ RabbitMQ, UpdatesReceiving)
+      root ! ActorRequestMessage(Topic() :+ Communication :+ Updates :+ RabbitMQ, Master)
       expectMsgType[ActorResponseErrorMessage]
-      root ! ActorRequestMessage(Topic() :+ Communication, NotificationSending)
+      root ! ActorRequestMessage(Topic() :+ Communication :+ Notifications :+ RabbitMQ, Master)
       expectMsgType[ActorResponseErrorMessage]
       root ! ActorRequestMessage(Topic() :+ Communication, Publishing)
-      expectMsg(ActorResponseOKMessage(publisherActor, Topic() :+ Communication, Publishing))
+      expectMsgType[ActorResponseErrorMessage]
     }
   }
 
   val yellowPagerOne: ActorRef = system.actorOf(YellowPagesActor.topicProps(root,Topic() :+ Communication))
   val yellowPagerTwo: ActorRef = system.actorOf(YellowPagesActor.topicProps(root,Topic() :+ Communication :+ RabbitMQ))
 
-  "Two yellow pages actors [(topic = Communication) and (topic = Communication.RabbitMQ)] have just been registered to the root yellow pages and, at this point, repeating the previous operations should still work" in {
+  "Two yellow pages actors [(topic = Communication) and (topic = Communication.RabbitMQ)] " +
+    "have just been registered to the root yellow pages and, at this point, " +
+    "repeating the previous operations should still work" in {
     root ! ActorRequestMessage(Topic() :+ Communication, ChannelCreating)
     expectMsgType[ActorResponseErrorMessage]
     root ! ActorRequestMessage(Topic() :+ Communication :+ RabbitMQ, ChannelCreating)
@@ -107,19 +109,21 @@ class YellowPagesActorTest extends TestKit(ActorSystem("CollaboraServer")) with 
     root ! ActorRequestMessage(Topic() :+ Communication :+ RabbitMQ :+ Database, ChannelCreating)
     expectMsgType[ActorResponseErrorMessage]
     root ! ActorRequestMessage(Topic() :+ Communication :+ RabbitMQ, Publishing)
-    expectMsgType[ActorResponseErrorMessage]
+    expectMsg(ActorResponseOKMessage(publisherActor, Topic() :+ Communication :+ RabbitMQ, Publishing))
     root ! ActorRequestMessage(Topic() :+ Communication, Master)
     expectMsgType[ActorResponseErrorMessage]
-    root ! ActorRequestMessage(Topic() :+ Communication :+ RabbitMQ, UpdatesReceiving)
+    root ! ActorRequestMessage(Topic() :+ Communication :+ Updates :+ RabbitMQ, Master)
     expectMsgType[ActorResponseErrorMessage]
-    root ! ActorRequestMessage(Topic() :+ Communication, NotificationSending)
+    root ! ActorRequestMessage(Topic() :+ Communication :+ Notifications :+ RabbitMQ, Master)
     expectMsgType[ActorResponseErrorMessage]
     root ! ActorRequestMessage(Topic() :+ Communication, Publishing)
-    expectMsg(ActorResponseOKMessage(publisherActor, Topic() :+ Communication, Publishing))
+    expectMsgType[ActorResponseErrorMessage]
 
   }
 
-  "If the actors with (topic = General, service = Naming) and (topic = Communication.RabbitMQ, service = ChannelCreating) are deregistered from the root, their references should be recoverable any longer" in {
+  "If the actors with (topic = General, service = Naming) and " +
+    "(topic = Communication.RabbitMQ, service = ChannelCreating) " +
+    "are deregistered from the root, their references should be recoverable any longer" in {
     root ! DeletionRequestMessage(naming, "Naming Actor", Topic() :+ General, Naming)
     root ! DeletionRequestMessage(channelCreator, "channelCreator", Topic() :+ Communication :+ RabbitMQ, ChannelCreating)
     root ! ActorRequestMessage(Topic() :+ General, Naming)
@@ -127,5 +131,5 @@ class YellowPagesActorTest extends TestKit(ActorSystem("CollaboraServer")) with 
     root ! ActorRequestMessage(Topic() :+ Communication :+ RabbitMQ, ChannelCreating)
     expectMsgType[ActorResponseErrorMessage]
 
-  }*/
+  }
 }

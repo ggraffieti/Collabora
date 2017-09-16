@@ -1,10 +1,12 @@
 package org.gammf.collabora.yellowpages
 
+import java.util.concurrent.TimeUnit
+
 import akka.actor.{ActorRef, ActorSystem}
 import com.newmotion.akka.rabbitmq.{ConnectionActor, ConnectionFactory}
-import org.gammf.collabora.authentication.AuthenticationServer
 import org.gammf.collabora.authentication.actors.AuthenticationActor
 import org.gammf.collabora.communication.actors._
+import org.gammf.collabora.communication.actors.rabbitmq._
 import org.gammf.collabora.database.actors.ConnectionManagerActor
 import org.gammf.collabora.database.actors.master._
 import org.gammf.collabora.database.actors.worker._
@@ -14,99 +16,95 @@ import org.gammf.collabora.yellowpages.messages.RegistrationRequestMessage
 import org.gammf.collabora.yellowpages.util.Topic
 import org.gammf.collabora.yellowpages.TopicElement._
 
-case class ActorCreator(system: ActorSystem) {
+import scala.concurrent.Await
+import scala.concurrent.duration.Duration
 
-  val rootYellowPages = system.actorOf(YellowPagesActor.rootProps())
+object ActorContainer {
 
-  def startCreation {
+  var actorSystem: ActorSystem = _
+  var rootYellowPages: ActorRef = _
+
+  def init(): Unit = {
+    actorSystem = ActorSystem("CollaboraServer")
+    rootYellowPages = actorSystem.actorOf(YellowPagesActor.rootProps())
+  }
+
+  def createAll(): Unit = {
     val factory = new ConnectionFactory()
-    val rabbitConnection = system.actorOf(ConnectionActor.props(factory), "rabbitmq")
+    val rabbitConnection = actorSystem.actorOf(ConnectionActor.props(factory), "rabbitmqtest")
     rootYellowPages ! RegistrationRequestMessage(rabbitConnection, "RabbitConnection", Topic() :+ Communication :+ RabbitMQ, ConnectionHandler)
 
-    createCommunicationActor()
+    createCommunicationActors()
     createConnectionManagerActor()
     createDBMasterActors()
     createDBDefaultWorkers()
     createDBExtraWorkers()
-    createAuthActor()
-    createYellowPagesActor()
+    createAuthenticationActor()
+    createYellowPagesActors()
   }
 
-  def createCommunicationActor() : Unit = {
-    val channelCreator = system.actorOf(ChannelCreatorActor.channelCreatorProps(rootYellowPages, Topic() :+ Communication :+ RabbitMQ, "RabbitChannelCreator"))
-    val namingActor = system.actorOf(RabbitMQNamingActor.namingProps(rootYellowPages, Topic() :+ Communication :+ RabbitMQ, "NamingActor"))
-    val publisherActor = system.actorOf(PublisherActor.publisherProps(rootYellowPages, Topic() :+ Communication :+ RabbitMQ, "PublisherActor"))
-    val subscriber = system.actorOf(SubscriberActor.subscriberProps(rootYellowPages, Topic() :+ Communication :+ RabbitMQ, "SubscriberActor"))
-
-    val updatesReceiver = system.actorOf(UpdatesReceiverActor.updatesReceiverProps(rootYellowPages, Topic() :+ Communication :+ Updates :+ RabbitMQ , "UpdatesReceiver"))
-    val notificationActor = system.actorOf(NotificationsSenderActor.notificationsSenderProps(rootYellowPages, Topic() :+ Communication :+ Notifications :+ RabbitMQ, "NotificationActor"))
-    val collaborationActor = system.actorOf(CollaborationMembersActor.collaborationMemberProps(rootYellowPages, Topic() :+ Communication :+ Collaborations  :+ RabbitMQ, "CollaborationActor"))
-
-    val notificationDispatcherActor = system.actorOf(NotificationsDispatcherActor.notificationsDispatcherProps(rootYellowPages, Topic() :+ Communication :+ Notifications, "NotificationDispatcher"))
-
-    val firebaseActor = system.actorOf(FirebaseActor.firebaseProps(rootYellowPages, Topic() :+ Communication :+ Notifications :+ Firebase, "FirebaseActor"))
+  def shutdown(): Unit = {
+    Await.ready(actorSystem.terminate(), Duration(1, TimeUnit.MINUTES))
   }
 
-  def createConnectionManagerActor() : Unit = {
-    //MONGO CONNECTION MANAGER
-    val mongoConnectionActor = system.actorOf(ConnectionManagerActor.connectionManagerProps(rootYellowPages, Topic() :+ Database, "MongoConnectionManager"))
+  private def createCommunicationActors() : Unit = {
+    actorSystem.actorOf(RabbitMQChannelCreatorActor.channelCreatorProps(rootYellowPages, Topic() :+ Communication :+ RabbitMQ, "RabbitChannelCreator"))
+    actorSystem.actorOf(RabbitMQNamingActor.namingProps(rootYellowPages, Topic() :+ Communication :+ RabbitMQ, "NamingActor"))
+    actorSystem.actorOf(RabbitMQPublisherActor.publisherProps(rootYellowPages, Topic() :+ Communication :+ RabbitMQ, "PublisherActor"))
+    actorSystem.actorOf(RabbitMQSubscriberActor.subscriberProps(rootYellowPages, Topic() :+ Communication :+ RabbitMQ, "SubscriberActor"))
+
+    actorSystem.actorOf(RabbitMQUpdatesReceiverActor.updatesReceiverProps(rootYellowPages, Topic() :+ Communication :+ Updates :+ RabbitMQ , "UpdatesReceiver"))
+    actorSystem.actorOf(RabbitMQNotificationsSenderActor.notificationsSenderProps(rootYellowPages, Topic() :+ Communication :+ Notifications :+ RabbitMQ, "NotificationActor"))
+    actorSystem.actorOf(RabbitMQCollaborationMembersActor.collaborationMemberProps(rootYellowPages, Topic() :+ Communication :+ Collaborations  :+ RabbitMQ, "CollaborationActor"))
+
+    actorSystem.actorOf(NotificationsDispatcherActor.notificationsDispatcherProps(rootYellowPages, Topic() :+ Communication :+ Notifications, "NotificationDispatcher"))
+
+    actorSystem.actorOf(FirebaseActor.firebaseProps(rootYellowPages, Topic() :+ Communication :+ Notifications :+ Firebase, "FirebaseActor"))
   }
 
-  def createDBMasterActors() : Unit = {
-    //MASTERS
-    val dbMasterActor = system.actorOf(DBMasterActor.dbMasterProps(rootYellowPages, Topic() :+ Database, "DBMaster"))
-    val dbMasterNoteActor = system.actorOf(DBMasterNote.dbMasterNoteProps(rootYellowPages, Topic() :+ Database :+ Note, "DBMasterNotes"))
-    val dbMasterModuleActor = system.actorOf(DBMasterModule.dbMasterModuleProps(rootYellowPages, Topic() :+ Database :+ Module, "DBMasterModules"))
-    val dbMasterCollaborationActor = system.actorOf(DBMasterCollaboration.dbMasterCollaborationProps(rootYellowPages, Topic() :+ Database :+ Collaboration, "DBMasterCollaborations"))
-    val dbMasterMemberActor = system.actorOf(DBMasterMember.dbMasterMemberProps(rootYellowPages, Topic() :+ Database :+ Member, "DBMasterMembers"))
+  private def createConnectionManagerActor() : Unit = {
+    actorSystem.actorOf(ConnectionManagerActor.connectionManagerProps(rootYellowPages, Topic() :+ Database, "MongoConnectionManager"))
   }
 
-  def createDBDefaultWorkers() : Unit = {
-    //DEFAULT WORKERS
-    val dBWorkerNotesActor = system.actorOf(DBWorkerNotesActor.dbWorkerNotesProps(rootYellowPages, Topic() :+ Database :+ Note, "DBWorkerNotes"))
-    val dBWorkerModulesActor = system.actorOf(DBWorkerModulesActor.dbWorkerModulesProps(rootYellowPages, Topic() :+ Database :+ Module, "DBWorkerModules"))
-    val dBWorkerCollaborationsActor = system.actorOf(DBWorkerCollaborationsActor.dbWorkerCollaborationsProps(rootYellowPages, Topic() :+ Database :+ Collaboration, "DBWorkerCollaborations"))
-    val dbWorkerMembersActor = system.actorOf(DBWorkerMemberActor.dbWorkerMemberProps(rootYellowPages, Topic() :+ Database :+ Member, "DBWorkerMembers"))
+  private def createDBMasterActors() : Unit = {
+    actorSystem.actorOf(DBMasterActor.dbMasterProps(rootYellowPages, Topic() :+ Database, "DBMaster"))
+    actorSystem.actorOf(DBMasterNote.dbMasterNoteProps(rootYellowPages, Topic() :+ Database :+ Note, "DBMasterNotes"))
+    actorSystem.actorOf(DBMasterModule.dbMasterModuleProps(rootYellowPages, Topic() :+ Database :+ Module, "DBMasterModules"))
+    actorSystem.actorOf(DBMasterCollaboration.dbMasterCollaborationProps(rootYellowPages, Topic() :+ Database :+ Collaboration, "DBMasterCollaborations"))
+    actorSystem.actorOf(DBMasterMember.dbMasterMemberProps(rootYellowPages, Topic() :+ Database :+ Member, "DBMasterMembers"))
   }
 
-  def createDBExtraWorkers() : Unit = {
-    //EXTRA WORKERS
-    val dBWorkerAuthenticationActor = system.actorOf(DBWorkerAuthenticationActor.dbWorkerAuthenticationProps(rootYellowPages, Topic() :+ Database, "DBWorkerAuthentication"))
-    val dBWorkerChangeModuleStateActor = system.actorOf(DBWorkerChangeModuleStateActor.dbWorkerChangeModuleStateProps(rootYellowPages, Topic() :+ Database :+ Module, "DBWorkerChangeModuleState"))
-    val dBWorkerCheckMemberExistenceActor = system.actorOf(DBWorkerCheckMemberExistenceActor.dbWorkerCheckMemberExistenceProps(rootYellowPages, Topic() :+ Database :+ Member, "DBWorkerCheckMember"))
-    val dBWorkerGetCollaborationActor = system.actorOf(DBWorkerGetCollaborationActor.dbWorkerGetCollaborationProps(rootYellowPages, Topic() :+ Database :+ Collaboration, "DBWorkerGetCollaboration"))
+  private def createDBDefaultWorkers() : Unit = {
+    actorSystem.actorOf(DBWorkerNoteActor.dbWorkerNoteProps(rootYellowPages, Topic() :+ Database :+ Note, "DBWorkerNotes"))
+    actorSystem.actorOf(DBWorkerModulesActor.dbWorkerModuleProps(rootYellowPages, Topic() :+ Database :+ Module, "DBWorkerModules"))
+    actorSystem.actorOf(DBWorkerCollaborationActor.dbWorkerCollaborationProps(rootYellowPages, Topic() :+ Database :+ Collaboration, "DBWorkerCollaborations"))
+    actorSystem.actorOf(DBWorkerMemberActor.dbWorkerMemberProps(rootYellowPages, Topic() :+ Database :+ Member, "DBWorkerMembers"))
   }
 
-  def createAuthActor() : Unit = {
-    //AUTHENTICATION
-    val authenticationActor = system.actorOf(AuthenticationActor.authenticationProps(rootYellowPages, Topic() :+ Authentication, "AuthenticationActor"))
-    AuthenticationServer.start(system, authenticationActor)
+  private def createDBExtraWorkers() : Unit = {
+    actorSystem.actorOf(DBWorkerAuthenticationActor.dbWorkerAuthenticationProps(rootYellowPages, Topic() :+ Database, "DBWorkerAuthentication"))
+    actorSystem.actorOf(DBWorkerChangeModuleStateActor.dbWorkerChangeModuleStateProps(rootYellowPages, Topic() :+ Database :+ Module, "DBWorkerChangeModuleState"))
+    actorSystem.actorOf(DBWorkerCheckMemberExistenceActor.dbWorkerCheckMemberExistenceProps(rootYellowPages, Topic() :+ Database :+ Member, "DBWorkerCheckMember"))
+    actorSystem.actorOf(DBWorkerGetCollaborationActor.dbWorkerGetCollaborationProps(rootYellowPages, Topic() :+ Database :+ Collaboration, "DBWorkerGetCollaboration"))
   }
 
-  def createYellowPagesActor() : Unit = {
-
-    val printerActor = system.actorOf(PrinterActor
-      .printerProps(rootYellowPages, Topic() :+ General))
-
-    val yellowPagesCommunication = system.actorOf(YellowPagesActor
-      .topicProps(rootYellowPages, Topic() :+ Communication))
-
-    val yellowPagesDatabase = system.actorOf(YellowPagesActor
-      .topicProps(rootYellowPages, Topic() :+ Database))
-
-    val yellowPagesCommunicationRabbit = system.actorOf(YellowPagesActor
-      .topicProps(rootYellowPages, Topic() :+ Communication :+ RabbitMQ))
-
-    val yellowPagesDatabaseNote = system.actorOf(YellowPagesActor
-      .topicProps(rootYellowPages, Topic() :+ Database :+ Note))
-    val yellowPagesDatabaseModule = system.actorOf(YellowPagesActor
-      .topicProps(rootYellowPages, Topic() :+ Database :+ Module))
-    val yellowPagesDatabaseCollaboration = system.actorOf(YellowPagesActor
-      .topicProps(rootYellowPages, Topic() :+ Database :+ Collaboration))
-    val yellowPagesDatabaseMember = system.actorOf(YellowPagesActor
-      .topicProps(rootYellowPages, Topic() :+ Database :+ Member))
+  private def createAuthenticationActor() : Unit = {
+    actorSystem.actorOf(AuthenticationActor.authenticationProps(rootYellowPages, Topic() :+ Authentication, "AuthenticationActor"))
   }
 
-  def getYellowPagesRoot:ActorRef = rootYellowPages
+  private def createYellowPagesActors() : Unit = {
 
+    actorSystem.actorOf(PrinterActor.printerProps(rootYellowPages, Topic() :+ General))
+
+    actorSystem.actorOf(YellowPagesActor.topicProps(rootYellowPages, Topic() :+ Communication))
+
+    actorSystem.actorOf(YellowPagesActor.topicProps(rootYellowPages, Topic() :+ Database))
+
+    actorSystem.actorOf(YellowPagesActor.topicProps(rootYellowPages, Topic() :+ Communication :+ RabbitMQ))
+
+    actorSystem.actorOf(YellowPagesActor.topicProps(rootYellowPages, Topic() :+ Database :+ Note))
+    actorSystem.actorOf(YellowPagesActor.topicProps(rootYellowPages, Topic() :+ Database :+ Module))
+    actorSystem.actorOf(YellowPagesActor.topicProps(rootYellowPages, Topic() :+ Database :+ Collaboration))
+    actorSystem.actorOf(YellowPagesActor.topicProps(rootYellowPages, Topic() :+ Database :+ Member))
+  }
 }

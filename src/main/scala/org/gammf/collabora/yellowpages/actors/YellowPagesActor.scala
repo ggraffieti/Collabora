@@ -28,8 +28,7 @@ sealed trait YellowPagesActor extends Actor {
 
   import org.gammf.collabora.yellowpages.entriesImplicitConversions._
   override def receive: Receive = {
-    case msg: RegistrationRequestMessage => handleActorInsertion(msg)
-    case msg: RedirectionRequestMessage => handleActorInsertion(msg)
+    case msg: InsertionRequestMessage => handleActorInsertion(msg)
     case msg: DeletionRequestMessage => handleActorDeletion(msg)
     case msg: ActorRequestMessage => handleActorRequest(msg)
     case msg: HierarchyRequestMessage => handleHierarchy(msg.level)

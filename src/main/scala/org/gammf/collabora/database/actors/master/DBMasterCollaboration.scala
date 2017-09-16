@@ -1,12 +1,11 @@
 package org.gammf.collabora.database.actors.master
 
-import akka.actor.ActorRef
+import akka.actor.{ActorRef, Props}
 import org.gammf.collabora.communication.messages.{PublishCollaborationInCollaborationExchange, PublishErrorMessageInCollaborationExchange, PublishNotificationMessage}
 import org.gammf.collabora.database.messages._
 import org.gammf.collabora.util.{CollaborationMessage, CollaborationType, ServerErrorCode, ServerErrorMessage, UpdateMessage, UpdateMessageTarget, UpdateMessageType}
 import org.gammf.collabora.yellowpages.ActorService.ActorService
 import org.gammf.collabora.yellowpages.util.Topic.ActorTopic
-
 import org.gammf.collabora.yellowpages.util.Topic
 import org.gammf.collabora.yellowpages.TopicElement._
 import org.gammf.collabora.yellowpages.ActorService._

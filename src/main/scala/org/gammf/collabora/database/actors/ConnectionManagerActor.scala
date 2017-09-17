@@ -1,6 +1,6 @@
 package org.gammf.collabora.database.actors
 
-import akka.actor.{ActorRef, Stash}
+import akka.actor.{ActorRef, Props, Stash}
 import org.gammf.collabora.database.messages.{AskConnectionMessage, GetConnectionMessage}
 import org.gammf.collabora.database._
 import org.gammf.collabora.yellowpages.actors.BasicActor
@@ -13,8 +13,10 @@ import org.gammf.collabora.yellowpages.ActorService._
 /**
   * An actor that have the purpose of establishing and mantaining the connection with the Database
   */
-class ConnectionManagerActor(override val yellowPages: ActorRef, override val name: String,
-                             override val topic: ActorTopic, override val service: ActorService) extends BasicActor with Stash {
+class ConnectionManagerActor(override val yellowPages: ActorRef,
+                             override val name: String,
+                             override val topic: ActorTopic,
+                             override val service: ActorService = ConnectionHandler) extends BasicActor with Stash {
 
   private[this] var connection: Option[MongoConnection] = None
   private[this] val mongoUri = CONNECTION_STRING
@@ -33,4 +35,16 @@ class ConnectionManagerActor(override val yellowPages: ActorRef, override val na
   override def receive: Receive = ({
     case _ : AskConnectionMessage => sender ! GetConnectionMessage(connection.get)
   }: Receive) orElse super[BasicActor].receive
+}
+
+object ConnectionManagerActor {
+  /**
+    * Factory methods that return a [[Props]] to create a connection manager registered actor
+    * @param yellowPages the reference to the yellow pages root actor.
+    * @param topic the topic to which this actor is going to be registered.
+    * @return the [[Props]] to use to create a connection manager actor.
+    */
+
+  def connectionManagerProps(yellowPages: ActorRef, topic: ActorTopic, name: String = "MongoConnectionManager") : Props =
+    Props(new ConnectionManagerActor(yellowPages = yellowPages, name = name, topic = topic))
 }

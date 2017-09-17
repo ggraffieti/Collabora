@@ -1,72 +1,108 @@
 package org.gammf.collabora.database.actors
 
-import akka.actor.{ActorRef, ActorSystem, Props}
+import akka.actor.{ActorRef, ActorSystem}
 import akka.testkit.{ImplicitSender, TestKit}
-import com.newmotion.akka.rabbitmq.{ConnectionActor, ConnectionFactory}
-import org.gammf.collabora.communication.actors._
-import org.gammf.collabora.database.actors.master.DBMasterActor
-import org.gammf.collabora.database.actors.worker.DBWorkerCollaborationActor
+import akka.pattern.ask
+import akka.util.Timeout
+import org.gammf.collabora.TestUtil
 import org.gammf.collabora.database.messages._
-import org.gammf.collabora.util.{Collaboration, CollaborationRight, CollaborationType, CollaborationUser, Location, Module, NoteState, SimpleCollaboration, SimpleModule, SimpleNote}
+import org.gammf.collabora.util.{CollaborationRight, CollaborationType, CollaborationUser, Location, NoteState, SimpleCollaboration, SimpleNote}
+import org.gammf.collabora.yellowpages.ActorContainer
+import org.gammf.collabora.yellowpages.ActorService.DefaultWorker
+import org.gammf.collabora.yellowpages.messages._
+import org.gammf.collabora.yellowpages.util.Topic
+import org.gammf.collabora.yellowpages.TopicElement._
 import org.joda.time.DateTime
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
 
+import scala.concurrent.Await
 import scala.concurrent.duration._
+import scala.language.postfixOps
 
-class DBWorkerCollaborationActorTest extends TestKit (ActorSystem("CollaboraServer")) with WordSpecLike  with Matchers with BeforeAndAfterAll with ImplicitSender {
+class DBWorkerCollaborationActorTest extends TestKit (ActorSystem("CollaboraTest")) with WordSpecLike  with Matchers with BeforeAndAfterAll with ImplicitSender {
 
-  /*val factory = new ConnectionFactory()
-  val connection:ActorRef = system.actorOf(ConnectionActor.props(factory), "rabbitmq")
-  val naming:ActorRef = system.actorOf(Props[RabbitMQNamingActor], "naming")
-  val channelCreator :ActorRef= system.actorOf(Props[ChannelCreatorActor], "channelCreator")
-  val publisherActor:ActorRef = system.actorOf(Props[PublisherActor], "publisher")
-  val collaborationMemberActor:ActorRef = system.actorOf(Props(new CollaborationMembersActor(connection, naming, channelCreator, publisherActor)))
-  val notificationActor:ActorRef = system.actorOf(Props(new NotificationsSenderActor(connection, naming, channelCreator, publisherActor,system)))
-  val dbConnectionActor :ActorRef= system.actorOf(Props[ConnectionManagerActor])
-  val dbMasterActor:ActorRef = system.actorOf(Props.create(classOf[DBMasterActor], system, notificationActor,collaborationMemberActor))
-  val connectionManagerActor: ActorRef =  system.actorOf(Props[ConnectionManagerActor])
-  val collaborationsActor:ActorRef = system.actorOf(Props.create(classOf[DBWorkerCollaborationsActor], connectionManagerActor))
-  val collabID:String = "123456788698540008123400"
+  val COLLABORATION_ID:String = "123456788698540008123400"
+  val COLLABORATION_NAME = "simplecollaboration"
+  val COLLABORATION_USER_FONE = "fone"
+  val COLLABORATION_USER_PERU = "peru"
+  val COLLABORATION_FIRST_NOTE_CONTENT = "questo è il contenuto"
+  val COLLABORATION_FIRST_LOCATION_LATITUDE = 23.32
+  val COLLABORATION_FIRST_LOCATION_LONGITUDE = 23.42
+  val COLLABORATION_SECOND_LOCATION_LATITUDE = 233.32
+  val COLLABORATION_SECOND_LOCATION_LONGITUDE = 233.42
+  val COLLABORATION_SECOND_NOTE_CONTENT = "questo è il contenuto2"
+  val COLLABORATION_STATE_DOING = "doing"
+  val COLLABORATION_STATE_DONE = "done"
 
-  val collab:Collaboration = SimpleCollaboration(
-    id = Some(collabID),
-    name = "simplecollaboration",
-    collaborationType = CollaborationType.GROUP,
-    users = Some(List(CollaborationUser("fone", CollaborationRight.ADMIN), CollaborationUser("peru", CollaborationRight.ADMIN))),
-    modules = Option.empty,
-    notes = Some(List(SimpleNote(None, "questo è il contenuto",Some(new DateTime()),Some(Location(23.32,23.42)),Option.empty,NoteState("doing", Some("fone")),None),
-      SimpleNote(None,"questo è il contenuto2",Some(new DateTime()),Some(Location(233.32,233.42)),None,NoteState("done", Option("peru")),None)))
-  )
+  implicit protected[this] val askTimeout: Timeout = Timeout(5 second)
+
+  var rootYellowPages: ActorRef = _
 
   override def beforeAll(): Unit = {
-
+    ActorContainer.init()
+    ActorContainer.createAll()
+    rootYellowPages = ActorContainer.rootYellowPages
+    Thread.sleep(200)
   }
 
+  val collaboration = SimpleCollaboration(
+    id = Some(COLLABORATION_ID),
+    name = COLLABORATION_NAME,
+    collaborationType = CollaborationType.GROUP,
+    users = Some(List(CollaborationUser(COLLABORATION_USER_FONE, CollaborationRight.ADMIN), CollaborationUser(COLLABORATION_USER_PERU, CollaborationRight.ADMIN))),
+    modules = Option.empty,
+    notes = Some(List(SimpleNote(None, COLLABORATION_FIRST_NOTE_CONTENT,Some(new DateTime()),Some(Location(COLLABORATION_FIRST_LOCATION_LATITUDE,COLLABORATION_FIRST_LOCATION_LONGITUDE)),Option.empty,NoteState(COLLABORATION_STATE_DOING, Some(COLLABORATION_USER_PERU)),None),
+      SimpleNote(None,COLLABORATION_SECOND_NOTE_CONTENT,Some(new DateTime()),Some(Location(COLLABORATION_SECOND_LOCATION_LATITUDE,COLLABORATION_SECOND_LOCATION_LONGITUDE)),None,NoteState(COLLABORATION_STATE_DONE, Option(COLLABORATION_USER_PERU)),None)))
+  )
+
   override def afterAll(): Unit = {
+    ActorContainer.shutdown()
     TestKit.shutdownActorSystem(system)
   }
 
   "A DBWorkerCollaborations actor" should {
     "insert new collaboration in the db" in {
 
-      within(5 second) {
-        collaborationsActor ! InsertCollaborationMessage(collab, "maffone")
-        expectMsgType[QueryOkMessage]
+      within(TestUtil.TASK_WAIT_TIME second) {
+        Await.result(rootYellowPages ? ActorRequestMessage(Topic() :+ Database :+ Collaboration, DefaultWorker), askTimeout.duration)
+          .asInstanceOf[ActorResponseMessage] match {
+          case response: ActorResponseOKMessage =>
+            response.actor ! InsertCollaborationMessage(collaboration, TestUtil.USER_ID)
+            expectMsgPF() {
+              case QueryOkMessage(query) => assert(query.isInstanceOf[InsertCollaborationMessage])
+            }
+          case _ => fail
+
+        }
       }
     }
 
     "update a collaboration in the db" in {
-      within(5 second) {
-        collaborationsActor ! UpdateCollaborationMessage(collab, "maffone")
-        expectMsgType[QueryOkMessage]
+      within(TestUtil.TASK_WAIT_TIME second) {
+        Await.result(rootYellowPages ? ActorRequestMessage(Topic() :+ Database :+ Collaboration, DefaultWorker), askTimeout.duration)
+          .asInstanceOf[ActorResponseMessage] match {
+            case response: ActorResponseOKMessage =>
+              response.actor ! UpdateCollaborationMessage(collaboration, TestUtil.USER_ID)
+              expectMsgPF() {
+                case QueryOkMessage(query) => assert(query.isInstanceOf[UpdateCollaborationMessage])
+              }
+            case _ => fail
+        }
       }
     }
 
     "delete a collaboration in the db" in {
-      within(5 second) {
-        collaborationsActor ! DeleteCollaborationMessage(collab, "maffone")
-        expectMsgType[QueryOkMessage]
+      within(TestUtil.TASK_WAIT_TIME second) {
+        Await.result(rootYellowPages ? ActorRequestMessage(Topic() :+ Database :+ Collaboration, DefaultWorker), askTimeout.duration)
+          .asInstanceOf[ActorResponseMessage] match {
+          case response: ActorResponseOKMessage =>
+            response.actor ! DeleteCollaborationMessage(collaboration, TestUtil.USER_ID)
+            expectMsgPF() {
+              case QueryOkMessage(query) => assert(query.isInstanceOf[DeleteCollaborationMessage])
+            }
+          case _ => fail
+        }
       }
     }
-  }*/
+  }
 }

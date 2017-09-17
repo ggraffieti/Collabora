@@ -4,7 +4,7 @@ import akka.actor._
 import org.gammf.collabora.communication.CommunicationType
 import org.gammf.collabora.communication.messages._
 import org.gammf.collabora.util.UpdateMessage
-import org.gammf.collabora.yellowpages.ActorService.{ActorService, _}
+import org.gammf.collabora.yellowpages.ActorService._
 import org.gammf.collabora.yellowpages.TopicElement._
 import org.gammf.collabora.yellowpages.actors.BasicActor
 import org.gammf.collabora.yellowpages.messages._
@@ -22,7 +22,7 @@ import play.api.libs.json.{JsError, JsSuccess, Json}
   * This is an actor that manages the reception of client updates.
   */
 class RabbitMQUpdatesReceiverActor(override val yellowPages: ActorRef, override val name: String,
-                                   override val topic: ActorTopic, override val service: ActorService) extends BasicActor {
+                                   override val topic: ActorTopic, override val service: ActorService = Master) extends BasicActor {
 
   private[this] var subQueue: Option[String] = None
 
@@ -40,4 +40,16 @@ class RabbitMQUpdatesReceiverActor(override val yellowPages: ActorRef, override 
         case error: JsError => println(error)
       }
   }: Receive) orElse super[BasicActor].receive
+}
+
+object RabbitMQUpdatesReceiverActor {
+  /**
+    * Factory methods that return a [[Props]] to create a updates receiver registered actor
+    * @param yellowPages the reference to the yellow pages root actor.
+    * @param topic the topic to which this actor is going to be registered.
+    * @return the [[Props]] to use to create a updates receiver actor.
+    */
+
+  def updatesReceiverProps(yellowPages: ActorRef, topic: ActorTopic, name: String = "UpdatesReceiver") : Props =
+    Props(new RabbitMQUpdatesReceiverActor(yellowPages = yellowPages, name = name, topic = topic))
 }

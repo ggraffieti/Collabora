@@ -1,12 +1,11 @@
 package org.gammf.collabora.database.actors.master
 
-import akka.actor.ActorRef
+import akka.actor.{ActorRef, Props}
 import org.gammf.collabora.communication.messages.{PublishCollaborationInCollaborationExchange, PublishErrorMessageInCollaborationExchange, PublishNotificationMessage}
 import org.gammf.collabora.database.messages._
 import org.gammf.collabora.util.{CollaborationMessage, CollaborationType, ServerErrorCode, ServerErrorMessage, UpdateMessage, UpdateMessageTarget, UpdateMessageType}
 import org.gammf.collabora.yellowpages.ActorService.ActorService
 import org.gammf.collabora.yellowpages.util.Topic.ActorTopic
-
 import org.gammf.collabora.yellowpages.util.Topic
 import org.gammf.collabora.yellowpages.TopicElement._
 import org.gammf.collabora.yellowpages.ActorService._
@@ -14,8 +13,10 @@ import org.gammf.collabora.yellowpages.ActorService._
 /**
   * The master actor that manages all the query about collaborations.
   */
-class DBMasterCollaboration(override val yellowPages: ActorRef, override val name: String,
-                            override val topic: ActorTopic, override val service: ActorService) extends AbstractDBMaster {
+class DBMasterCollaboration(override val yellowPages: ActorRef,
+                            override val name: String,
+                            override val topic: ActorTopic,
+                            override val service: ActorService = Master) extends AbstractDBMaster {
 
   override def receive: Receive = ({
 
@@ -58,4 +59,16 @@ class DBMasterCollaboration(override val yellowPages: ActorRef, override val nam
       ))
 
   }: Receive) orElse super[AbstractDBMaster].receive
+}
+
+object DBMasterCollaboration {
+  /**
+    * Factory methods that return a [[Props]] to create a database master collaboration registered actor
+    * @param yellowPages the reference to the yellow pages root actor.
+    * @param topic the topic to which this actor is going to be registered.
+    * @return the [[Props]] to use to create a database master collaboration actor.
+    */
+
+  def dbMasterCollaborationProps(yellowPages: ActorRef, topic: ActorTopic, name: String = "DBMasterCollaboration") : Props =
+    Props(new DBMasterCollaboration(yellowPages = yellowPages, name = name, topic = topic))
 }

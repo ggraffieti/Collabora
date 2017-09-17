@@ -1,6 +1,6 @@
 package org.gammf.collabora.database.actors.master
 
-import akka.actor.ActorRef
+import akka.actor.{ActorRef, Props}
 import akka.pattern.{ask, pipe}
 import akka.util.Timeout
 import org.gammf.collabora.authentication.messages.{LoginMessage, SigninMessage, SigninResponseMessage}
@@ -13,7 +13,6 @@ import org.gammf.collabora.yellowpages.util.Topic.ActorTopic
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.language.postfixOps
 import scala.concurrent.duration._
-
 import org.gammf.collabora.yellowpages.util.Topic
 import org.gammf.collabora.yellowpages.TopicElement._
 import org.gammf.collabora.yellowpages.ActorService._
@@ -21,8 +20,10 @@ import org.gammf.collabora.yellowpages.ActorService._
 /**
   * The actor that coordinate, create and act like a gateway for every request from and to the DB. It also create all the needed actors.
   */
-class DBMasterActor(override val yellowPages: ActorRef, override val name: String,
-                    override val topic: ActorTopic, override val service: ActorService) extends AbstractDBMaster {
+class DBMasterActor(override val yellowPages: ActorRef,
+                    override val name: String,
+                    override val topic: ActorTopic,
+                    override val service: ActorService = Master) extends AbstractDBMaster {
 
   implicit val timeout: Timeout = Timeout(5 seconds)
 
@@ -53,4 +54,17 @@ class DBMasterActor(override val yellowPages: ActorRef, override val name: Strin
 
     case _: NoActionMessage => unhandled(_)
   }: Receive) orElse super[AbstractDBMaster].receive
+}
+
+object DBMasterActor {
+
+  /**
+    * Factory methods that return a [[Props]] to create a database master registered actor
+    * @param yellowPages the reference to the yellow pages root actor.
+    * @param topic the topic to which this actor is going to be registered.
+    * @return the [[Props]] to use to create a database master actor.
+    */
+
+  def dbMasterProps(yellowPages: ActorRef, topic: ActorTopic, name: String = "DBMaster") : Props =
+    Props(new DBMasterActor(yellowPages = yellowPages, name = name, topic = topic))
 }

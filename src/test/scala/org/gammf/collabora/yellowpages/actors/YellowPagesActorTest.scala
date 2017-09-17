@@ -1,17 +1,26 @@
 package org.gammf.collabora.yellowpages.actors
 
-import akka.actor.{ActorRef, ActorSystem, Props}
+import akka.actor.{ActorRef, ActorSystem}
 import akka.testkit.{ImplicitSender, TestKit}
+import akka.util.Timeout
+import org.gammf.collabora.communication.actors.rabbitmq.{RabbitMQChannelCreatorActor, RabbitMQNamingActor, RabbitMQPublisherActor}
+import org.gammf.collabora.yellowpages.ActorContainer
+import org.gammf.collabora.yellowpages.messages._
+import org.gammf.collabora.yellowpages.util.Topic
+import org.gammf.collabora.yellowpages.TopicElement._
+import org.gammf.collabora.yellowpages.ActorService._
 import org.scalatest._
 
+import scala.concurrent.duration._
+import scala.language.postfixOps
 
-class YellowPagesActorTest extends TestKit(ActorSystem("CollaboraServer")) with ImplicitSender
+class YellowPagesActorTest extends TestKit(ActorSystem("CollaboraTest")) with ImplicitSender
   with WordSpecLike with Matchers with BeforeAndAfterAll {
   implicit val timeout: Timeout = Timeout(5 seconds)
 
   val root: ActorRef = system.actorOf(YellowPagesActor.rootProps())
 
-  override def afterAll {
+  override def afterAll: Unit = {
     TestKit.shutdownActorSystem(system)
   }
 
@@ -22,7 +31,7 @@ class YellowPagesActorTest extends TestKit(ActorSystem("CollaboraServer")) with 
     }
   }
 
-  val naming = system.actorOf(RabbitMQNamingActor.namingProps(root, Topic() :+ Communication :+ RabbitMQ, "Naming Actor"))
+  val naming: ActorRef = system.actorOf(RabbitMQNamingActor.namingProps(root, Topic() :+ Communication :+ RabbitMQ, "Naming Actor"))
 
   "The root yellow pages actor" must {
     "respond with a RegistrationResponseMessage if an actor with (topic = General, service = Naming) asks to be registered" in {
@@ -60,8 +69,8 @@ class YellowPagesActorTest extends TestKit(ActorSystem("CollaboraServer")) with 
     }
   }
 
-  val channelCreator = system.actorOf(ChannelCreatorActor.channelCreatorProps(root, Topic() :+ Communication :+ RabbitMQ, "channelCreator"))
-  val publisherActor = system.actorOf(PublisherActor.publisherProps(root, Topic() :+ Communication :+ RabbitMQ, "Publisher Actor"))
+  val channelCreator: ActorRef = system.actorOf(RabbitMQChannelCreatorActor.channelCreatorProps(root, Topic() :+ Communication :+ RabbitMQ, "channelCreator"))
+  val publisherActor: ActorRef = system.actorOf(RabbitMQPublisherActor.publisherProps(root, Topic() :+ Communication :+ RabbitMQ, "Publisher Actor"))
 
   "At this point, the root yellow pages" should {
     "have no problems with registering the two new actors in -> (topic = Communication, service = ChannelCreating) and (topic = Communication.RabbitMQ, service = ChannelCreating)" in {

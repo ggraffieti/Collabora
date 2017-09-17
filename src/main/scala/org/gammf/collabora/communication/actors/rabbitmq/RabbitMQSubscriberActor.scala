@@ -2,6 +2,7 @@ package org.gammf.collabora.communication.actors.rabbitmq
 
 import akka.actor._
 import com.newmotion.akka.rabbitmq._
+
 import org.gammf.collabora.communication.messages.{ClientUpdateMessage, SubscribeMessage}
 import org.gammf.collabora.communication.fromBytes
 import org.gammf.collabora.yellowpages.ActorService._
@@ -15,20 +16,20 @@ import org.gammf.collabora.yellowpages.util.Topic.ActorTopic
 class RabbitMQSubscriberActor(override val yellowPages: ActorRef, override val name: String,
                               override val topic: ActorTopic, override val service: ActorService = Subscribing) extends BasicActor {
 
-  private[this] var messageSender: Option[ActorRef] = None
-
   override def receive: Receive = ({
-    case SubscribeMessage(channel, queue) =>
-      messageSender = Some(sender)
-      val consumer = new DefaultConsumer(channel) {
-        override def handleDelivery(consumerTag: String, envelope: Envelope, properties: BasicProperties, body: Array[Byte]) {
-          channel.basicAck(envelope.getDeliveryTag, false)
-          messageSender.get ! ClientUpdateMessage(body)
-        }
-      }
-      channel.basicConsume(queue, false, consumer)
-      println("[Subscriber Actor] Subscribtion started!")
+    case SubscribeMessage(channel, queue) => subscribe(channel, queue, sender)
   }: Receive) orElse super[BasicActor].receive
+
+  private[this] def subscribe(channel: Channel, queue: String, sender: ActorRef): Unit = {
+    val consumer = new DefaultConsumer(channel) {
+      override def handleDelivery(consumerTag: String, envelope: Envelope, properties: BasicProperties, body: Array[Byte]) {
+        channel.basicAck(envelope.getDeliveryTag, false)
+        sender ! ClientUpdateMessage(body)
+      }
+    }
+    channel.basicConsume(queue, false , consumer)
+    println("[Subscriber Actor] Subscribtion started!")
+  }
 }
 
 object RabbitMQSubscriberActor{

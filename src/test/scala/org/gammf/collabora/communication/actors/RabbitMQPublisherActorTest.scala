@@ -47,7 +47,7 @@ class RabbitMQPublisherActorTest extends TestKit (ActorSystem("CollaboraTest")) 
     factory.setHost(TestUtil.BROKER_HOST)
     connection = factory.newConnection
     createFakeCollaborationReceiver(TestUtil.TYPE_COLLABORATIONS, TestUtil.COLLABORATION_ROUTING_KEY)
-    createFakeNotificationsReceiver(TestUtil.TYPE_NOTIFICATIONS, TestMessageUtil.collaborationId)
+    createFakeNotificationsReceiver(TestUtil.TYPE_NOTIFICATIONS, TestMessageUtil.fakeCollaborationId)
 
     Thread.sleep(200)
   }
@@ -61,7 +61,7 @@ class RabbitMQPublisherActorTest extends TestKit (ActorSystem("CollaboraTest")) 
   "A Publisher actor" should {
 
     "correctly publish an update message in exchange \"notifications\"" in {
-      val message = PublishMessage(notificationsChannel, TestUtil.TYPE_NOTIFICATIONS, Some(TestMessageUtil.collaborationId), Json.toJson("test string"))
+      val message = PublishMessage(notificationsChannel, TestUtil.TYPE_NOTIFICATIONS, Some(TestMessageUtil.fakeCollaborationId), Json.toJson("test string"))
 
       Await.result(rootYellowPages ? ActorRequestMessage(Topic() :+ Communication :+ RabbitMQ, Publishing), askTimeout.duration)
         .asInstanceOf[ActorResponseMessage] match {

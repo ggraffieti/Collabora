@@ -48,7 +48,6 @@ class RabbitMQNamingActorTest extends TestKit (ActorSystem("CollaboraTest")) wit
               case ChannelNamesResponseMessage(channel, None) => assert(channel.equals("collaborations"))
             }
           case _ => fail
-
         }
       }
     }

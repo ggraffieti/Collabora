@@ -6,7 +6,7 @@ import akka.pattern.ask
 import akka.util.Timeout
 import org.gammf.collabora.TestUtil
 import org.gammf.collabora.database.messages._
-import org.gammf.collabora.util.{CollaborationRight, CollaborationUser, SimpleUser}
+import org.gammf.collabora.util.{CollaborationRight, CollaborationUser}
 import org.gammf.collabora.yellowpages.ActorContainer
 import org.gammf.collabora.yellowpages.ActorService.DefaultWorker
 import org.gammf.collabora.yellowpages.messages._
@@ -16,7 +16,6 @@ import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.language.postfixOps
 
 class DBWorkerMemberActorTest extends TestKit (ActorSystem("CollaboraTest")) with WordSpecLike  with Matchers with BeforeAndAfterAll with ImplicitSender {

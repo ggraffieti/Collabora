@@ -62,14 +62,4 @@ class RabbitMQSubscriberActorTest extends TestKit (ActorSystem("CollaboraTest"))
       connection.abort()
     }
   }
-
-  private def deregisterActualUpdatesReceiver():Unit = {
-    Thread.sleep(200)
-    Await.result(rootYellowPages ? ActorRequestMessage(Topic() :+ Communication :+ Updates :+ RabbitMQ, Master), askTimeout.duration)
-      .asInstanceOf[ActorResponseMessage] match {
-      case response: ActorResponseOKMessage =>
-        rootYellowPages ! DeletionRequestMessage(response.actor, "UpdatesReceiver", Topic() :+ Communication :+ Updates :+ RabbitMQ, Master)
-      case _ => fail
-    }
-  }
 }

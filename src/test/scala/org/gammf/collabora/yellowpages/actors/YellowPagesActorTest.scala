@@ -4,7 +4,6 @@ import akka.actor.{ActorRef, ActorSystem}
 import akka.testkit.{ImplicitSender, TestKit}
 import akka.util.Timeout
 import org.gammf.collabora.communication.actors.rabbitmq.{RabbitMQChannelCreatorActor, RabbitMQNamingActor, RabbitMQPublisherActor}
-import org.gammf.collabora.yellowpages.ActorContainer
 import org.gammf.collabora.yellowpages.messages._
 import org.gammf.collabora.yellowpages.util.Topic
 import org.gammf.collabora.yellowpages.TopicElement._

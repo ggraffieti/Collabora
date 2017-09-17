@@ -4,11 +4,9 @@ import akka.actor.{Actor, ActorRef, ActorSystem, Props}
 import akka.pattern.ask
 import akka.testkit.{ImplicitSender, TestKit}
 import akka.util.Timeout
-import org.gammf.collabora.communication.CommunicationType
 import org.gammf.collabora.{TestMessageUtil, TestUtil}
 import org.gammf.collabora.communication.messages._
-import org.gammf.collabora.database.actors.master.DBMasterActor
-import org.gammf.collabora.database.messages.GetConnectionMessage
+
 import org.gammf.collabora.util.UpdateMessage
 import org.gammf.collabora.yellowpages.ActorContainer
 import org.gammf.collabora.yellowpages.ActorService._

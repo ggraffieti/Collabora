@@ -24,9 +24,13 @@ import scala.language.postfixOps
 class RabbitMQNotificationsSenderActorTest extends TestKit (ActorSystem("CollaboraTest")) with WordSpecLike with Eventually with DefaultTimeout with Matchers with BeforeAndAfterAll with ImplicitSender {
 
   implicit protected[this] val askTimeout: Timeout = Timeout(5 second)
+  override implicit val patienceConfig: PatienceConfig = PatienceConfig(
+    timeout = scaled(TestUtil.TIMEOUT_SECOND seconds),
+    interval = scaled(TestUtil.INTERVAL_MILLIS millis)
+  )
 
   var rootYellowPages: ActorRef = _
-  var expectedMessage: String = _
+  var expectedMessage: String = ""
 
   override def beforeAll(): Unit ={
     ActorContainer.init()
@@ -37,18 +41,12 @@ class RabbitMQNotificationsSenderActorTest extends TestKit (ActorSystem("Collabo
     subscribeFakePublisherActor()
 
     Thread.sleep(200)
-    expectedMessage = ""
   }
 
   override def afterAll(): Unit = {
     ActorContainer.shutdown()
     TestKit.shutdownActorSystem(system)
   }
-
-  override implicit val patienceConfig: PatienceConfig = PatienceConfig(
-    timeout = scaled(TestUtil.TIMEOUT_SECOND seconds),
-    interval = scaled(TestUtil.INTERVAL_MILLIS millis)
-  )
 
   "A NotificationsSender actor" should {
 

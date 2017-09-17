@@ -10,57 +10,9 @@ import org.gammf.collabora.util.{Collaboration, CollaborationMessage, Collaborat
   */
 object TestMessageUtil {
 
-  val messageNotificationsSenderActorTest: String =
-    """
-      |{
-      |   "messageType": "CREATION",
-      |   "collaborationId":"59806a4af27da3fcfe0ac0ca",
-      |   "target" : "NOTE",
-      |   "user" : "JDoe",
-      |   "note": {
-      |             "content" : "refactoring in communication actor tests",
-      |             "expiration" : "2017-08-07T08:01:17.171+02:00",
-      |             "location" : {
-      |                             "latitude" : 546,
-      |                             "longitude" : 324
-      |                          },
-      |             "previousNotes" : [ "5980710df27da3fcfe0ac88e", "5980710df27da3fcfe0ac88f" ],
-      |             "state" : {
-      |                         "definition" : "done",
-      |                         "responsible" : "JDoe"
-      |                       }
-      |            }
-      | }
-    """.stripMargin.replaceAll("\n", " ")
-
-  val startMessageNotificationsSenderActorTest: String =
-    """{"target":"NOTE","messageType":"CREATION","user":"JDoe","note":{"id":"""
-
-  val endMessageNotificationsSenderActorTest: String =
-    """"content":"refactoring in communication actor tests","expiration":"2017-08-07T08:01:17.171+02:00","location":{"latitude":546,"longitude":324},"previousNotes":["5980710df27da3fcfe0ac88e","5980710df27da3fcfe0ac88f"],"state":{"definition":"done","responsible":"JDoe"}},"collaborationId":"59806a4af27da3fcfe0ac0ca"}""".stripMargin.replaceAll("\n", " ")
-
-  val messageSubscriberActorTest: String =
-    """
-      |{
-      |"messageType": "insertion",
-      |"target" : "note",
-      |"user" : "JDoe",
-      |"note": {
-      |         "content" : "setup working enviroment",
-      |         "expiration" : "2017-08-07T08:01:17.171+02:00",
-      |         "location" : {
-      |                       "latitude" : 546,
-      |                       "longitude" : 324
-      |                      },
-      |         "previousNotes" : [ "5980710df27da3fcfe0ac88e", "5980710df27da3fcfe0ac88f" ],
-      |         "state" : {
-      |                     "definition" : "done",
-      |                     "username" : "JDoe"
-      |                   }
-      |         }
-      |}
-    """.stripMargin.replaceAll("\n", " ")
-
+  /**
+    * Authentication related constants
+    */
   val insertUserRequest_AuthServerTest: String =
     """
       |{
@@ -75,48 +27,12 @@ object TestMessageUtil {
 
   val emptyRequest_AuthServerTest: String = "{}"
 
-  val messageDBMasterActorTest: String =
-    """
-      |{
-      |   "target":"NOTE",
-      |   "messageType":"CREATION",
-      |   "collaborationId":"59806a4af27da3fcfe0ac0ca",
-      |   "user" : "JDoe",
-      |   "note": {
-      |             "content" : "creation of some messages for tests",
-      |             "expiration" : "2017-08-07T08:01:17.171+02:00",
-      |             "location" : { "latitude" : 546, "longitude" : 324 },
-      |             "previousNotes" : [ "5980710df27da3fcfe0ac88e", "5980710df27da3fcfe0ac88f" ],
-      |             "state" : {
-      |                         "definition" : "done",
-      |                         "username" : "JDoe"
-      |                        }
-      |            }
-      | }
-    """.stripMargin.replaceAll("\n", " ")
+  /**
+    * Collaborations related constants
+    */
+  val fakeCollaborationId = "59bd381e3b00003d006b65be"
 
-  val messageToBeContainedDBMasterActorTest: String =
-    """"target":"NOTE","messageType":"CREATION"""
-
-  val jsonCollaborationMessage: String =
-    """
-      |{
-      |  "user" : "fone",
-      |  "collaboration" : {
-      |    "id": "59bd381e3b00003d006b65be",
-      |    "name": "group",
-      |    "collaborationType": "GROUP",
-      |    "users": [ {
-      |    "user": "fone",
-      |    "right": "ADMIN"
-      |    }]
-      |  }
-      |}
-    """.stripMargin.replaceAll("\n", " ")
-
-  val collaborationId = "59bd381e3b00003d006b65be"
-
-  val collaborationMessage = CollaborationMessage("fone", Collaboration(Some(collaborationId),
+  val collaborationMessage = CollaborationMessage("fone", Collaboration(Some(fakeCollaborationId),
                                                           "collaboration",
                                                           CollaborationType.GROUP))
 
@@ -126,7 +42,9 @@ object TestMessageUtil {
 
   val publishErrorCollaborationMessage = PublishErrorMessageInCollaborationExchange("fone", serverErrorMessage)
 
-  //-----------------------------------
+  /**
+    * Notifications related constants
+     */
   val notificationNote = Note(id = Some("8sfdg9sdf8g"),
                               content = "note",
                               state = NoteState("doing", Some("fone")))
@@ -134,8 +52,8 @@ object TestMessageUtil {
                                        messageType = UpdateMessageType.CREATION,
                                        user = "fone",
                                        note = Some(notificationNote),
-                                       collaborationId = Some(collaborationId))
-  val publishNoteNotificationMessage = PublishNotificationMessage(collaborationId, noteUpdateMessage)
+                                       collaborationId = Some(fakeCollaborationId))
+  val publishNoteNotificationMessage = PublishNotificationMessage(fakeCollaborationId, noteUpdateMessage)
 
 
   val notificationModule = Module(Some("dfgs8d8fgs8d"), "this is a module", "doing")
@@ -143,8 +61,8 @@ object TestMessageUtil {
                                           messageType = UpdateMessageType.UPDATING,
                                           user = "fone",
                                           module = Some(notificationModule),
-                                          collaborationId = Some(collaborationId))
-  val publishModuleNotificationMessage = PublishNotificationMessage(collaborationId, moduleUpdateMessage)
+                                          collaborationId = Some(fakeCollaborationId))
+  val publishModuleNotificationMessage = PublishNotificationMessage(fakeCollaborationId, moduleUpdateMessage)
 
 
   val notificationCollaboration = Collaboration(id = Some("i8afsd7f6"),
@@ -154,8 +72,8 @@ object TestMessageUtil {
                                                  messageType = UpdateMessageType.CREATION,
                                                  user = "fone",
                                                  collaboration = Some(notificationCollaboration),
-                                                 collaborationId = Some(collaborationId))
-  val publishCollaborationNotificationMessage = PublishNotificationMessage(collaborationId, collaborationUpdateMessage)
+                                                 collaborationId = Some(fakeCollaborationId))
+  val publishCollaborationNotificationMessage = PublishNotificationMessage(fakeCollaborationId, collaborationUpdateMessage)
 
 
   val notificationMember = CollaborationUser("fone", CollaborationRight.ADMIN)
@@ -163,6 +81,17 @@ object TestMessageUtil {
                                           messageType = UpdateMessageType.DELETION,
                                           user = "fone",
                                           member = Some(notificationMember),
-                                          collaborationId = Some(collaborationId))
-  val publishMemberNotificationMessage = PublishNotificationMessage(collaborationId, memberUpdateMessage)
+                                          collaborationId = Some(fakeCollaborationId))
+  val publishMemberNotificationMessage = PublishNotificationMessage(fakeCollaborationId, memberUpdateMessage)
+
+  /**
+    * ModuleStateChangeActor related constants
+    */
+  val moduleStateChangeCollaborationID = "5980482cf27da3fcfe0a8ddf"
+  val moduleStateChangeModuleID = "59804ad3f27da3fcfe0a8f37"
+
+  /**
+    * GetCollaborationActor realated constant
+     */
+  val collaborationGetterCollaborationID = "5980482cf27da3fcfe0a8ddf"
 }

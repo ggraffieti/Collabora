@@ -1,8 +1,7 @@
 package org.gammf.collabora.yellowpages
 
-import java.util.concurrent.TimeUnit
-
 import akka.actor.{ActorRef, ActorSystem}
+import akka.util.Timeout
 import com.newmotion.akka.rabbitmq.{ConnectionActor, ConnectionFactory}
 import org.gammf.collabora.authentication.actors.AuthenticationActor
 import org.gammf.collabora.communication.actors._
@@ -17,9 +16,11 @@ import org.gammf.collabora.yellowpages.util.Topic
 import org.gammf.collabora.yellowpages.TopicElement._
 
 import scala.concurrent.Await
-import scala.concurrent.duration.Duration
+import scala.concurrent.duration._
+import scala.language.postfixOps
 
 object ActorContainer {
+  private[this] val timeout: Timeout = 30 seconds
 
   var actorSystem: ActorSystem = _
   var rootYellowPages: ActorRef = _
@@ -44,7 +45,8 @@ object ActorContainer {
   }
 
   def shutdown(): Unit = {
-    Await.ready(actorSystem.terminate(), Duration(1, TimeUnit.MINUTES))
+    actorSystem.terminate()
+    Await.result(actorSystem.whenTerminated, timeout.duration)
   }
 
   private def createCommunicationActors() : Unit = {

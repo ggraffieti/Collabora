@@ -63,7 +63,7 @@ object NoteState {
 }
 
 object Note {
-  def apply(id: Option[String], content: String, expiration: Option[DateTime], location: Option[Location], previousNotes: Option[List[String]], state: NoteState, module: Option[String]): Note = SimpleNote(id, content, expiration, location, previousNotes, state, module)
+  def apply(id: Option[String] = None, content: String, expiration: Option[DateTime] = None, location: Option[Location] = None, previousNotes: Option[List[String]] = None, state: NoteState, module: Option[String] = None): Note = SimpleNote(id, content, expiration, location, previousNotes, state, module)
 
   def unapply(arg: Note): Option[(Option[String], String, Option[DateTime], Option[Location], Option[List[String]], NoteState, Option[String])] = Some((arg.id, arg.content, arg.expiration, arg.location, arg.previousNotes, arg.state, arg.module))
 

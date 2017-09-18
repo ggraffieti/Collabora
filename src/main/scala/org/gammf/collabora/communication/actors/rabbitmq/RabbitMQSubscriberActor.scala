@@ -35,10 +35,10 @@ class RabbitMQSubscriberActor(override val yellowPages: ActorRef, override val n
 object RabbitMQSubscriberActor{
 
   /**
-    * Factory methods that return a [[Props]] to create a subscriber registered actor
+    * Factory method that returns a Props to create an already-registered subscriber actor.
     * @param yellowPages the reference to the yellow pages root actor.
     * @param topic the topic to which this actor is going to be registered.
-    * @return the [[Props]] to use to create a subscriber actor.
+    * @return the Props to use to create a subscriber actor.
     */
 
   def subscriberProps(yellowPages: ActorRef, topic: ActorTopic, name: String = "SubscriberActor") : Props =

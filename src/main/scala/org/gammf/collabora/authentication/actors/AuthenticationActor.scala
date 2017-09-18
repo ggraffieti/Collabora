@@ -66,10 +66,10 @@ class AuthenticationActor(override val yellowPages: ActorRef,
 object AuthenticationActor {
 
   /**
-    * Factory methods that return a [[Props]] to create a authentication registered actor
+    * Factory method that returns a Props to create an already-registered authentication actor.
     * @param yellowPages the reference to the yellow pages root actor.
     * @param topic the topic to which this actor is going to be registered.
-    * @return the [[Props]] to use to create a authentication actor.
+    * @return the Props to use to create a authentication actor.
     */
   def authenticationProps(yellowPages: ActorRef, topic: ActorTopic, name: String = "AuthenticationActor") : Props =
     Props(new AuthenticationActor(yellowPages = yellowPages, name = name, topic = topic))

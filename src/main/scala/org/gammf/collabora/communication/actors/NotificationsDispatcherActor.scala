@@ -48,10 +48,10 @@ private case class ForwardMessageToFirebaseNotificationActorMessage(message: Pub
 
 object NotificationsDispatcherActor {
   /**
-    * Factory methods that return a [[Props]] to create a notifications dispatcher registered actor
+    * Factory method that returns a Props to create an already-registered notifications dispatcher actor.
     * @param yellowPages the reference to the yellow pages root actor.
     * @param topic the topic to which this actor is going to be registered.
-    * @return the [[Props]] to use to create a notifications dispatcher actor.
+    * @return the Props to use to create a notifications dispatcher actor.
     */
 
   def notificationsDispatcherProps(yellowPages: ActorRef, topic: ActorTopic, name: String = "NotificationDispatcher") : Props =

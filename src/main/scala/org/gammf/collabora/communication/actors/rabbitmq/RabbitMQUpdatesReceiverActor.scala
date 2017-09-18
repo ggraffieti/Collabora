@@ -44,10 +44,10 @@ class RabbitMQUpdatesReceiverActor(override val yellowPages: ActorRef, override 
 
 object RabbitMQUpdatesReceiverActor {
   /**
-    * Factory methods that return a [[Props]] to create a updates receiver registered actor
+    * Factory method that returns a Props to create an already-registered updates receiver actor.
     * @param yellowPages the reference to the yellow pages root actor.
     * @param topic the topic to which this actor is going to be registered.
-    * @return the [[Props]] to use to create a updates receiver actor.
+    * @return the Props to use to create a updates receiver actor.
     */
 
   def updatesReceiverProps(yellowPages: ActorRef, topic: ActorTopic, name: String = "UpdatesReceiver") : Props =

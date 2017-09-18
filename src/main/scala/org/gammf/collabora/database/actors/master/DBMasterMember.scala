@@ -109,10 +109,10 @@ private case class SendInsertMemberCollaborationMessage(insertMessage: InsertMem
 
 object DBMasterMember {
   /**
-    * Factory methods that return a [[Props]] to create a database master member registered actor
+    * Factory method that returns a Props to create an already-registered database master member actor.
     * @param yellowPages the reference to the yellow pages root actor.
     * @param topic the topic to which this actor is going to be registered.
-    * @return the [[Props]] to use to create a database master member actor.
+    * @return the Props to use to create a database master member actor.
     */
 
   def dbMasterMemberProps(yellowPages: ActorRef, topic: ActorTopic, name: String = "DBMasterMember") : Props =

@@ -30,10 +30,10 @@ class RabbitMQNamingActor(override val yellowPages: ActorRef, override val name:
 object RabbitMQNamingActor {
 
   /**
-    * Factory methods that return a [[Props]] to create a RabbitMQ Naming registered actor
+    * Factory method that returns a Props to create an already-registered RabbitMQ naming actor.
     * @param yellowPages the reference to the yellow pages root actor.
     * @param topic the topic to which this actor is going to be registered.
-    * @return the [[Props]] to use to create a RabbitMQ Naming actor.
+    * @return the Props to use to create a RabbitMQ Naming actor.
     */
 
   def namingProps(yellowPages: ActorRef, topic: ActorTopic, name: String = "NamingActor") : Props =

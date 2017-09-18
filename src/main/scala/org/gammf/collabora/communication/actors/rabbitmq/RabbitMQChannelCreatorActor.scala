@@ -45,10 +45,10 @@ class RabbitMQChannelCreatorActor(override val yellowPages: ActorRef, override v
 object RabbitMQChannelCreatorActor {
 
   /**
-    * Factory methods that return a [[Props]] to create a channel creator registered actor
+    * Factory method that returns a Props to create an already-registered channel creator actor.
     * @param yellowPages the reference to the yellow pages root actor.
     * @param topic the topic to which this actor is going to be registered.
-    * @return the [[Props]] to use to create a channel creator actor.
+    * @return the Props to use to create a channel creator actor.
     */
 
   def channelCreatorProps(yellowPages: ActorRef, topic: ActorTopic, name: String = "RabbitChannelCreator") : Props =

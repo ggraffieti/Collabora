@@ -50,10 +50,10 @@ class DBWorkerCollaborationActor(override val yellowPages: ActorRef, override va
 
 object DBWorkerCollaborationActor {
   /**
-    * Factory methods that return a [[Props]] to create a database worker collaborations registered actor
+    * Factory method that returns a Props to create an already-registered database worker collaborations actor.
     * @param yellowPages the reference to the yellow pages root actor.
     * @param topic the topic to which this actor is going to be registered.
-    * @return the [[Props]] to use to create a database worker collaborations actor.
+    * @return the Props to use to create a database worker collaborations actor.
     */
 
   def dbWorkerCollaborationProps(yellowPages: ActorRef, topic: ActorTopic, name: String = "DBWorkerCollaborations") : Props =

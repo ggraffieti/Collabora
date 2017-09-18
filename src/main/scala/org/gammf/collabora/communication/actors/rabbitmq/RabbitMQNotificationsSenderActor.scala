@@ -45,10 +45,10 @@ class RabbitMQNotificationsSenderActor(override val yellowPages: ActorRef, overr
 object RabbitMQNotificationsSenderActor {
 
   /**
-    * Factory methods that return a [[Props]] to create a notifications sender registered actor
+    * Factory method that returns a Props to create an already-registered notifications sender actor.
     * @param yellowPages the reference to the yellow pages root actor.
     * @param topic the topic to which this actor is going to be registered.
-    * @return the [[Props]] to use to create a notifications sender actor.
+    * @return the Props to use to create a notifications sender actor.
     */
 
   def notificationsSenderProps(yellowPages: ActorRef, topic: ActorTopic, name: String = "NotificationActor") : Props =

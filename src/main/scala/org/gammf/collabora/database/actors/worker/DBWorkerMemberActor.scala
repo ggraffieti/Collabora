@@ -54,10 +54,10 @@ class DBWorkerMemberActor(override val yellowPages: ActorRef,
 
 object DBWorkerMemberActor {
   /**
-    * Factory methods that return a [[Props]] to create a database worker member registered actor
+    * Factory method that returns a Props to create an already-registered database worker member actor.
     * @param yellowPages the reference to the yellow pages root actor.
     * @param topic the topic to which this actor is going to be registered.
-    * @return the [[Props]] to use to create a database worker member actor.
+    * @return the Props to use to create a database worker member actor.
     */
   def dbWorkerMemberProps(yellowPages: ActorRef, topic: ActorTopic, name: String = "DBWorkerMember") : Props =
     Props(new DBWorkerMemberActor(yellowPages = yellowPages, name = name, topic = topic))

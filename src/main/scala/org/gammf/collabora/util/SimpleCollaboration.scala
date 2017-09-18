@@ -2,9 +2,7 @@ package org.gammf.collabora.util
 
 import org.gammf.collabora.util.CollaborationType.CollaborationType
 import org.joda.time.DateTime
-import play.api.libs.json.{JsPath, Json, Reads, Writes}
-import play.api.libs.functional.syntax._
-import reactivemongo.bson.{BSON, BSONArray, BSONDocument, BSONDocumentReader, BSONDocumentWriter, BSONObjectID}
+import play.api.libs.json.Json
 
 /**
   * A simple implementation of the trait collaboration

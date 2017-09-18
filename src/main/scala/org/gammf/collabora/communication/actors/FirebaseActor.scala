@@ -68,10 +68,10 @@ class FirebaseActor(override val yellowPages: ActorRef,
 
 object FirebaseActor {
   /**
-    * Factory methods that return a [[Props]] to create a firebase registered actor
+    * Factory method that returns a Props to create an already-registered firebase actor.
     * @param yellowPages the reference to the yellow pages root actor.
     * @param topic the topic to which this actor is going to be registered.
-    * @return the [[Props]] to use to create a firebase actor.
+    * @return the Props to use to create a firebase actor.
     */
 
   def firebaseProps(yellowPages: ActorRef, topic: ActorTopic, name: String = "FirebaseActor") : Props =

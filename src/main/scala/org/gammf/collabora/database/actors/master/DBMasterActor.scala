@@ -59,10 +59,10 @@ class DBMasterActor(override val yellowPages: ActorRef,
 object DBMasterActor {
 
   /**
-    * Factory methods that return a [[Props]] to create a database master registered actor
+    * Factory method that returns a Props to create an already-registered database master actor.
     * @param yellowPages the reference to the yellow pages root actor.
     * @param topic the topic to which this actor is going to be registered.
-    * @return the [[Props]] to use to create a database master actor.
+    * @return the Props to use to create a database master actor.
     */
 
   def dbMasterProps(yellowPages: ActorRef, topic: ActorTopic, name: String = "DBMaster") : Props =

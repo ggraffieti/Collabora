@@ -25,10 +25,10 @@ class RabbitMQPublisherActor(override val yellowPages: ActorRef, override val na
 object RabbitMQPublisherActor{
 
   /**
-    * Factory methods that return a [[Props]] to create a publisher registered actor
+    * Factory method that returns a Props to create an already-registered publisher actor.
     * @param yellowPages the reference to the yellow pages root actor.
     * @param topic the topic to which this actor is going to be registered.
-    * @return the [[Props]] to use to create a publisher actor.
+    * @return the Props to use to create a publisher actor.
     */
 
   def publisherProps(yellowPages: ActorRef, topic: ActorTopic, name:String = "PublisherActor") : Props =

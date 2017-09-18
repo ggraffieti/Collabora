@@ -7,8 +7,6 @@ import org.gammf.collabora.database.messages._
 import org.gammf.collabora.util.Collaboration
 import reactivemongo.bson.BSONObjectID
 
-import scala.concurrent.ExecutionContext.Implicits.global
-
 import org.gammf.collabora.yellowpages.ActorService.{ActorService, Getter}
 import reactivemongo.bson.BSONDocument
 
@@ -45,10 +43,10 @@ class DBWorkerGetCollaborationActor(override val yellowPages: ActorRef,
 object DBWorkerGetCollaborationActor {
 
   /**
-    * Factory methods that return a [[Props]] to create a database worker get collaboration registered actor
+    * Factory method that returns a Props to create an already-registered database worker get collaboration actor.
     * @param yellowPages the reference to the yellow pages root actor.
     * @param topic the topic to which this actor is going to be registered.
-    * @return the [[Props]] to use to create a database worker get collaboration actor.
+    * @return the Props to use to create a database worker get collaboration actor.
     */
   def dbWorkerGetCollaborationProps(yellowPages: ActorRef, topic: ActorTopic, name: String = "DBWorkerGetCollaboration") : Props =
     Props(new DBWorkerGetCollaborationActor(yellowPages = yellowPages, name = name, topic = topic))

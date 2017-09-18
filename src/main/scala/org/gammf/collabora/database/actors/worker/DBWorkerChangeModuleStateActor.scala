@@ -118,10 +118,10 @@ private object State {
 object DBWorkerChangeModuleStateActor {
 
   /**
-    * Factory methods that return a [[Props]] to create a database worker change module state registered actor
+    * Factory method that returns a Props to create an already-registered database worker change module state actor.
     * @param yellowPages the reference to the yellow pages root actor.
     * @param topic the topic to which this actor is going to be registered.
-    * @return the [[Props]] to use to create a database worker change module state actor.
+    * @return the Props to use to create a database worker change module state actor.
     */
   def dbWorkerChangeModuleStateProps(yellowPages: ActorRef, topic: ActorTopic, name: String = "DBWorkerChangeModuleState") : Props =
     Props(new DBWorkerChangeModuleStateActor(yellowPages = yellowPages, name = name, topic = topic))

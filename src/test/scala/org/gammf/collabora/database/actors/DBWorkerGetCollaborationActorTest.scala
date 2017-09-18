@@ -69,7 +69,7 @@ class DBWorkerGetCollaborationActorTest extends TestKit (ActorSystem("CollaboraT
         case response: ActorResponseOKMessage =>
           response.actor ! GetAllCollaborationsMessage("maffone")
           expectMsgPF() {
-            case message: Option[List[Collaboration]] => assert(message.isDefined && message.get.size == 2)
+            case Some(_ :: _ :: Nil) => succeed
             case None => fail
           }
         case _ => fail

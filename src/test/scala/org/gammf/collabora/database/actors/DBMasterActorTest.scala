@@ -153,25 +153,25 @@ class DBMasterActorTest extends TestKit (ActorSystem("CollaboraTest")) with Word
     Thread.sleep(200)
     Await.result(rootYellowPages ? ActorRequestMessage(Topic() :+ Database :+ TopicElement.Note, Master), askTimeout.duration)
       .asInstanceOf[ActorResponseMessage] match {
-      case response: ActorResponseOKMessage => rootYellowPages ! DeletionRequestMessage(response.actor, "DBMasterNotes", Topic() :+ Database :+ TopicElement.Note, Master)
+      case response: ActorResponseOKMessage => rootYellowPages ! DeletionRequestMessage(response.actor, "DBMasterNote", Topic() :+ Database :+ TopicElement.Note, Master)
       case _ => fail
     }
 
     Await.result(rootYellowPages ? ActorRequestMessage(Topic() :+ Database :+ TopicElement.Module, Master), askTimeout.duration)
       .asInstanceOf[ActorResponseMessage] match {
-      case response: ActorResponseOKMessage => rootYellowPages ! DeletionRequestMessage(response.actor, "DBMasterModules", Topic() :+ Database :+ TopicElement.Module, Master)
+      case response: ActorResponseOKMessage => rootYellowPages ! DeletionRequestMessage(response.actor, "DBMasterModule", Topic() :+ Database :+ TopicElement.Module, Master)
       case _ => fail
     }
 
     Await.result(rootYellowPages ? ActorRequestMessage(Topic() :+ Database :+ TopicElement.Collaboration, Master), askTimeout.duration)
       .asInstanceOf[ActorResponseMessage] match {
-      case response: ActorResponseOKMessage => rootYellowPages ! DeletionRequestMessage(response.actor, "DBMasterCollaborations", Topic() :+ Database :+ TopicElement.Collaboration, Master)
+      case response: ActorResponseOKMessage => rootYellowPages ! DeletionRequestMessage(response.actor, "DBMasterCollaboration", Topic() :+ Database :+ TopicElement.Collaboration, Master)
       case _ => fail
     }
 
     Await.result(rootYellowPages ? ActorRequestMessage(Topic() :+ Database :+ Member, Master), askTimeout.duration)
       .asInstanceOf[ActorResponseMessage] match {
-      case response: ActorResponseOKMessage => rootYellowPages ! DeletionRequestMessage(response.actor, "DBMasterMembers", Topic() :+ Database :+ Member, Master)
+      case response: ActorResponseOKMessage => rootYellowPages ! DeletionRequestMessage(response.actor, "DBMasterMember", Topic() :+ Database :+ Member, Master)
       case _ => fail
     }
   }

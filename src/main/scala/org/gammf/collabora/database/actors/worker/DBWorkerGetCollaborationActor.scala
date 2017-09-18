@@ -39,15 +39,3 @@ class DBWorkerGetCollaborationActor(override val yellowPages: ActorRef,
       ) pipeTo sender
   }: Receive )
 }
-
-object DBWorkerGetCollaborationActor {
-
-  /**
-    * Factory method that returns a Props to create an already-registered database worker get collaboration actor.
-    * @param yellowPages the reference to the yellow pages root actor.
-    * @param topic the topic to which this actor is going to be registered.
-    * @return the Props to use to create a database worker get collaboration actor.
-    */
-  def dbWorkerGetCollaborationProps(yellowPages: ActorRef, topic: ActorTopic, name: String = "DBWorkerGetCollaboration") : Props =
-    Props(new DBWorkerGetCollaborationActor(yellowPages = yellowPages, name = name, topic = topic))
-}

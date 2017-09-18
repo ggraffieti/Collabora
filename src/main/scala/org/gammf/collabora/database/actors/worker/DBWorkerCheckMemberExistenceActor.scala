@@ -26,15 +26,3 @@ class DBWorkerCheckMemberExistenceActor(override val yellowPages: ActorRef,
       ) pipeTo sender
   }: Receive)
 }
-
-object DBWorkerCheckMemberExistenceActor {
-
-  /**
-    * Factory method that returns a Props to create an already-registered database worker check member existence actor.
-    * @param yellowPages the reference to the yellow pages root actor.
-    * @param topic the topic to which this actor is going to be registered.
-    * @return the Props to use to create a database worker check member existence actor.
-    */
-  def dbWorkerCheckMemberExistenceProps(yellowPages: ActorRef, topic: ActorTopic, name: String = "DBWorkerCheckMember") : Props =
-    Props(new DBWorkerCheckMemberExistenceActor(yellowPages = yellowPages, name = name, topic = topic))
-}

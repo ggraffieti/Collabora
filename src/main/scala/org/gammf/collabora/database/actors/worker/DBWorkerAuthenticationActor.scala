@@ -44,15 +44,3 @@ class DBWorkerAuthenticationActor(override val yellowPages: ActorRef,
     case _ => unhandled(_)
   }: Receive)
 }
-
-object DBWorkerAuthenticationActor {
-
-  /**
-    * Factory method that returns a Props to create an already-registered database worker authentication actor.
-    * @param yellowPages the reference to the yellow pages root actor.
-    * @param topic the topic to which this actor is going to be registered.
-    * @return the Props to use to create a database worker authentication actor.
-    */
-  def dbWorkerAuthenticationProps(yellowPages: ActorRef, topic: ActorTopic, name: String = "DBWorkerAuthentication") : Props =
-    Props(new DBWorkerAuthenticationActor(yellowPages = yellowPages, name = name, topic = topic))
-}

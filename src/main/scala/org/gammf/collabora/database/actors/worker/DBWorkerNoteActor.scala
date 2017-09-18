@@ -53,15 +53,3 @@ class DBWorkerNoteActor(override val yellowPages: ActorRef, override val name: S
 
   }: Receive)
 }
-
-object DBWorkerNoteActor {
-  /**
-    * Factory method that returns a Props to create an already-registered database worker notes actor.
-    * @param yellowPages the reference to the yellow pages root actor.
-    * @param topic the topic to which this actor is going to be registered.
-    * @return the Props to use to create a database worker notes actor.
-    */
-
-  def dbWorkerNoteProps(yellowPages: ActorRef, topic: ActorTopic, name: String = "DBWorkerNotes") : Props =
-    Props(new DBWorkerNoteActor(yellowPages = yellowPages, name = name, topic = topic))
-}

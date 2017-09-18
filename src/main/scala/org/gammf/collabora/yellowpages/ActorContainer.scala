@@ -77,17 +77,17 @@ object ActorContainer {
   }
 
   private def createDBDefaultWorkers() : Unit = {
-    actorSystem.actorOf(DBWorkerNoteActor.dbWorkerNoteProps(rootYellowPages, Topic() :+ Database :+ Note))
-    actorSystem.actorOf(DBWorkerModulesActor.dbWorkerModuleProps(rootYellowPages, Topic() :+ Database :+ Module))
-    actorSystem.actorOf(DBWorkerCollaborationActor.dbWorkerCollaborationProps(rootYellowPages, Topic() :+ Database :+ Collaboration))
-    actorSystem.actorOf(DBWorkerMemberActor.dbWorkerMemberProps(rootYellowPages, Topic() :+ Database :+ Member))
+    actorSystem.actorOf(DBWorker.dbWorkerNoteProps(rootYellowPages, Topic() :+ Database :+ Note))
+    actorSystem.actorOf(DBWorker.dbWorkerModuleProps(rootYellowPages, Topic() :+ Database :+ Module))
+    actorSystem.actorOf(DBWorker.dbWorkerCollaborationProps(rootYellowPages, Topic() :+ Database :+ Collaboration))
+    actorSystem.actorOf(DBWorker.dbWorkerMemberProps(rootYellowPages, Topic() :+ Database :+ Member))
   }
 
   private def createDBExtraWorkers() : Unit = {
-    actorSystem.actorOf(DBWorkerAuthenticationActor.dbWorkerAuthenticationProps(rootYellowPages, Topic() :+ Database))
-    actorSystem.actorOf(DBWorkerChangeModuleStateActor.dbWorkerChangeModuleStateProps(rootYellowPages, Topic() :+ Database :+ Module))
-    actorSystem.actorOf(DBWorkerCheckMemberExistenceActor.dbWorkerCheckMemberExistenceProps(rootYellowPages, Topic() :+ Database :+ Member))
-    actorSystem.actorOf(DBWorkerGetCollaborationActor.dbWorkerGetCollaborationProps(rootYellowPages, Topic() :+ Database :+ Collaboration))
+    actorSystem.actorOf(DBWorker.dbWorkerAuthenticationProps(rootYellowPages, Topic() :+ Database))
+    actorSystem.actorOf(DBWorker.dbWorkerChangeModuleStateProps(rootYellowPages, Topic() :+ Database :+ Module))
+    actorSystem.actorOf(DBWorker.dbWorkerCheckMemberExistenceProps(rootYellowPages, Topic() :+ Database :+ Member))
+    actorSystem.actorOf(DBWorker.dbWorkerGetCollaborationProps(rootYellowPages, Topic() :+ Database :+ Collaboration))
   }
 
   private def createAuthenticationActor() : Unit = {

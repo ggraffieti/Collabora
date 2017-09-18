@@ -28,7 +28,7 @@ class RabbitMQSubscriberActor(override val yellowPages: ActorRef, override val n
       }
     }
     channel.basicConsume(queue, false , consumer)
-    println("[Subscriber Actor] Subscribtion started!")
+    println("[" + name + "] Subscribtion started!")
   }
 }
 

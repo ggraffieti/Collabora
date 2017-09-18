@@ -18,7 +18,7 @@ class RabbitMQPublisherActor(override val yellowPages: ActorRef, override val na
   override def receive: Receive = ({
     case PublishMessage(channel, exchange, routingKey, message) =>
       channel.basicPublish(exchange, routingKey.getOrElse(""), null, message.toString)
-      println("[PublisherActor] Message published! " + Json.prettyPrint(message) +", exchange: " + exchange + ", routing key " + routingKey)
+      println("[" + name + "] Message published! " + Json.prettyPrint(message) +", exchange: " + exchange + ", routing key " + routingKey)
   } :Receive) orElse super[BasicActor].receive
 }
 

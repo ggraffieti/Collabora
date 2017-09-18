@@ -35,7 +35,7 @@ class FirebaseActor(override val yellowPages: ActorRef,
                 foreach(dbMaster =>
                   (dbMaster ? GetCollaborationMessage(publishMessage.collaborationID)).mapTo[Option[List[Collaboration]]].map {
                     case Some(head :: _) => sendFirebaseNotification(head, publishMessage.message)
-                    case _ => println("Something went wrong")
+                    case _ => println("[" + name + "] Notification error! Collaboration not found.")
                   })
             case _=>
     }

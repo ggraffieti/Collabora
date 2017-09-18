@@ -23,7 +23,7 @@ class RabbitMQChannelCreatorActor(override val yellowPages: ActorRef, override v
     case message: PublishingChannelCreationMessage =>
       createChannel(message.exchange, None, message.routingKey, sender, message)
 
-    case ChannelCreated(_) => println("[Channel Creator Actor] Channel created!")
+    case ChannelCreated(_) => println("[" + name + "] Channel created!")
   }: Receive) orElse super[BasicActor].receive
 
   private[this] def createChannel(exchange: String, queue: Option[String], routingKey: Option[String], messageSender: ActorRef, forwardMessage: Any): Unit = {

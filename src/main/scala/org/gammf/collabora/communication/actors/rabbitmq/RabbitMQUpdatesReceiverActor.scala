@@ -37,7 +37,7 @@ class RabbitMQUpdatesReceiverActor(override val yellowPages: ActorRef, override 
     case message: ClientUpdateMessage =>
       Json.parse(message.text).validate[UpdateMessage] match {
         case updateMessage: JsSuccess[UpdateMessage] => getActorOrElse(Topic() :+ Database, Master, message).foreach(_ ! updateMessage.value)
-        case error: JsError => println(error)
+        case error: JsError => println("[" + name + "] Error: " + error)
       }
   }: Receive) orElse super[BasicActor].receive
 }

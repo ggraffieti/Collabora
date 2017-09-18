@@ -1,6 +1,8 @@
 package org.gammf.collabora.database.actors.worker
 
+import akka.actor.{ActorRef, Props}
 import org.gammf.collabora.yellowpages.actors.BasicActor
+import org.gammf.collabora.yellowpages.util.Topic.ActorTopic
 import reactivemongo.api.MongoConnection
 import reactivemongo.api.collections.bson.BSONCollection
 import reactivemongo.bson.BSONDocument
@@ -93,4 +95,78 @@ trait DBWorker[T] extends BasicActor {
   protected def delete(selector: BSONDocument,
              okMessage: T,
              failStrategy: PartialFunction[Throwable, T]): Future[T]
+}
+
+object DBWorker {
+  /**
+    * Factory method that returns a Props to create an already-registered database worker authentication actor.
+    * @param yellowPages the reference to the yellow pages root actor.
+    * @param topic the topic to which this actor is going to be registered.
+    * @return the Props to use to create a database worker authentication actor.
+    */
+  def dbWorkerAuthenticationProps(yellowPages: ActorRef, topic: ActorTopic, name: String = "DBWorkerAuthentication") : Props =
+    Props(new DBWorkerAuthenticationActor(yellowPages = yellowPages, name = name, topic = topic))
+
+  /**
+    * Factory method that returns a Props to create an already-registered database worker change module state actor.
+    * @param yellowPages the reference to the yellow pages root actor.
+    * @param topic the topic to which this actor is going to be registered.
+    * @return the Props to use to create a database worker change module state actor.
+    */
+  def dbWorkerChangeModuleStateProps(yellowPages: ActorRef, topic: ActorTopic, name: String = "DBWorkerChangeModuleState") : Props =
+    Props(new DBWorkerChangeModuleStateActor(yellowPages = yellowPages, name = name, topic = topic))
+
+  /**
+    * Factory method that returns a Props to create an already-registered database worker check member existence actor.
+    * @param yellowPages the reference to the yellow pages root actor.
+    * @param topic the topic to which this actor is going to be registered.
+    * @return the Props to use to create a database worker check member existence actor.
+    */
+  def dbWorkerCheckMemberExistenceProps(yellowPages: ActorRef, topic: ActorTopic, name: String = "DBWorkerCheckMember") : Props =
+    Props(new DBWorkerCheckMemberExistenceActor(yellowPages = yellowPages, name = name, topic = topic))
+
+  /**
+    * Factory method that returns a Props to create an already-registered database worker collaborations actor.
+    * @param yellowPages the reference to the yellow pages root actor.
+    * @param topic the topic to which this actor is going to be registered.
+    * @return the Props to use to create a database worker collaborations actor.
+    */
+  def dbWorkerCollaborationProps(yellowPages: ActorRef, topic: ActorTopic, name: String = "DBWorkerCollaborations") : Props =
+    Props(new DBWorkerCollaborationActor(yellowPages = yellowPages, name = name, topic = topic))
+
+  /**
+    * Factory method that returns a Props to create an already-registered database worker get collaboration actor.
+    * @param yellowPages the reference to the yellow pages root actor.
+    * @param topic the topic to which this actor is going to be registered.
+    * @return the Props to use to create a database worker get collaboration actor.
+    */
+  def dbWorkerGetCollaborationProps(yellowPages: ActorRef, topic: ActorTopic, name: String = "DBWorkerGetCollaboration") : Props =
+    Props(new DBWorkerGetCollaborationActor(yellowPages = yellowPages, name = name, topic = topic))
+
+  /**
+    * Factory method that returns a Props to create an already-registered database worker member actor.
+    * @param yellowPages the reference to the yellow pages root actor.
+    * @param topic the topic to which this actor is going to be registered.
+    * @return the Props to use to create a database worker member actor.
+    */
+  def dbWorkerMemberProps(yellowPages: ActorRef, topic: ActorTopic, name: String = "DBWorkerMember") : Props =
+    Props(new DBWorkerMemberActor(yellowPages = yellowPages, name = name, topic = topic))
+
+  /**
+    * Factory method that returns a Props to create an already-registered database worker modules actor.
+    * @param yellowPages the reference to the yellow pages root actor.
+    * @param topic the topic to which this actor is going to be registered.
+    * @return the Props to use to create a database worker modules actor.
+    */
+  def dbWorkerModuleProps(yellowPages: ActorRef, topic: ActorTopic, name: String = "DBWorkerModules") : Props =
+    Props(new DBWorkerModuleActor(yellowPages = yellowPages, name = name, topic = topic))
+
+  /**
+    * Factory method that returns a Props to create an already-registered database worker notes actor.
+    * @param yellowPages the reference to the yellow pages root actor.
+    * @param topic the topic to which this actor is going to be registered.
+    * @return the Props to use to create a database worker notes actor.
+    */
+  def dbWorkerNoteProps(yellowPages: ActorRef, topic: ActorTopic, name: String = "DBWorkerNotes") : Props =
+    Props(new DBWorkerNoteActor(yellowPages = yellowPages, name = name, topic = topic))
 }

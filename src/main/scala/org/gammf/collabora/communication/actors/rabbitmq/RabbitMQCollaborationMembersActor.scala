@@ -1,6 +1,6 @@
 package org.gammf.collabora.communication.actors.rabbitmq
 
-import akka.actor.{ActorRef, Stash}
+import akka.actor.{ActorRef, Props, Stash}
 import com.newmotion.akka.rabbitmq.Channel
 import org.gammf.collabora.communication.CommunicationType
 import org.gammf.collabora.communication.messages._
@@ -19,7 +19,7 @@ import play.api.libs.json.Json
   * After that, it can be used to send some private information directly to one and only user.
   */
 class RabbitMQCollaborationMembersActor(override val yellowPages: ActorRef, override val name: String,
-                                        override val topic: ActorTopic, override val service: ActorService) extends BasicActor with Stash {
+                                        override val topic: ActorTopic, override val service: ActorService = Master) extends BasicActor with Stash {
 
   private[this] var pubChannel: Option[Channel] = None
   private[this] var pubExchange: Option[String] = None
@@ -44,4 +44,17 @@ class RabbitMQCollaborationMembersActor(override val yellowPages: ActorRef, over
         case _ => stash()
       }
   }: Receive) orElse super[BasicActor].receive
+}
+
+object RabbitMQCollaborationMembersActor {
+
+  /**
+    * Factory method that returns a Props to create an already-registered collaboration members actor.
+    * @param yellowPages the reference to the yellow pages root actor.
+    * @param topic the topic to which this actor is going to be registered.
+    * @return the Props to use to create a collaboration members actor.
+    */
+
+  def collaborationMemberProps(yellowPages: ActorRef, topic: ActorTopic, name: String = "CollaborationActor") : Props =
+    Props(new RabbitMQCollaborationMembersActor(yellowPages = yellowPages, name = name, topic = topic))
 }

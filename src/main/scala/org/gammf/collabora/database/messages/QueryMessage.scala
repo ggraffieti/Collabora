@@ -95,15 +95,16 @@ case class AllCollaborationsMessage(collaborationList: List[Collaboration]) exte
   * to check the existence of a member in the application.
   * @param username the username of the member.
   */
-case class IsMemberExistsMessage(username: String) extends QueryMessage
+case class CheckMemberExistenceRequestMessage(username: String) extends QueryMessage
 
 /**
-  * A message that represents a response to a [[IsMemberExistsMessage]], containing a boolean value that indicates
+  * A message that represents a response to a [[CheckMemberExistenceRequestMessage]], containing a boolean value that indicates
   * if the member is registered in the system or no.
+ *
   * @param username the username of the member.
   * @param isRegistered true if the member is Registered, false otherwise.
   */
-case class IsMemberExistsResponseMessage(username: String, isRegistered: Boolean) extends QueryMessage
+case class CheckMemberExistenceResponseMessage(username: String, isRegistered: Boolean) extends QueryMessage
 
 /**
   * A message sent to the [[org.gammf.collabora.database.actors.worker.DBWorkerChangeModuleStateActor]], in

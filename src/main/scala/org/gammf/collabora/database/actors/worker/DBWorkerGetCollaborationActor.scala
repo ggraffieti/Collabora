@@ -1,12 +1,14 @@
 package org.gammf.collabora.database.actors.worker
 
-import akka.actor.{ActorRef, Stash}
+import akka.actor.{ActorRef, Props, Stash}
 import akka.pattern.pipe
 import org.gammf.collabora.database._
 import org.gammf.collabora.database.messages._
 import org.gammf.collabora.util.Collaboration
-import org.gammf.collabora.yellowpages.ActorService.ActorService
-import reactivemongo.bson.{BSONDocument, BSONObjectID}
+import reactivemongo.bson.BSONObjectID
+
+import org.gammf.collabora.yellowpages.ActorService.{ActorService, Getter}
+import reactivemongo.bson.BSONDocument
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import org.gammf.collabora.yellowpages.util.Topic.ActorTopic
@@ -14,8 +16,10 @@ import org.gammf.collabora.yellowpages.util.Topic.ActorTopic
 /***
   * A worker that perform a get on collaboration collection and communicate with CollaborationMembersActor
   */
-class DBWorkerGetCollaborationActor(override val yellowPages: ActorRef, override val name: String,
-                                    override val topic: ActorTopic, override val service: ActorService)
+class DBWorkerGetCollaborationActor(override val yellowPages: ActorRef,
+                                    override val name: String,
+                                    override val topic: ActorTopic,
+                                    override val service: ActorService = Getter)
   extends CollaborationsDBWorker[Option[List[Collaboration]]] with Stash {
 
   override def receive: Receive = super.receive orElse ({

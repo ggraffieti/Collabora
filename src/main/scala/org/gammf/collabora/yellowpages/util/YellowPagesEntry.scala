@@ -97,6 +97,7 @@ sealed trait ActorYellowPagesEntry extends YellowPagesEntry[ActorRef, TopicEleme
 /**
   * Simple implementation of a yellow pages entry in the actor world.
   * @param reference the reference to the actor registered to the service.
+  * @param name the name of the actor.
   * @param topic the topic to which the actor is registered.
   * @param service the service offered by the actor.
   * @param used a boolean flag stating if the entry has been used recently.

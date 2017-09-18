@@ -140,6 +140,7 @@ object YellowPagesActor {
     * Factory methods that returns a Props to create a yellow pages actor registered to the specified topic.
     * @param yellowPages the reference to the yellow pages root actor.
     * @param topic the topic to which this actor is going to be registered.
+    * @param name the name of the actor to be created.
     * @return the Props to use to create a yellow pages topic actor.
     */
   def topicProps(yellowPages: ActorRef, topic: ActorTopic, name: String = "Topic_YellowPages"): Props =

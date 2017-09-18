@@ -7,8 +7,8 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
 
 /**
- * Simple class that sends a post request to the firebase server in order to delivery a
- * notification message to all the clients registered in a certain topic.
+ * Simple class that sends a post request to the firebase server in order to delivery a notification message to all
+ * the clients registered in a certain topic.
  */
 public final class FirebaseNotificationSender {
 

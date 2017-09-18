@@ -1,6 +1,6 @@
 package org.gammf.collabora.database.actors.worker
 
-import akka.actor.{ActorRef, Stash}
+import akka.actor.{ActorRef, Props, Stash}
 import akka.pattern.pipe
 import org.gammf.collabora.database._
 import org.gammf.collabora.database.messages._
@@ -10,13 +10,14 @@ import reactivemongo.bson.{BSON, BSONDocument, BSONObjectID}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
+import org.gammf.collabora.yellowpages.ActorService._
 import org.gammf.collabora.yellowpages.util.Topic.ActorTopic
 
 /**
   * A worker that performs query on notes.
   */
 class DBWorkerNoteActor(override val yellowPages: ActorRef, override val name: String,
-                        override val topic: ActorTopic, override val service: ActorService)
+                        override val topic: ActorTopic, override val service: ActorService = DefaultWorker)
   extends CollaborationsDBWorker[DBWorkerMessage] with Stash with DefaultDBWorker {
 
   override def receive: Receive = super.receive orElse ({

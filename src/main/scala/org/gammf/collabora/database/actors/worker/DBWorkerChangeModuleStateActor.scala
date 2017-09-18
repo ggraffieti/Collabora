@@ -1,6 +1,6 @@
 package org.gammf.collabora.database.actors.worker
 
-import akka.actor.{ActorRef, Stash}
+import akka.actor.{ActorRef, Props, Stash}
 import org.gammf.collabora.util.{Collaboration, Module, Note, UpdateMessage, UpdateMessageTarget, UpdateMessageType}
 import reactivemongo.bson.{BSONDocument, BSONObjectID}
 import org.gammf.collabora.database._
@@ -17,8 +17,10 @@ import org.gammf.collabora.yellowpages.ActorService._
   * A Worker that performs module state changement. The changement is based on previous module state and
   * the state of the notes
   */
-class DBWorkerChangeModuleStateActor(override val yellowPages: ActorRef, override val name: String,
-                                     override val topic: ActorTopic, override val service: ActorService)
+class DBWorkerChangeModuleStateActor(override val yellowPages: ActorRef,
+                                     override val name: String,
+                                     override val topic: ActorTopic,
+                                     override val service: ActorService = StateChanger)
   extends CollaborationsDBWorker[Option[BSONDocument]] with Stash {
 
   override def receive: Receive = super.receive orElse ({

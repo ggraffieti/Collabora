@@ -1,65 +1,89 @@
 package org.gammf.collabora.database.actors
 
-import akka.actor.{ActorRef, ActorSystem, Props}
+import akka.actor.{ActorRef, ActorSystem}
 import akka.testkit.{ImplicitSender, TestKit}
-import com.newmotion.akka.rabbitmq.{ConnectionActor, ConnectionFactory}
-import org.gammf.collabora.communication.actors._
-import org.gammf.collabora.database.actors.master.DBMasterActor
-import org.gammf.collabora.database.actors.worker.DBWorkerMemberActor
+import akka.pattern.ask
+import akka.util.Timeout
+import org.gammf.collabora.TestUtil
 import org.gammf.collabora.database.messages._
 import org.gammf.collabora.util.{CollaborationRight, CollaborationUser}
+import org.gammf.collabora.yellowpages.ActorContainer
+import org.gammf.collabora.yellowpages.ActorService.DefaultWorker
+import org.gammf.collabora.yellowpages.messages._
+import org.gammf.collabora.yellowpages.util.Topic
+import org.gammf.collabora.yellowpages.TopicElement._
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
 
+import scala.concurrent.Await
 import scala.concurrent.duration._
+import scala.language.postfixOps
 
-class DBWorkerMemberActorTest extends TestKit (ActorSystem("CollaboraServer")) with WordSpecLike  with Matchers with BeforeAndAfterAll with ImplicitSender {
+class DBWorkerMemberActorTest extends TestKit (ActorSystem("CollaboraTest")) with WordSpecLike  with Matchers with BeforeAndAfterAll with ImplicitSender {
 
-  /*val factory = new ConnectionFactory()
-  val connection:ActorRef = system.actorOf(ConnectionActor.props(factory), "rabbitmq")
-  val naming:ActorRef = system.actorOf(Props[RabbitMQNamingActor], "naming")
-  val channelCreator :ActorRef= system.actorOf(Props[ChannelCreatorActor], "channelCreator")
-  val publisherActor:ActorRef = system.actorOf(Props[PublisherActor], "publisher")
-  val collaborationMemberActor:ActorRef = system.actorOf(Props(new CollaborationMembersActor(connection, naming, channelCreator, publisherActor)))
-  val notificationActor:ActorRef = system.actorOf(Props(new NotificationsSenderActor(connection, naming, channelCreator, publisherActor,system)))
-  val dbConnectionActor :ActorRef= system.actorOf(Props[ConnectionManagerActor])
-  val dbMasterActor:ActorRef = system.actorOf(Props.create(classOf[DBMasterActor], system, notificationActor,collaborationMemberActor))
-  val connectionManagerActor: ActorRef =  system.actorOf(Props[ConnectionManagerActor])
-  val usersActor:ActorRef = system.actorOf(Props.create(classOf[DBWorkerMemberActor], connectionManagerActor))
+  implicit protected[this] val askTimeout: Timeout = Timeout(5 second)
 
-  val user = CollaborationUser("peru", CollaborationRight.WRITE)
+  var rootYellowPages: ActorRef = _
+
+  val COLLABORATION_USERNAME = "peru"
+  val user = CollaborationUser(COLLABORATION_USERNAME, CollaborationRight.WRITE)
 
   override def beforeAll(): Unit = {
-
+    ActorContainer.init()
+    ActorContainer.createAll()
+    rootYellowPages = ActorContainer.rootYellowPages
+    Thread.sleep(200)
   }
 
   override def afterAll(): Unit = {
+    ActorContainer.shutdown()
     TestKit.shutdownActorSystem(system)
   }
 
   "A DBWorkerMember actor" should {
     "insert new user in a collaboration correctly in the db" in {
-      within(5 second) {
-        usersActor ! InsertMemberMessage(user, "59806a4af27da3fcfe0ac0ca", "maffone")
-        expectMsgType[QueryOkMessage]
+
+      within(TestUtil.TASK_WAIT_TIME second) {
+        Await.result(rootYellowPages ? ActorRequestMessage(Topic() :+ Database :+ Member, DefaultWorker), askTimeout.duration)
+          .asInstanceOf[ActorResponseMessage] match {
+          case response: ActorResponseOKMessage =>
+            response.actor ! InsertMemberMessage(user, TestUtil.FAKE_ID, TestUtil.USER_ID)
+            expectMsgPF() {
+              case QueryOkMessage(query) => assert(query.isInstanceOf[InsertMemberMessage])
+            }
+          case _ => fail
+        }
       }
     }
 
     "update a user right in a collaboration correctly" in {
-      within(5 second) {
-        usersActor ! UpdateMemberMessage(user, "59806a4af27da3fcfe0ac0ca", "maffone")
-        expectMsgType[QueryOkMessage]
+
+      within(TestUtil.TASK_WAIT_TIME second) {
+        Await.result(rootYellowPages ? ActorRequestMessage(Topic() :+ Database :+ Member, DefaultWorker), askTimeout.duration)
+          .asInstanceOf[ActorResponseMessage] match {
+          case response: ActorResponseOKMessage =>
+            response.actor ! UpdateMemberMessage(user, TestUtil.FAKE_ID, TestUtil.USER_ID)
+            expectMsgPF() {
+              case QueryOkMessage(query) => assert(query.isInstanceOf[UpdateMemberMessage])
+            }
+          case _ => fail
+        }
       }
     }
 
-    "delete a user in a collaboration correctly" in {
-      within(5 second) {
-        usersActor ! DeleteMemberMessage(user, "59806a4af27da3fcfe0ac0ca", "maffone")
-        expectMsgType[QueryOkMessage]
+    "delete a user from a collaboration" in {
+
+      within(TestUtil.TASK_WAIT_TIME second) {
+        Await.result(rootYellowPages ? ActorRequestMessage(Topic() :+ Database :+ Member, DefaultWorker), askTimeout.duration)
+          .asInstanceOf[ActorResponseMessage] match {
+          case response: ActorResponseOKMessage =>
+            response.actor ! DeleteMemberMessage(user, TestUtil.FAKE_ID, TestUtil.USER_ID)
+            expectMsgPF() {
+              case QueryOkMessage(query) => assert(query.isInstanceOf[DeleteMemberMessage])
+            }
+          case _ => fail
+        }
       }
     }
-
-
-
-  }*/
+  }
 }
 

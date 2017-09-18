@@ -28,8 +28,7 @@ sealed trait YellowPagesActor extends Actor {
 
   import org.gammf.collabora.yellowpages.entriesImplicitConversions._
   override def receive: Receive = {
-    case msg: RegistrationRequestMessage => handleActorInsertion(msg)
-    case msg: RedirectionRequestMessage => handleActorInsertion(msg)
+    case msg: InsertionRequestMessage => handleActorInsertion(msg)
     case msg: DeletionRequestMessage => handleActorDeletion(msg)
     case msg: ActorRequestMessage => handleActorRequest(msg)
     case msg: HierarchyRequestMessage => handleHierarchy(msg.level)
@@ -131,15 +130,16 @@ case class TopicYellowPagesActor(override val yellowPages: ActorRef,
 
 object YellowPagesActor {
   /**
-    * Factory methods that returns a Props to create a yellow pages root actor.
+    * Factory method that returns a Props to create a yellow pages root actor.
     * @return the Props to use to create a yellow pages root actor.
     */
   def rootProps(): Props = Props(RootYellowPagesActor(name = "Root_YellowPages"))
 
   /**
-    * Factory methods that returns a Props to create a yellow pages actor registered to the specified topic.
+    * Factory method that returns a Props to create a yellow pages actor registered to the specified topic.
     * @param yellowPages the reference to the yellow pages root actor.
     * @param topic the topic to which this actor is going to be registered.
+    * @param name the name of the actor to be created.
     * @return the Props to use to create a yellow pages topic actor.
     */
   def topicProps(yellowPages: ActorRef, topic: ActorTopic, name: String = "Topic_YellowPages"): Props =

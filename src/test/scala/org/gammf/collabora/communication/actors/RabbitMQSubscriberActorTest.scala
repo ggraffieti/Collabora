@@ -1,54 +1,65 @@
 package org.gammf.collabora.communication.actors
 
-import akka.actor.{ActorRef, ActorSystem, Props}
+import akka.actor.{ActorRef, ActorSystem}
+import akka.pattern.ask
 import akka.testkit.{DefaultTimeout, ImplicitSender, TestKit}
-import com.newmotion.akka.rabbitmq.{Channel, ConnectionActor, ConnectionFactory}
+import akka.util.Timeout
 import com.rabbitmq.client.{Channel, Connection, ConnectionFactory}
-import org.gammf.collabora.communication.messages._
+import org.gammf.collabora.TestUtil
+import org.gammf.collabora.communication.messages.{ClientUpdateMessage, SubscribeMessage}
+import org.gammf.collabora.yellowpages.ActorContainer
+import org.gammf.collabora.yellowpages.ActorService._
+import org.gammf.collabora.yellowpages.messages._
+import org.gammf.collabora.yellowpages.util.Topic
+import org.gammf.collabora.yellowpages.TopicElement._
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
+import org.gammf.collabora.communication.toBytes
 
+import scala.concurrent.Await
+import scala.concurrent.duration._
+import scala.language.postfixOps
 
-class RabbitMQSubscriberActorTest extends TestKit (ActorSystem("CollaboraServer")) with WordSpecLike with DefaultTimeout with Matchers with BeforeAndAfterAll with ImplicitSender {
+class RabbitMQSubscriberActorTest extends TestKit (ActorSystem("CollaboraTest")) with WordSpecLike with DefaultTimeout with Matchers with BeforeAndAfterAll with ImplicitSender {
 
-  /*private val EXCHANGE_NAME = "updates"
-  private val ROUTING_KEY = ""
+  implicit protected[this] val askTimeout: Timeout = Timeout(5 second)
 
-  val factory = new ConnectionFactory()
-  val connection:ActorRef = system.actorOf(ConnectionActor.props(factory), "rabbitmq")
-  val channelCreator: ActorRef = system.actorOf(Props[ChannelCreatorActor], "channelCreator")
-  val subscriber:ActorRef = system.actorOf(Props[SubscriberActor], "subscriber")
+  var rootYellowPages: ActorRef = _
 
-  val connectemp: Connection = factory.newConnection
-  var channel: Channel = connectemp.createChannel
+  override def beforeAll(): Unit = {
+    ActorContainer.init()
+    ActorContainer.createAll()
+    rootYellowPages = ActorContainer.rootYellowPages
+
+    Thread.sleep(200)
+  }
 
   override def afterAll(): Unit = {
+    ActorContainer.shutdown()
     TestKit.shutdownActorSystem(system)
   }
 
-
   "A Subscriber actor" should {
 
-    "subscribes on a certain queue in a rabbitMQ channel correctly" in {
-      channelCreator ! SubscribingChannelCreationMessage(connection, "updates", "update.server", None)
-      val ChannelCreatedMessage(channel) = expectMsgType[ChannelCreatedMessage]
-      subscriber ! SubscribeMessage(channel, "update.server")
-      this.channel = channel
-      val message = "{\"messageType\": \"insertion\",\"target\" : \"note\",\"user\" : \"maffone\",\"note\": {\"content\" : \"setup working enviroment\",\"expiration\" : \"2017-08-07T08:01:17.171+02:00\",\"location\" : { \"latitude\" : 546, \"longitude\" : 324 },\"previousNotes\" : [ \"5980710df27da3fcfe0ac88e\", \"5980710df27da3fcfe0ac88f\" ],\"state\" : { \"definition\" : \"done\", \"username\" : \"maffone\"}}}"
-      channel.basicPublish(EXCHANGE_NAME, ROUTING_KEY, null, message.getBytes("UTF-8"))
-      expectMsg(ClientUpdateMessage("{\"messageType\": \"insertion\",\"target\" : \"note\",\"user\" : \"maffone\",\"note\": {\"content\" : \"setup working enviroment\",\"expiration\" : \"2017-08-07T08:01:17.171+02:00\",\"location\" : { \"latitude\" : 546, \"longitude\" : 324 },\"previousNotes\" : [ \"5980710df27da3fcfe0ac88e\", \"5980710df27da3fcfe0ac88f\" ],\"state\" : { \"definition\" : \"done\", \"username\" : \"maffone\"}}}"))
-    }
+    "capture a message sent to the previously-set queue" in {
+      val factory = new ConnectionFactory()
+      val connection: Connection = factory.newConnection
+      val channel: Channel = connection.createChannel
+      val queue = channel.queueDeclare.getQueue
 
-    "capturing all the messages send to setted queue " in {
-      for(_ <- 1 to 5){
-        val message = "{\"messageType\": \"insertion\",\"target\" : \"note\",\"user\" : \"maffone\",\"note\": {\"content\" : \"setup working enviroment\",\"expiration\" : \"2017-08-07T08:01:17.171+02:00\",\"location\" : { \"latitude\" : 546, \"longitude\" : 324 },\"previousNotes\" : [ \"5980710df27da3fcfe0ac88e\", \"5980710df27da3fcfe0ac88f\" ],\"state\" : { \"definition\" : \"done\", \"username\" : \"maffone\"}}}"
-        channel.basicPublish(EXCHANGE_NAME, ROUTING_KEY, null, message.getBytes("UTF-8"))
-      }
-      var messages = Seq[ClientUpdateMessage]()
-      receiveWhile(){
-        case msg:ClientUpdateMessage => messages = msg +: messages
-      }
-      messages.length should be(5)
-    }
+      channel.queueBind(queue, "updates", "test_routing_key")
 
-  }*/
+      Await.result(rootYellowPages ? ActorRequestMessage(Topic() :+ Communication :+ RabbitMQ, Subscribing), askTimeout.duration)
+        .asInstanceOf[ActorResponseMessage] match {
+        case response: ActorResponseOKMessage =>
+          response.actor ! SubscribeMessage(channel, queue)
+          channel.basicPublish(TestUtil.TYPE_UPDATES, "test_routing_key", null, "some content")
+          expectMsgPF() {
+            case ClientUpdateMessage(body) => assert(body.equals("some content"))
+          }
+        case _ => fail
+      }
+
+      connection.abort()
+    }
+  }
 }

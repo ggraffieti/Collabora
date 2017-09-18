@@ -28,23 +28,22 @@ public final class NotificationsReceiver {
      * @throws Exception if something went wrong.
      */
     public static void main(final String[] args) throws Exception {
-        ConnectionFactory factory = new ConnectionFactory();
+        final ConnectionFactory factory = new ConnectionFactory();
         factory.setHost(BROKER_HOST);
-        Connection connection = factory.newConnection();
-        Channel channel = connection.createChannel();
+        final Connection connection = factory.newConnection();
+        final Channel channel = connection.createChannel();
 
         channel.exchangeDeclare(EXCHANGE_NAME, BuiltinExchangeType.DIRECT, true);
-        String queueName = channel.queueDeclare().getQueue();
+        final String queueName = channel.queueDeclare().getQueue();
         channel.queueBind(queueName, EXCHANGE_NAME, ROUTING_KEY);
 
         System.out.println(" [*] Waiting for messages. To exit press CTRL+C");
 
         Consumer consumer = new DefaultConsumer(channel) {
             @Override
-            public void handleDelivery(final String consumerTag, final Envelope envelope,
-                                       final AMQP.BasicProperties properties, final byte[] body) throws IOException {
-                String message = new String(body, "UTF-8");
-                System.out.println(" [x] Received '" + message + "'");
+            public void handleDelivery(final String consumerTag, final Envelope envelope, final AMQP.BasicProperties properties,
+                                       final byte[] body) throws IOException {
+                System.out.println("[x] Received: " + new String(body, "UTF-8"));
             }
         };
         channel.basicConsume(queueName, true, consumer);

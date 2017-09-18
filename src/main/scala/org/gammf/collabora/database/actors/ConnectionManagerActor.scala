@@ -25,7 +25,7 @@ class ConnectionManagerActor(override val yellowPages: ActorRef, override val na
     val tryCconnection = parseUri.map(driver.connection)
     tryCconnection match {
       case Success(c) => connection = Some(c)
-      case Failure(e) => e.printStackTrace() // TODO now logging stack
+      case Failure(e) => e.printStackTrace()
     }
     super[BasicActor].preStart()
   }

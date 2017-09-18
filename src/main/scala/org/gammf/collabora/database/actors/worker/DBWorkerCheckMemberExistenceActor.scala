@@ -18,10 +18,10 @@ class DBWorkerCheckMemberExistenceActor(override val yellowPages: ActorRef,
 
   override def receive: Receive = super.receive orElse ({
 
-    case message: IsMemberExistsMessage =>
+    case message: CheckMemberExistenceRequestMessage =>
       find(
         selector = BSONDocument(USER_ID -> message.username),
-        okStrategy = bsonDocumet => QueryOkMessage(IsMemberExistsResponseMessage(message.username, bsonDocumet.isDefined)),
+        okStrategy = bsonDocumet => QueryOkMessage(CheckMemberExistenceResponseMessage(message.username, bsonDocumet.isDefined)),
         failStrategy = defaultDBWorkerFailStrategy(message.username)
       ) pipeTo sender
   }: Receive)

@@ -30,8 +30,8 @@ class DBMasterMember(override val yellowPages: ActorRef,
         case UpdateMessageType.CREATION =>
           getActorOrElse(Topic() :+ Database :+ Member, ExistenceChecking, message).
             foreach(checkMemberWorker =>
-          (checkMemberWorker ? IsMemberExistsMessage(message.member.get.user)).mapTo[QueryOkMessage].map(query => query.queryGoneWell match {
-            case member: IsMemberExistsResponseMessage =>
+          (checkMemberWorker ? CheckMemberExistenceRequestMessage(message.member.get.user)).mapTo[QueryOkMessage].map(query => query.queryGoneWell match {
+            case member: CheckMemberExistenceResponseMessage =>
               if (member.isRegistered)
                 getActorOrElse(Topic() :+ Database :+ Member, DefaultWorker, message).foreach(_ ! InsertMemberMessage(message.member.get, message.collaborationId.get, message.user))
               else

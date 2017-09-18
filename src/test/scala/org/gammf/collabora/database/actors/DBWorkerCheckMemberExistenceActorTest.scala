@@ -5,7 +5,7 @@ import akka.testkit.{ImplicitSender, TestKit}
 import akka.util.Timeout
 import akka.pattern.ask
 import org.gammf.collabora.TestMessageUtil
-import org.gammf.collabora.database.messages.{IsMemberExistsMessage, IsMemberExistsResponseMessage, QueryOkMessage}
+import org.gammf.collabora.database.messages.{CheckMemberExistenceRequestMessage, CheckMemberExistenceResponseMessage, QueryOkMessage}
 import org.gammf.collabora.yellowpages.ActorContainer
 import org.gammf.collabora.yellowpages.ActorService._
 import org.gammf.collabora.yellowpages.messages.{ActorRequestMessage, ActorResponseMessage, ActorResponseOKMessage}
@@ -42,9 +42,9 @@ class DBWorkerCheckMemberExistenceActorTest extends TestKit (ActorSystem("Collab
       Await.result(rootYellowPages ? ActorRequestMessage(Topic() :+ Database :+ Member, ExistenceChecking), askTimeout.duration)
         .asInstanceOf[ActorResponseMessage] match {
         case response: ActorResponseOKMessage =>
-          response.actor ! IsMemberExistsMessage("maffone")
+          response.actor ! CheckMemberExistenceRequestMessage("maffone")
           expectMsgPF() {
-            case QueryOkMessage(IsMemberExistsResponseMessage(username, existence)) => assert(existence && username == "maffone")
+            case QueryOkMessage(CheckMemberExistenceResponseMessage(username, existence)) => assert(existence && username == "maffone")
           }
         case _ => fail
       }
@@ -53,9 +53,9 @@ class DBWorkerCheckMemberExistenceActorTest extends TestKit (ActorSystem("Collab
       Await.result(rootYellowPages ? ActorRequestMessage(Topic() :+ Database :+ Member, ExistenceChecking), askTimeout.duration)
         .asInstanceOf[ActorResponseMessage] match {
         case response: ActorResponseOKMessage =>
-          response.actor ! IsMemberExistsMessage("usernameNotPresent")
+          response.actor ! CheckMemberExistenceRequestMessage("usernameNotPresent")
           expectMsgPF() {
-            case QueryOkMessage(IsMemberExistsResponseMessage(username, existence)) => assert(!existence && username == "usernameNotPresent")
+            case QueryOkMessage(CheckMemberExistenceResponseMessage(username, existence)) => assert(!existence && username == "usernameNotPresent")
           }
         case _ => fail
       }

@@ -1,10 +1,6 @@
 # Collabora
 The universal collaboration tool, from big projects to shopping lists.
 
-## Important message
-This repository contains a university course project. Please, **do not fork it or send us your ideas until this message is here** (~ mid September 2017).
-
-
 ## Status badge
 ### Stable branch
 [![Build Status](https://travis-ci.org/manuelperuzzi/Collabora.svg?branch=master)](https://travis-ci.org/manuelperuzzi/Collabora)
